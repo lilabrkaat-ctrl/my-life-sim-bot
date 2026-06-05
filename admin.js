@@ -70,22 +70,10 @@ function adminCommand(player, command, args) {
             break;
 
         case 'unlock': case 'unlockall':
-            // باز کردن همه مکان‌ها
-            const allLocations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
-            player.unlocked.locations = allLocations;
-            
-            // باز کردن همه دشمنان
-            const allEnemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight'];
-            player.unlocked.enemies = allEnemies;
-            
-            // باز کردن همه NPCها
-            const allNpcs = ['witch', 'ghost', 'fairy', 'knight', 'angel', 'wizard', 'werewolf', 'prince', 'jester', 'skeleton'];
-            player.unlocked.npcs = allNpcs;
-            
-            // باز کردن همه دستور پخت‌ها
-            const allRecipes = ['تبر سنگی', 'شمشیر آهنی', 'زره چرمی', 'کلبه چوبی', 'تیروکمان'];
-            player.unlocked.recipes = allRecipes;
-            
+            player.unlocked.locations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
+            player.unlocked.enemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight_enemy', 'queen'];
+            player.unlocked.npcs = ['witch', 'ghost_sexy', 'fairy', 'knight', 'angel', 'wizard', 'werewolf', 'prince', 'jester', 'skeleton', 'sage', 'farmer', 'blacksmith', 'merchant'];
+            player.unlocked.recipes = ['تبر سنگی', 'شمشیر آهنی', 'زره چرمی', 'کلبه چوبی', 'تیروکمان'];
             result = { success: true, message: '🔓 *همه چیز باز شد!*\n✅ تمام مکان‌ها\n✅ تمام دشمنان\n✅ تمام NPCها\n✅ تمام دستور پخت‌ها' };
             break;
 
@@ -103,11 +91,47 @@ function adminCommand(player, command, args) {
             
             // باز کردن همه چیز
             player.unlocked.locations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
-            player.unlocked.enemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight'];
-            player.unlocked.npcs = ['witch', 'ghost', 'fairy', 'knight', 'angel', 'wizard', 'werewolf', 'prince', 'jester', 'skeleton'];
+            player.unlocked.enemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight_enemy', 'queen'];
+            player.unlocked.npcs = ['witch', 'ghost_sexy', 'fairy', 'knight', 'angel', 'wizard', 'werewolf', 'prince', 'jester', 'skeleton', 'sage', 'farmer', 'blacksmith', 'merchant'];
             player.unlocked.recipes = ['تبر سنگی', 'شمشیر آهنی', 'زره چرمی', 'کلبه چوبی', 'تیروکمان'];
             
-            result = { success: true, message: '👑 *همه چیز مکس شد!*\n⭐ سطح: ۱۰۰\n❤️ جان: ۹۹۹۹\n⚔️ حمله: ۹۹۹\n🛡️ دفاع: ۹۹۹\n👑 طلا: ۹۹۹۹۹\n🔓 همه چیز باز شد!' };
+            // زندانی کردن همه NPCها
+            if (!player.prison) player.prison = [];
+            if (!player.prisonRelations) player.prisonRelations = {};
+            
+            const allNpcs = [
+                { id: 'witch', name: 'ساحره', emoji: '🧙‍♀️' },
+                { id: 'ghost_sexy', name: 'روح سکسی', emoji: '👻' },
+                { id: 'fairy', name: 'پری جنگل', emoji: '🧚' },
+                { id: 'angel', name: 'فرشته', emoji: '👼' },
+                { id: 'knight', name: 'شوالیه', emoji: '⚔️' },
+                { id: 'jester', name: 'دلقک', emoji: '🎭' },
+                { id: 'prince', name: 'پرنسس', emoji: '🤴' },
+                { id: 'skeleton', name: 'اسکلت', emoji: '💀' },
+                { id: 'werewolf', name: 'گرگینه', emoji: '🐺' },
+                { id: 'wizard', name: 'جادوگر', emoji: '🧙‍♂️' },
+                { id: 'sage', name: 'حکیم دانا', emoji: '🧙' },
+                { id: 'farmer', name: 'دهقان', emoji: '🧑‍🌾' },
+                { id: 'blacksmith', name: 'آهنگر', emoji: '⚒️' },
+                { id: 'merchant', name: 'تاجر', emoji: '🧑‍🌾' }
+            ];
+            
+            let prisonCount = 0;
+            for (let npc of allNpcs) {
+                if (!player.prison.find(p => p.npcId === npc.id)) {
+                    player.prison.push({
+                        npcId: npc.id,
+                        name: npc.name,
+                        emoji: npc.emoji,
+                        daysUntilEscape: 999,
+                        capturedAt: Date.now()
+                    });
+                    player.prisonRelations[npc.id] = 100;
+                    prisonCount++;
+                }
+            }
+            
+            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐ سطح: ۱۰۰\n❤️ جان: ۹۹۹۹\n⚔️ حمله: ۹۹۹\n🛡️ دفاع: ۹۹۹\n👑 طلا: ۹۹۹۹۹\n🔓 همه چیز باز شد!\n🔒 ${prisonCount} NPC زندانی شدن!` };
             break;
 
         case 'god': case 'godmode':
@@ -116,6 +140,41 @@ function adminCommand(player, command, args) {
             player.attack = 9999;
             player.defense = 9999;
             result = { success: true, message: '🔱 *گاد مود فعال شد!*\n❤️ جان: ۹۹۹۹۹\n⚔️ حمله: ۹۹۹۹\n🛡️ دفاع: ۹۹۹۹\n💀 نامیرا شدی!' };
+            break;
+
+        case 'prison': case 'prisonall':
+            if (!player.prison) player.prison = [];
+            if (!player.prisonRelations) player.prisonRelations = {};
+            
+            const npcs = [
+                { id: 'witch', name: 'ساحره', emoji: '🧙‍♀️' },
+                { id: 'ghost_sexy', name: 'روح سکسی', emoji: '👻' },
+                { id: 'fairy', name: 'پری جنگل', emoji: '🧚' },
+                { id: 'angel', name: 'فرشته', emoji: '👼' },
+                { id: 'knight', name: 'شوالیه', emoji: '⚔️' },
+                { id: 'jester', name: 'دلقک', emoji: '🎭' },
+                { id: 'prince', name: 'پرنسس', emoji: '🤴' },
+                { id: 'skeleton', name: 'اسکلت', emoji: '💀' },
+                { id: 'werewolf', name: 'گرگینه', emoji: '🐺' },
+                { id: 'wizard', name: 'جادوگر', emoji: '🧙‍♂️' },
+                { id: 'sage', name: 'حکیم دانا', emoji: '🧙' },
+                { id: 'farmer', name: 'دهقان', emoji: '🧑‍🌾' },
+                { id: 'blacksmith', name: 'آهنگر', emoji: '⚒️' },
+                { id: 'merchant', name: 'تاجر', emoji: '🧑‍🌾' }
+            ];
+            
+            let count = 0;
+            for (let npc of npcs) {
+                if (!player.prison.find(p => p.npcId === npc.id)) {
+                    player.prison.push({
+                        npcId: npc.id, name: npc.name, emoji: npc.emoji,
+                        daysUntilEscape: 999, capturedAt: Date.now()
+                    });
+                    player.prisonRelations[npc.id] = 100;
+                    count++;
+                }
+            }
+            result = { success: true, message: `🔒 ${count} NPC زندانی شدن!\n🏰 برو تو زندان ببینشون!` };
             break;
 
         case 'reset':
@@ -129,23 +188,27 @@ function adminCommand(player, command, args) {
             player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10 };
             player.equipment = { weapon: null, armor: null, house: null };
             player.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
-            result = { success: true, message: '🔄 *همه چیز ریست شد!* از اول شروع کن!' };
+            player.prison = [];
+            player.prisonRelations = {};
+            player.seduced = {};
+            result = { success: true, message: '🔄 *همه چیز ریست شد!*' };
             break;
 
         case 'help':
             result = { success: true, message: `👑 *دستورات ادمین:*\n
-💰 /admin gold [عدد] - اضافه کردن طلا
-✨ /admin xp [عدد] - اضافه کردن تجربه
-🏆 /admin score [عدد] - اضافه کردن امتیاز
-❤️ /admin heal - شفای کامل
-🎒 /admin item [اسم] [عدد] - آیتم
-⚔️ /admin attack [عدد] - اضافه کردن حمله
-🛡️ /admin defense [عدد] - اضافه کردن دفاع
-⭐ /admin level [عدد] - اضافه کردن سطح
-🔓 /admin unlock - باز کردن همه چیز
-👑 /admin max - مکس کردن همه چیز
-🔱 /admin god - گاد مود
-🔄 /admin reset - ریست کامل` };
+💰 /admin gold [عدد]
+✨ /admin xp [عدد]
+🏆 /admin score [عدد]
+❤️ /admin heal
+🎒 /admin item [اسم] [عدد]
+⚔️ /admin attack [عدد]
+🛡️ /admin defense [عدد]
+⭐ /admin level [عدد]
+🔓 /admin unlock
+👑 /admin max
+🔒 /admin prison
+🔱 /admin god
+🔄 /admin reset` };
             break;
     }
 
