@@ -33,18 +33,9 @@ function craftItem(player, itemName) {
         }
     }
 
-    if (recipe.effect === 'weapon') {
-        player.equipment.weapon = itemName;
-        player.attack = 5 + recipe.bonus;
-    } else if (recipe.effect === 'armor') {
-        player.equipment.armor = itemName;
-        player.defense = 2 + recipe.bonus;
-    } else if (recipe.effect === 'house') {
-        player.equipment.house = itemName;
-        player.maxHp += 50;
-        player.hp = player.maxHp;
-        player.defense += recipe.bonus;
-    }
+    if (recipe.effect === 'weapon') { player.equipment.weapon = itemName; player.attack = 5 + recipe.bonus; }
+    else if (recipe.effect === 'armor') { player.equipment.armor = itemName; player.defense = 2 + recipe.bonus; }
+    else if (recipe.effect === 'house') { player.equipment.house = itemName; player.maxHp += 50; player.hp = player.maxHp; player.defense += recipe.bonus; }
 
     return { success: true, message: `✅ ${recipe.emoji} *${itemName}* ساخته شد!` };
 }
