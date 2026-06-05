@@ -9,7 +9,7 @@ const dialogues = {
         { text: "🧙‍♀️ باشه قبول... تو از من قوی‌تری... بیا متحد شیم!", options: [{ text: "🤝 متحد", action: "ally" }, { text: "💋 همدم", action: "seduce" }] },
         { text: "🧙‍♀️ ارباب من... چی فرمان میدی؟ 😈", options: [{ text: "🎁 هدیه", action: "gift" }, { text: "💋 بوس", action: "kiss" }] }
     ],
-    ghost: [
+    ghost_sexy: [
         { text: "👻 من... من کیم؟ یادم نمیاد...", options: [{ text: "🕯️ کمک", action: "help" }, { text: "🏃 فرار", action: "flee" }] },
         { text: "👻 تو دوباره اومدی... کسی رو دیدی شبیه من؟", options: [{ text: "👂 بگو", action: "listen" }, { text: "💋 تصاحب", action: "seduce" }] },
         { text: "👻 آره! من نگهبان گنج بودم! می‌خوای بگم کجاست؟", options: [{ text: "💰 بگو", action: "treasure" }, { text: "💋 بوس", action: "kiss" }] },
@@ -45,6 +45,19 @@ const dialogues = {
     wizard: [
         { text: "🧙‍♂️ من می‌دونم دنبال چی می‌گردی...", options: [{ text: "🔮 طلسم", action: "power" }, { text: "💋 شیفته", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] },
         { text: "🧙‍♂️ قدرت زیاد می‌خوای؟ باید هزینه‌اش رو بدی!", options: [{ text: "💰 می‌پردازم", action: "wealth" }, { text: "🗡️ نمی‌خوام", action: "fight" }] }
+    ],
+    sage: [
+        { text: "🧙 حکیم دانا: "سلام مسافر... آینده‌ات رو توی چشمات می‌بینم...", options: [{ text: "🔮 فال بگیر", action: "power" }, { text: "💡 راهنمایی", action: "help" }, { text: "🚶 برم", action: "flee" }] },
+        { text: "🧙 حکیم دانا: "باز هم سوال داری؟ هر سوالی یه قیمتی داره..."", options: [{ text: "💰 می‌پردازم", action: "wealth" }, { text: "🎁 رایگان بگو", action: "gift" }] }
+    ],
+    farmer: [
+        { text: "🧑‍🌾 دهقان پیرمرد: "سلام جوون! گرسنه‌ای؟ غذا دارم، ارزون می‌دم!"", options: [{ text: "🍖 بخرم", action: "trade" }, { text: "💰 پول ندارم", action: "flee" }, { text: "🤝 کمک می‌خوام", action: "help" }] }
+    ],
+    blacksmith: [
+        { text: "⚒️ آهنگر: "به کارگاه من خوش اومدی! چی می‌خوای بسازی؟"", options: [{ text: "🔨 ساخت", action: "craft" }, { text: "🤝 صحبت", action: "ally" }] }
+    ],
+    merchant: [
+        { text: "🧑‍🌾 تاجر: "جنس دارم، جنس مرغوب! از شیراز آوردیم!"", options: [{ text: "💰 خرید", action: "trade" }, { text: "🤝 تخفیف بده", action: "gift" }] }
     ]
 };
 
@@ -77,7 +90,7 @@ const prisonDialogues = {
             "🧙‍♀️: مال تو شدم... طلسمت کردم... تا ابد پیشمی... 😈💋"
         ]
     },
-    ghost: {
+    ghost_sexy: {
         untrusted: [
             "👻: من سال‌هاست کسی رو لمس نکردم... نمی‌دونم هنوز می‌تونم...",
             "👻: از من نمی‌ترسی؟ بیشتر آدما فرار می‌کنن...",
@@ -241,7 +254,7 @@ const prisonDialogues = {
 
 const npcConfig = {
     witch: { image: 'witch', emoji: '🧙‍♀️', fightReward: { xp: 50, gold: 30 }, seduceReward: { hp: 30, xp: 20 }, startPoints: 15 },
-    ghost: { image: 'ghost_sexy', emoji: '👻', fightReward: { xp: 80, gold: 40 }, seduceReward: { hp: 50, xp: 30 }, startPoints: 25 },
+    ghost_sexy: { image: 'ghost_sexy', emoji: '👻', fightReward: { xp: 80, gold: 40 }, seduceReward: { hp: 50, xp: 30 }, startPoints: 25 },
     fairy: { image: 'fairy', emoji: '🧚', fightReward: { xp: 40, gold: 25 }, seduceReward: { hp: 20, xp: 15 }, startPoints: 20 },
     angel: { image: 'angel', emoji: '👼', fightReward: { xp: 100, gold: 50 }, seduceReward: { hp: 100, xp: 50 }, startPoints: 20 },
     knight: { image: 'knight', emoji: '⚔️', fightReward: { xp: 60, gold: 35 }, seduceReward: { hp: 40, xp: 25 }, startPoints: 10 },
@@ -249,23 +262,27 @@ const npcConfig = {
     prince: { image: 'prince', emoji: '🤴', fightReward: { xp: 70, gold: 100 }, seduceReward: { hp: 30, xp: 20 }, startPoints: 15 },
     skeleton: { image: 'skeleton', emoji: '💀', fightReward: { xp: 35, gold: 15 }, seduceReward: { hp: 15, xp: 10 }, startPoints: 30 },
     werewolf: { image: 'werewolf', emoji: '🐺', fightReward: { xp: 90, gold: 45 }, seduceReward: { hp: 50, xp: 35 }, startPoints: 5 },
-    wizard: { image: 'wizard', emoji: '🧙‍♂️', fightReward: { xp: 70, gold: 40 }, seduceReward: { hp: 30, xp: 25 }, startPoints: 15 }
+    wizard: { image: 'wizard', emoji: '🧙‍♂️', fightReward: { xp: 70, gold: 40 }, seduceReward: { hp: 30, xp: 25 }, startPoints: 15 },
+    sage: { image: 'sage', emoji: '🧙', fightReward: { xp: 30, gold: 20 }, seduceReward: { hp: 20, xp: 10 }, startPoints: 40 },
+    farmer: { image: 'farmer', emoji: '🧑‍🌾', fightReward: { xp: 15, gold: 10 }, seduceReward: { hp: 10, xp: 5 }, startPoints: 35 },
+    blacksmith: { image: 'blacksmith', emoji: '⚒️', fightReward: { xp: 40, gold: 25 }, seduceReward: { hp: 15, xp: 10 }, startPoints: 30 },
+    merchant: { image: 'merchant', emoji: '🧑‍🌾', fightReward: { xp: 20, gold: 50 }, seduceReward: { hp: 10, xp: 5 }, startPoints: 35 }
 };
 
 // توابع دیالوگ محیط
 function getDialogue(npcId, encounterCount) {
     const npcDialogues = dialogues[npcId];
     if (!npcDialogues) return null;
-    const index = Math.min(encounterCount, npcDialogues.length - 1);
+    const index = Math.min(encounterCount || 0, npcDialogues.length - 1);
     return npcDialogues[index];
 }
 
 // توابع دیالوگ زندان
 function getPrisonDialogue(npcId, relationLevel) {
     const npcDialogues = prisonDialogues[npcId];
-    if (!npcDialogues) return { text: "🤐 حرفی برای گفتن نداره...", level: relationLevel };
+    if (!npcDialogues) return { text: "🤐 حرفی برای گفتن نداره...", level: relationLevel || 'untrusted' };
     
-    const levelDialogues = npcDialogues[relationLevel] || npcDialogues.untrusted || npcDialogues.wild;
+    const levelDialogues = npcDialogues[relationLevel] || npcDialogues.untrusted || npcDialogues.wild || ["🤐 ..."];
     const text = levelDialogues[Math.floor(Math.random() * levelDialogues.length)];
     
     return { text, level: relationLevel };
@@ -287,11 +304,11 @@ function handleAction(player, npcId, action) {
             result.message = `⚔️ ${npc.emoji} برای نبرد آماده میشه!`;
             break;
         case 'seduce':
-            player.hp = Math.min(player.maxHp, player.hp + npc.seduceReward.hp);
-            player.xp += npc.seduceReward.xp;
+            player.hp = Math.min(player.maxHp, player.hp + (npc.seduceReward?.hp || 10));
+            player.xp += npc.seduceReward?.xp || 10;
             if (!player.seduced) player.seduced = {};
             player.seduced[npcId] = (player.seduced[npcId] || 0) + 1;
-            result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +${npc.seduceReward.hp} | ✨ +${npc.seduceReward.xp}`;
+            result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +${npc.seduceReward?.hp || 10} | ✨ +${npc.seduceReward?.xp || 10}`;
             break;
         case 'flee': result.message = `🏃 فرار کردی... ${npc.emoji} با عصبانیت نگاهت می‌کنه!`; break;
         case 'heal': player.hp = player.maxHp; result.message = `❤️ ${npc.emoji} تو رو شفا داد!`; break;
@@ -306,6 +323,7 @@ function handleAction(player, npcId, action) {
         case 'listen': player.xp += 10; result.message = `👂 گوش دادی... +۱۰✨`; break;
         case 'treasure': player.inventory.gold += 50; result.message = `💰 گنج! +۵۰👑`; break;
         case 'free': player.xp += 30; result.message = `🕊️ آزادش کردی! +۳۰✨`; break;
+        case 'craft': result.message = `🔨 برو به بخش ساخت‌وساز!`; break;
         default: result.message = `🤔 ${npc.emoji} منتظر تصمیم توئه...`;
     }
 
