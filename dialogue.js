@@ -40,6 +40,10 @@ const dialogues = {
     ],
     werewolf: [
         { text: "🐺 ماه کامله... تبدیل شو یا فرار کن!", options: [{ text: "⚔️ بجنگ", action: "fight" }, { text: "💋 تصاحب", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] }
+    ],
+    wizard: [
+        { text: "🧙‍♂️ من می‌دونم دنبال چی می‌گردی...", options: [{ text: "🔮 طلسم", action: "power" }, { text: "💋 شیفته", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] },
+        { text: "🧙‍♂️ قدرت زیاد می‌خوای؟ باید هزینه‌اش رو بدی!", options: [{ text: "💰 می‌پردازم", action: "wealth" }, { text: "🗡️ نمی‌خوام", action: "fight" }] }
     ]
 };
 
@@ -52,7 +56,8 @@ const npcConfig = {
     jester: { image: 'jester', emoji: '🎭', fightReward: { xp: 20, gold: 10 }, seduceReward: { hp: 10, xp: 5 } },
     prince: { image: 'prince', emoji: '🤴', fightReward: { xp: 70, gold: 100 }, seduceReward: { hp: 30, xp: 20 } },
     skeleton: { image: 'skeleton', emoji: '💀', fightReward: { xp: 35, gold: 15 }, seduceReward: { hp: 15, xp: 10 } },
-    werewolf: { image: 'werewolf', emoji: '🐺', fightReward: { xp: 90, gold: 45 }, seduceReward: { hp: 50, xp: 35 } }
+    werewolf: { image: 'werewolf', emoji: '🐺', fightReward: { xp: 90, gold: 45 }, seduceReward: { hp: 50, xp: 35 } },
+    wizard: { image: 'wizard', emoji: '🧙‍♂️', fightReward: { xp: 70, gold: 40 }, seduceReward: { hp: 30, xp: 25 } }
 };
 
 function getDialogue(npcId, encounterCount) {
@@ -98,6 +103,44 @@ function handleAction(player, npcId, action) {
         case 'kiss':
             player.hp = Math.min(player.maxHp, player.hp + 15);
             result.message = `😘 ${npc.emoji} بوسیدت! +۱۵❤️`;
+            break;
+        case 'wealth':
+            player.inventory.gold += 30;
+            result.message = `💰 ${npc.emoji} بهت ۳۰👑 طلا داد!`;
+            break;
+        case 'power':
+            player.attack += 5;
+            result.message = `⚔️ ${npc.emoji} قدرتت رو زیاد کرد! +۵⚔️`;
+            break;
+        case 'ally':
+            player.defense += 3;
+            result.message = `🤝 ${npc.emoji} متحدت شد! +۳🛡️`;
+            break;
+        case 'trade':
+            player.inventory.gold += 15;
+            player.inventory.iron += 5;
+            result.message = `🤝 معامله کردی! +۱۵👑 +۵⛏️`;
+            break;
+        case 'potion':
+            player.hp = Math.min(player.maxHp, player.hp + 40);
+            player.attack += 2;
+            result.message = `🧪 معجون خوردی! +۴۰❤️ +۲⚔️`;
+            break;
+        case 'help':
+            player.xp += 15;
+            result.message = `🤝 کمک کردی! +۱۵✨`;
+            break;
+        case 'listen':
+            player.xp += 10;
+            result.message = `👂 گوش دادی... +۱۰✨`;
+            break;
+        case 'treasure':
+            player.inventory.gold += 50;
+            result.message = `💰 گنج رو پیدا کردی! +۵۰👑`;
+            break;
+        case 'free':
+            player.xp += 30;
+            result.message = `🕊️ آزادش کردی! +۳۰✨`;
             break;
         default:
             result.message = `🤔 ${npc.emoji} منتظر تصمیم توئه...`;
