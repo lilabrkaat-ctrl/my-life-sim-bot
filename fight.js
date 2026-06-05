@@ -2,18 +2,17 @@ const config = require('./config');
 const activeBattles = {};
 
 function startFight(player) {
-    const enemyKeys = config.locationEnemies[player.location];
-    if (!enemyKeys || enemyKeys.length === 0) {
-        return { success: false, message: '⚠️ اینجا دشمنی نیست!' };
-    }
+    const keys = config.locationEnemies[player.location];
+    if (!keys || keys.length === 0) return { success: false, message: '⚠️ اینجا دشمنی نیست!' };
 
-    const key = enemyKeys[Math.floor(Math.random() * enemyKeys.length)];
-    const data = config.images.enemies[key];
+    const k = keys[Math.floor(Math.random() * keys.length)];
+    const d = config.images.enemies[k];
+    if (!d) return { success: false, message: '⚠️ دشمن پیدا نشد!' };
     
     const enemy = {
-        key, name: data.name, emoji: data.emoji, file_id: data.file_id,
-        hp: data.hp, maxHp: data.hp, attack: data.attack,
-        reward: JSON.parse(JSON.stringify(data.reward)), status: 'fighting'
+        key: k, name: d.name, emoji: d.emoji, file_id: d.file_id,
+        hp: d.hp, maxHp: d.hp, attack: d.attack,
+        reward: JSON.parse(JSON.stringify(d.reward || { xp: 10 })), status: 'fighting'
     };
 
     return { success: true, enemy, message: formatBattle(player, enemy) };
@@ -21,26 +20,26 @@ function startFight(player) {
 
 function playerAttack(player, enemy) {
     let log = '';
-    const roll = Math.random();
+    const r = Math.random();
     let dmg;
 
-    if (roll < 0.15) { dmg = player.attack * 2; log += '💥 *ضربه انتقادی!* '; }
-    else if (roll < 0.35) { dmg = Math.floor(player.attack * 1.5); log += '⚡ *ضربه قدرتمند!* '; }
-    else if (roll > 0.85) { dmg = Math.floor(player.attack * 0.5); log += '😕 *ضربه ضعیف...* '; }
+    if (r < 0.15) { dmg = player.attack * 2; log += '💥 '; }
+    else if (r < 0.35) { dmg = Math.floor(player.attack * 1.5); log += '⚡ '; }
+    else if (r > 0.85) { dmg = Math.floor(player.attack * 0.5); log += '😕 '; }
     else { dmg = player.attack; log += '🗡️ '; }
 
     enemy.hp -= dmg;
     if (enemy.hp < 0) enemy.hp = 0;
-    log += `تو ${dmg} زدی! ❤️${enemy.emoji} ${enemy.hp}/${enemy.maxHp}\n`;
+    log += `${dmg} ضربه | ❤️${enemy.emoji} ${enemy.hp}/${enemy.maxHp}`;
 
     if (enemy.hp <= 0) {
-        log += `\n💀 ${enemy.name} کشته شد! 🎉\n✨ +${enemy.reward.xp} XP`;
-        player.xp += enemy.reward.xp;
+        log += `\n💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
+        player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated++;
-        for (let r in enemy.reward) {
-            if (r !== 'xp' && player.inventory[r] !== undefined) {
-                player.inventory[r] += enemy.reward[r];
-                log += `\n${config.images.resources[r]?.emoji || ''} +${enemy.reward[r]}`;
+        for (let rw in enemy.reward) {
+            if (rw !== 'xp' && player.inventory[rw] !== undefined) {
+                player.inventory[rw] += enemy.reward[rw];
+                log += `\n${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}`;
             }
         }
         if (require('./player').checkLevelUp(player)) log += `\n⬆️ لول آپ! سطح ${player.level}!`;
@@ -48,15 +47,9 @@ function playerAttack(player, enemy) {
     }
 
     if (enemy.hp < enemy.maxHp * 0.25) {
-        const r = Math.random();
-        if (r < 0.55) {
-            log += `\n🏃 ${enemy.emoji} ${enemy.name} فرار کرد!`;
-            return { battleOver: true, playerWon: false, message: log };
-        } else if (r < 0.80) {
-            enemy.status = 'trapped';
-            log += `\n🔒 ${enemy.name} محاصره شد!`;
-            return { battleOver: false, message: log };
-        }
+        const roll = Math.random();
+        if (roll < 0.55) { log += `\n🏃 ${enemy.name} فرار کرد!`; return { battleOver: true, playerWon: false, message: log }; }
+        else if (roll < 0.80) { enemy.status = 'trapped'; log += `\n🔒 ${enemy.name} محاصره شد!`; return { battleOver: false, message: log }; }
     }
 
     return enemyTurn(player, enemy, log);
@@ -67,7 +60,7 @@ function enemyTurn(player, enemy, log) {
     const dmg = Math.max(1, enemy.attack - Math.floor(player.defense / 3));
     player.hp -= dmg;
     if (player.hp < 0) player.hp = 0;
-    log += `💢 ${enemy.name} ${dmg} زد! ❤️تو ${player.hp}/${player.maxHp}\n`;
+    log += `\n💢 ${enemy.name} ${dmg} زد! ❤️تو ${player.hp}/${player.maxHp}`;
 
     if (player.hp <= 0) {
         player.hp = Math.floor(player.maxHp / 2);
@@ -89,12 +82,7 @@ function playerEscape(player, enemy) {
         player.hp -= dmg;
         if (player.hp < 0) player.hp = 0;
         let msg = `🔒 محاصره شدی! ${enemy.name} ${dmg} زد!`;
-        if (player.hp <= 0) {
-            player.hp = Math.floor(player.maxHp / 2);
-            player.location = 'village';
-            msg += `\n💀 مردی! به روستا برگشتی.`;
-            return { battleOver: true, escaped: false, message: msg };
-        }
+        if (player.hp <= 0) { player.hp = Math.floor(player.maxHp / 2); player.location = 'village'; msg += `\n💀 مردی! به روستا برگشتی.`; return { battleOver: true, escaped: false, message: msg }; }
         return { battleOver: false, escaped: false, message: msg };
     }
     return { battleOver: false, escaped: false, message: '😬 نتونستی فرار کنی!' };
