@@ -1,4 +1,5 @@
 const config = require('./config');
+const { triggerRandomEvent } = require('./events');
 
 function travel(player, destination) {
     const locations = config.images.locations;
@@ -8,30 +9,30 @@ function travel(player, destination) {
     }
 
     if (player.location === destination) {
-        return { success: false, message: '⚠️ تو همین جا هستی!' };
+        return { success: false, message: '⚠️ همین جا هستی!' };
     }
 
-    const oldLoc = locations[player.location];
-    const newLoc = locations[destination];
-    
+    player.travels++;
     player.location = destination;
-    
+    const newLoc = locations[destination];
+
+    if (Math.random() < 0.3) {
+        const eventResult = triggerRandomEvent(player, 'travel');
+        if (eventResult && eventResult.eventTriggered) {
+            return {
+                success: true,
+                message: `🚶 به ${newLoc.emoji} ${newLoc.name} رسیدی!\n${newLoc.description}\n\n${eventResult.message}`,
+                eventImage: eventResult.image,
+                travelImage: newLoc.file_id
+            };
+        }
+    }
+
     return {
         success: true,
-        message: `🚶 از ${oldLoc.emoji} ${oldLoc.name} به ${newLoc.emoji} ${newLoc.name} سفر کردی.`
+        message: `🚶 به ${newLoc.emoji} ${newLoc.name} رسیدی!\n${newLoc.description}`,
+        travelImage: newLoc.file_id
     };
 }
 
-function showTravelMenu() {
-    const locations = config.images.locations;
-    let menu = '🗺️ *نقشه سفر*\n\n';
-    
-    for (let key in locations) {
-        const loc = locations[key];
-        menu += `${loc.emoji} ${loc.name}: /travel_${key}\n`;
-    }
-    
-    return menu;
-}
-
-module.exports = { travel, showTravelMenu };
+module.exports = { travel };
