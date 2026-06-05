@@ -1,5 +1,4 @@
 const config = require('./config');
-
 const players = {};
 
 function createPlayer(chatId) {
@@ -13,26 +12,21 @@ function getPlayer(chatId) {
 
 function formatStatus(p) {
     const loc = config.images.locations[p.location];
+    const pHpBar = '█'.repeat(Math.max(0, Math.floor(p.hp / p.maxHp * 10))) + '░'.repeat(Math.max(0, 10 - Math.floor(p.hp / p.maxHp * 10)));
     
     return `
-👤 *${p.name}*
-⚡ سطح: ${p.level} | تجربه: ${p.xp}
-❤️ جان: ${p.hp}/${p.maxHp}
-⚔️ حمله: ${p.attack} | 🛡️ دفاع: ${p.defense}
+👤 *${p.name}* | ⭐ ${p.level} | ☀️ روز ${p.day}
+❤️ ${pHpBar} ${p.hp}/${p.maxHp}
+⚔️ ${p.attack} | 🛡️ ${p.defense} | ✨ ${p.xp}/${p.level * 20}
+
+📍 ${loc.emoji} ${loc.name}
 
 🎒 *اینونتوری:*
-🪵 چوب: ${p.inventory.wood}
-🪨 سنگ: ${p.inventory.stone}
-🍖 گوشت: ${p.inventory.meat}
-💧 آب: ${p.inventory.water}
-🦴 پوست: ${p.inventory.skin}
-⛏️ آهن: ${p.inventory.iron}
-👑 طلا: ${p.inventory.gold}
+🪵${p.inventory.wood} 🪨${p.inventory.stone} 🍖${p.inventory.meat} 💧${p.inventory.water}
+🦴${p.inventory.skin} ⛏️${p.inventory.iron} 👑${p.inventory.gold}
 
-🏠 خونه: ${p.equipment.house || 'نداری'}
-🗡️ اسلحه: ${p.equipment.weapon || 'نداری'}
-🛡️ زره: ${p.equipment.armor || 'نداری'}
-📍 مکان: ${loc.emoji} ${loc.name}
+🛡️ *تجهیزات:*
+🏠 ${p.equipment.house || '❌'} | 🗡️ ${p.equipment.weapon || '❌'} | 🛡️ ${p.equipment.armor || '❌'}
 🏆 شکست‌خورده: ${p.enemiesDefeated}
     `;
 }
