@@ -1,34 +1,48 @@
 const config = require('./config');
 const activeBattles = {};
 
+// انیمیشن‌ها
+const animations = {
+    magic: 'CgACAgQAAxkBAAEqLflqIwn95lMF2X_HmipPQR6-l15QEwACsBwAAiiYGVEtH6Hh1OaSvTsE',
+    dragon: 'CgACAgQAAxkBAAEqLfdqIwn9C-y0z3D0l8MfUYPa3dIHwAACmhwAAiiYGVG2mdi_jGe3AjsE',
+    damage: 'CgACAgQAAxkBAAEqLfhqIwn9sRbE1qunXL1XWg3QkXcRCgACqxwAAiiYGVG3erS7MeKUoTsE',
+    heal: 'CgACAgQAAxkBAAEqLsBqIxe3emIP2Fh4QtjKq96Rf8z95AAC9B8AAn4RGFFV9Ndj3CrAuDsE',
+    fire: 'CgACAgQAAxkBAAEqLsFqIxe3l2O8cm0nZ2isbVxO2BC-QQACCyAAAn4RGFHHp4PTxPZjVTsE',
+    levelup: 'CgACAgQAAxkBAAEqLstqIxe31ugPDQ-cHCbwGkNhJ-PCnAACFCAAAn4RGFEJFR7ZyREyTDsE',
+    escape: 'CgACAgQAAxkBAAEqLslqIxe3I_pbDijfOoaA8KpkSKM5FAACEiAAAn4RGFF6LZ6XVqIrbTsE',
+    treasure: 'CgACAgQAAxkBAAEqLsVqIxe3OomIRGM9gLgsnpw8F7mh5gACECAAAn4RGFEvJxvIRXlaGDsE',
+    angel_heal: 'CgACAgQAAxkBAAEqLsZqIxe3aY30jIhHeTSC9bXio7KOkAACESAAAn4RGFG2IV0p66Bn0jsE',
+    sunrise: 'CgACAgQAAxkBAAEqLsJqIxe3mi40nLyoVjUO6F9ItlrA9QACDSAAAn4RGFEf4E1UGbo9tjsE'
+};
+
 function startFight(player) {
     const keys = config.locationEnemies[player.location];
-    if (!keys || keys.length === 0) return { success: false, message: '⚠️ اینجا دشمنی نیست! برو یه جای دیگه!' };
+    if (!keys || keys.length === 0) return { success: false, message: '⚠️ اینجا دشمنی نیست!', animation: null };
 
-    // انتخاب دشمن
     let k = keys[Math.floor(Math.random() * keys.length)];
     let d = config.images.enemies[k];
     
-    // اگه دشمن توی images نبود، از بین همه دشمنان یکی انتخاب کن
-    if (!d) {
+    if (!d || !d.hp) {
         const allEnemies = Object.keys(config.images.enemies).filter(key => 
             config.images.enemies[key] && config.images.enemies[key].hp
         );
-        if (allEnemies.length === 0) return { success: false, message: '⚠️ دشمنی پیدا نشد!' };
+        if (allEnemies.length === 0) return { success: false, message: '⚠️ دشمنی پیدا نشد!', animation: null };
         k = allEnemies[Math.floor(Math.random() * allEnemies.length)];
         d = config.images.enemies[k];
     }
     
-    if (!d || !d.hp) return { success: false, message: '⚠️ دشمن پیدا نشد!' };
-    
     const enemy = {
-        key: k, name: d.name || 'دشمن ناشناس', emoji: d.emoji || '👾', file_id: d.file_id || null,
+        key: k, name: d.name || 'دشمن', emoji: d.emoji || '👾', file_id: d.file_id || null,
         hp: d.hp || 20, maxHp: d.hp || 20, attack: d.attack || 5,
         reward: JSON.parse(JSON.stringify(d.reward || { xp: 10 })), status: 'fighting',
         isPlayer: false
     };
 
-    return { success: true, enemy, message: formatBattle(player, enemy) };
+    // انیمیشن اژدها برای اژدها
+    let anim = null;
+    if (k === 'dragon') anim = animations.dragon;
+
+    return { success: true, enemy, message: formatBattle(player, enemy), animation: anim };
 }
 
 function startPvPFight(player1, player2) {
@@ -51,11 +65,26 @@ function playerAttack(player, enemy) {
     let log = '';
     const r = Math.random();
     let dmg;
+    let animation = null;
 
-    if (r < 0.15) { dmg = player.attack * 2; log += '💥 *ضربه انتقادی!* '; }
-    else if (r < 0.35) { dmg = Math.floor(player.attack * 1.5); log += '⚡ *قدرتمند!* '; }
-    else if (r > 0.85) { dmg = Math.floor(player.attack * 0.5); log += '😕 *ضعیف...* '; }
-    else { dmg = player.attack; log += '🗡️ '; }
+    if (r < 0.15) { 
+        dmg = player.attack * 2; 
+        log += '💥 *ضربه انتقادی!* '; 
+        animation = animations.magic;
+    }
+    else if (r < 0.35) { 
+        dmg = Math.floor(player.attack * 1.5); 
+        log += '🔥 *قدرتمند!* '; 
+        animation = animations.fire;
+    }
+    else if (r > 0.85) { 
+        dmg = Math.floor(player.attack * 0.5); 
+        log += '😕 *ضعیف...* '; 
+    }
+    else { 
+        dmg = player.attack; 
+        log += '🗡️ '; 
+    }
 
     enemy.hp -= dmg;
     if (enemy.hp < 0) enemy.hp = 0;
@@ -63,10 +92,10 @@ function playerAttack(player, enemy) {
 
     if (enemy.hp <= 0) {
         if (enemy.isPlayer) {
-            log += `\n💀 ${enemy.name} کشته شد! 🎉 +۵۰🏆`;
+            log += `\n💀 ${enemy.name} کشته شد! +۵۰🏆`;
             player.score = (player.score || 0) + 50;
             require('./player').checkUnlocks(player);
-            return { battleOver: true, playerWon: true, message: log, isPvP: true };
+            return { battleOver: true, playerWon: true, message: log, isPvP: true, animation: animations.levelup };
         }
         
         log += `\n💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
@@ -81,30 +110,40 @@ function playerAttack(player, enemy) {
             }
         }
         
-        if (require('./player').checkLevelUp(player)) log += `\n⬆️ لول آپ! سطح ${player.level}!`;
+        const leveledUp = require('./player').checkLevelUp(player);
+        if (leveledUp) {
+            log += `\n⬆️ لول آپ! سطح ${player.level}!`;
+            animation = animations.levelup;
+        }
         require('./player').checkUnlocks(player);
         
-        // شانس زندانی کردن NPCها
         const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen'];
         if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
-            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key };
+            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animation };
         }
         
-        return { battleOver: true, playerWon: true, message: log };
+        return { battleOver: true, playerWon: true, message: log, animation: animation };
     }
 
     // فرار دشمن
     if (!enemy.isPlayer && enemy.hp < enemy.maxHp * 0.25) {
         const roll = Math.random();
-        if (roll < 0.55) { log += `\n🏃 ${enemy.name} فرار کرد!`; return { battleOver: true, playerWon: false, message: log }; }
-        else if (roll < 0.80) { enemy.status = 'trapped'; log += `\n🔒 ${enemy.name} محاصره شد!`; return { battleOver: false, message: log }; }
+        if (roll < 0.55) { 
+            log += `\n🏃 ${enemy.name} فرار کرد!`; 
+            return { battleOver: true, playerWon: false, message: log, animation: animations.escape, escaped: true, escapedNpc: enemy.key }; 
+        }
+        else if (roll < 0.80) { 
+            enemy.status = 'trapped'; 
+            log += `\n🔒 ${enemy.name} محاصره شد!`; 
+            return { battleOver: false, message: log, animation: null }; 
+        }
     }
 
-    return enemyTurn(player, enemy, log);
+    return enemyTurn(player, enemy, log, animation);
 }
 
-function enemyTurn(player, enemy, log) {
-    if (enemy.status === 'trapped') return { battleOver: false, message: log };
+function enemyTurn(player, enemy, log, animation) {
+    if (enemy.status === 'trapped') return { battleOver: false, message: log, animation: null };
     
     const dmg = Math.max(1, enemy.attack - Math.floor((player.defense || 2) / 3));
     player.hp -= dmg;
@@ -118,15 +157,15 @@ function enemyTurn(player, enemy, log) {
         player.score = Math.max(0, (player.score || 0) - 10);
         player.location = 'village';
         log += `\n💀 *مردی!* به روستا برگشتی. ❤️${player.hp}/${player.maxHp}`;
-        return { battleOver: true, playerWon: false, message: log };
+        return { battleOver: true, playerWon: false, message: log, animation: animations.damage };
     }
     
-    return { battleOver: false, message: log };
+    return { battleOver: false, message: log, animation: animations.damage };
 }
 
 function playerEscape(player, enemy) {
     const r = Math.random();
-    if (r < 0.65) return { battleOver: true, escaped: true, message: '💨 فرار کردی!' };
+    if (r < 0.65) return { battleOver: true, escaped: true, message: '💨 فرار کردی!', animation: animations.escape };
     else if (r < 0.90) {
         enemy.status = 'trapped_player';
         const dmg = Math.max(1, Math.floor(enemy.attack * 1.3));
@@ -138,11 +177,11 @@ function playerEscape(player, enemy) {
             player.location = 'village';
             player.score = Math.max(0, (player.score || 0) - 10);
             msg += `\n💀 مردی! به روستا برگشتی.`;
-            return { battleOver: true, escaped: false, message: msg };
+            return { battleOver: true, escaped: false, message: msg, animation: animations.damage };
         }
-        return { battleOver: false, escaped: false, message: msg };
+        return { battleOver: false, escaped: false, message: msg, animation: animations.damage };
     }
-    return { battleOver: false, escaped: false, message: '😬 نتونستی فرار کنی!' };
+    return { battleOver: false, escaped: false, message: '😬 نتونستی فرار کنی!', animation: null };
 }
 
 function hpBar(c, m) {
@@ -160,4 +199,7 @@ function getBattleKeyboard(enemy) {
     return { reply_markup: { keyboard: b, resize_keyboard: true } };
 }
 
-module.exports = { activeBattles, startFight, startPvPFight, playerAttack, playerEscape, formatBattle, getBattleKeyboard };
+module.exports = { 
+    activeBattles, startFight, startPvPFight, playerAttack, playerEscape, 
+    formatBattle, getBattleKeyboard, animations 
+};
