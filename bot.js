@@ -10,14 +10,15 @@ const { fight } = require('./fight');
 const { showShopMenu, buyItem, sellItem } = require('./shop');
 const config = require('./config');
 
-// منوی اصلی
+// منوی اصلی با ایموجی‌های باحال
 function mainMenu() {
     return {
         reply_markup: {
             keyboard: [
-                ['📊 وضعیت', '🎒 جمع‌آوری'],
-                ['🗺️ نقشه', '⚔️ نبرد'],
-                ['🔨 ساخت‌وساز', '🏪 بازار']
+                ['👤 📊 وضعیت من', '🌿 🪓 جمع‌آوری منابع'],
+                ['🗺️ 🚶 سفر به مکان جدید', '⚔️ 💀 نبرد با دشمنان'],
+                ['🔨 ⚒️ کارگاه ساخت‌وساز', '🏪 💰 بازار تجارت'],
+                ['🎒 📦 اینونتوری کامل']
             ],
             resize_keyboard: true,
             persistent: true
@@ -29,22 +30,13 @@ function mainMenu() {
 function locationMenu() {
     const locations = config.images.locations;
     const buttons = [];
-    let row = [];
-    let count = 0;
     
     for (let key in locations) {
         const loc = locations[key];
-        row.push(`${loc.emoji} ${loc.name}`);
-        count++;
-        
-        if (count % 2 === 0) {
-            buttons.push(row);
-            row = [];
-        }
+        buttons.push([`${loc.emoji} سفر به ${loc.name}`]);
     }
     
-    if (row.length > 0) buttons.push(row);
-    buttons.push(['🔙 بازگشت']);
+    buttons.push(['🔙 برگشت به منوی اصلی']);
     
     return {
         reply_markup: {
@@ -55,17 +47,31 @@ function locationMenu() {
     };
 }
 
+// منوی نبرد
+function fightMenu() {
+    return {
+        reply_markup: {
+            keyboard: [
+                ['⚔️ ⚡ حمله سریع', '🛡️ 🏃 فرار'],
+                ['🔙 برگشت به منوی اصلی']
+            ],
+            resize_keyboard: true,
+            persistent: true
+        }
+    };
+}
+
 // منوی ساخت‌وساز
-function craftMenu() {
+function craftKeyboard() {
     const recipes = config.recipes;
     const buttons = [];
     
     for (let itemName in recipes) {
         const recipe = recipes[itemName];
-        buttons.push([`${recipe.emoji} ساخت ${itemName}`]);
+        buttons.push([`${recipe.emoji} 🔨 ساخت ${itemName}`]);
     }
     
-    buttons.push(['🔙 بازگشت']);
+    buttons.push(['🔙 برگشت به منوی اصلی']);
     
     return {
         reply_markup: {
@@ -77,15 +83,14 @@ function craftMenu() {
 }
 
 // منوی بازار
-function shopMenu() {
+function shopKeyboard() {
     return {
         reply_markup: {
             keyboard: [
-                ['🪵 خرید چوب', '🪨 خرید سنگ'],
-                ['🍖 خرید گوشت', '💧 خرید آب'],
-                ['🦴 خرید پوست', '⛏️ خرید آهن'],
-                ['👑 خرید طلا', '📤 فروش'],
-                ['🔙 بازگشت']
+                ['🪵 خرید چوب (۲👑)', '🪨 خرید سنگ (۳👑)'],
+                ['🍖 خرید گوشت (۳👑)', '💧 خرید آب (۱👑)'],
+                ['🦴 خرید پوست (۵👑)', '⛏️ خرید آهن (۸👑)'],
+                ['📤 📦 فروش منابع', '🔙 برگشت به منوی اصلی']
             ],
             resize_keyboard: true,
             persistent: true
@@ -94,77 +99,157 @@ function shopMenu() {
 }
 
 // منوی فروش
-function sellMenu() {
+function sellKeyboard() {
     return {
         reply_markup: {
             keyboard: [
-                ['🪵 فروش چوب', '🪨 فروش سنگ'],
-                ['🍖 فروش گوشت', '💧 فروش آب'],
-                ['🦴 فروش پوست', '⛏️ فروش آهن'],
-                ['👑 فروش طلا', '🔙 بازار']
-            ],
-            resize_keyboard: true,
-            persistent: true
+                ['🪵 فروش چوب (۱👑)', '🪨 فروش سنگ (۱👑)'],
+                ['🍖 فروش گوشت (۲👑)', '💧 فروش آب (۱👑)'],
+                ['🦴 فروش پوست (۳👑)', '⛏️ فروش آهن (۴👑)'],
+                ['🔙 برگشت به بازار']
+            ]
         }
     };
 }
 
-// /start
-bot.onText(/\/start/, (msg) => {
+// 🎮 /start - شروع بازی با عکس
+bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     
     if (!player.getPlayer(chatId)) {
         player.createPlayer(chatId);
     }
 
-    const loc = config.images.locations[player.getPlayer(chatId).location];
+    const p = player.getPlayer(chatId);
+    const loc = config.images.locations[p.location];
 
-    const welcome = `
-🏛️ *به دنیای بقای باستانی خوش آمدی!*
+    // ارسال عکس مکان فعلی
+    await bot.sendPhoto(chatId, loc.file_id, {
+        caption: `
+╔══════════════════════╗
+    🏛️ *بقای باستانی* 🏛️
+╚══════════════════════╝
 
-تو در ${loc.emoji} *${loc.name}* بیدار شدی.
-باید زنده بمونی، منابع جمع کنی و خونه‌ات رو بسازی.
+✨ *${p.name}* به دنیای باستان خوش آمدی!
 
-از دکمه‌های زیر استفاده کن! 👇
-    `;
-    
-    bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+📍 مکان فعلی: ${loc.emoji} *${loc.name}*
+${loc.description}
+
+⚔️ زنده بمون، بساز، بجنگ و افسانه شو!
+
+📜 *از دکمه‌های زیر استفاده کن* 👇
+        `,
+        parse_mode: 'Markdown',
+        ...mainMenu()
+    });
 });
 
-// 📊 وضعیت
-bot.onText(/📊 وضعیت/, (msg) => {
+// 👤 📊 وضعیت من
+bot.onText(/👤 📊 وضعیت من/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
-    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!', mainMenu());
-    
-    bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-// 🎒 جمع‌آوری
-bot.onText(/🎒 جمع‌آوری/, (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
-    
-    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!', mainMenu());
-    
-    const result = gather(p);
-    bot.sendMessage(chatId, result.message, mainMenu());
-});
-
-// 🗺️ نقشه
-bot.onText(/🗺️ نقشه/, (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
-    
-    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!', mainMenu());
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
     
     const loc = config.images.locations[p.location];
-    bot.sendMessage(chatId, `📍 الان توی ${loc.emoji} *${loc.name}* هستی.\nکجا می‌خوای بری؟`, { parse_mode: 'Markdown', ...locationMenu() });
+    
+    // ارسال عکس بازمانده
+    const avatar = config.images.npcs[p.name === 'بازمانده زن' ? 'female_survivor' : 'male_survivor'];
+    
+    await bot.sendPhoto(chatId, avatar.file_id, {
+        caption: `
+╔══════════════════════╗
+      👤 *وضعیت قهرمان* 👤
+╚══════════════════════╝
+
+🏷️ *${p.name}*
+⭐ سطح: ${p.level}
+✨ تجربه: ${p.xp}/${p.level * 20}
+❤️ جان: ${'█'.repeat(Math.floor(p.hp / p.maxHp * 10))}${'░'.repeat(10 - Math.floor(p.hp / p.maxHp * 10))} ${p.hp}/${p.maxHp}
+⚔️ حمله: ${p.attack}
+🛡️ دفاع: ${p.defense}
+
+📍 *مکان:* ${loc.emoji} ${loc.name}
+
+🎒 *اینونتوری:*
+🪵 چوب: ${p.inventory.wood}  🪨 سنگ: ${p.inventory.stone}
+🍖 گوشت: ${p.inventory.meat}  💧 آب: ${p.inventory.water}
+🦴 پوست: ${p.inventory.skin}  ⛏️ آهن: ${p.inventory.iron}
+👑 طلا: ${p.inventory.gold}
+
+🛡️ *تجهیزات:*
+🏠 خونه: ${p.equipment.house || '❌ نداری'}
+🗡️ اسلحه: ${p.equipment.weapon || '❌ نداری'}
+🛡️ زره: ${p.equipment.armor || '❌ نداری'}
+
+🏆 دشمنان شکست‌خورده: ${p.enemiesDefeated}
+        `,
+        parse_mode: 'Markdown',
+        ...mainMenu()
+    });
 });
 
-// سفر به مکان‌ها
-bot.onText(/^(.+) (.+)$/, (msg, match) => {
+// 🌿 🪓 جمع‌آوری منابع
+bot.onText(/🌿 🪓 جمع‌آوری منابع/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
+    
+    const loc = config.images.locations[p.location];
+    
+    // عکس مکان
+    await bot.sendPhoto(chatId, loc.file_id, {
+        caption: `🔍 در ${loc.emoji} *${loc.name}* مشغول جستجویی...`,
+        parse_mode: 'Markdown'
+    });
+    
+    const result = gather(p);
+    
+    // عکس آیتم پیدا شده
+    if (result.success) {
+        await bot.sendMessage(chatId, `
+╔══════════════════════╗
+    🎒 *نتیجه جستجو* 🎒
+╚══════════════════════╝
+
+${result.message}
+
+🔄 دوباره جستجو کن یا کار دیگه‌ای بکن!
+        `, { parse_mode: 'Markdown', ...mainMenu() });
+    } else {
+        await bot.sendMessage(chatId, `
+╔══════════════════════╗
+    😞 *بی‌نتیجه* 😞
+╚══════════════════════╝
+
+${result.message}
+        `, { parse_mode: 'Markdown', ...mainMenu() });
+    }
+});
+
+// 🗺️ 🚶 سفر
+bot.onText(/🗺️ 🚶 سفر به مکان جدید/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
+    
+    const loc = config.images.locations[p.location];
+    
+    await bot.sendPhoto(chatId, loc.file_id, {
+        caption: `
+📍 الان اینجایی: ${loc.emoji} *${loc.name}*
+
+🗺️ کجا می‌خوای بری؟ یکی رو انتخاب کن:
+        `,
+        parse_mode: 'Markdown',
+        ...locationMenu()
+    });
+});
+
+// سفر به مکان
+bot.onText(/^(.+) سفر به (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
@@ -177,36 +262,98 @@ bot.onText(/^(.+) (.+)$/, (msg, match) => {
     
     for (let key in locations) {
         if (locations[key].emoji === emoji && locations[key].name === name) {
+            const oldLoc = config.images.locations[p.location];
             const result = travel(p, key);
-            bot.sendMessage(chatId, result.message, mainMenu());
+            const newLoc = config.images.locations[p.location];
+            
+            // عکس مکان جدید
+            await bot.sendPhoto(chatId, newLoc.file_id, {
+                caption: `
+╔══════════════════════╗
+    🚶 *سفر موفق* 🚶
+╚══════════════════════╝
+
+${result.message}
+
+📍 الان در ${newLoc.emoji} *${newLoc.name}* هستی.
+${newLoc.description}
+
+🔄 حالا می‌تونی منابع جمع کنی یا بجنگی!
+                `,
+                parse_mode: 'Markdown',
+                ...mainMenu()
+            });
             return;
         }
     }
 });
 
-// ⚔️ نبرد
-bot.onText(/⚔️ نبرد/, (msg) => {
+// ⚔️ 💀 نبرد
+bot.onText(/⚔️ 💀 نبرد با دشمنان/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
-    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!', mainMenu());
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
     
-    const result = fight(p);
-    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    const loc = config.images.locations[p.location];
+    
+    await bot.sendPhoto(chatId, loc.file_id, {
+        caption: `
+⚔️ *آماده نبرد در ${loc.emoji} ${loc.name}!*
+
+دکمه حمله رو بزن تا دشمن پیدا کنی!
+        `,
+        parse_mode: 'Markdown',
+        ...fightMenu()
+    });
 });
 
-// 🔨 ساخت‌وساز
-bot.onText(/🔨 ساخت‌وساز/, (msg) => {
+// ⚔️ ⚡ حمله سریع
+bot.onText(/⚔️ ⚡ حمله سریع/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
-    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!', mainMenu());
+    if (!p) return;
     
-    bot.sendMessage(chatId, showCraftMenu(), { parse_mode: 'Markdown', ...craftMenu() });
+    const result = fight(p);
+    
+    if (result.enemyImage) {
+        await bot.sendPhoto(chatId, result.enemyImage, {
+            caption: result.message,
+            parse_mode: 'Markdown',
+            ...mainMenu()
+        });
+    } else {
+        await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    }
+});
+
+// 🔨 ⚒️ کارگاه ساخت‌وساز
+bot.onText(/🔨 ⚒️ کارگاه ساخت‌وساز/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
+    
+    const blacksmith = config.images.npcs.blacksmith;
+    
+    await bot.sendPhoto(chatId, blacksmith.file_id, {
+        caption: `
+╔══════════════════════╗
+  ⚒️ *آهنگر باستانی* ⚒️
+╚══════════════════════╝
+
+${showCraftMenu()}
+
+👆 برای ساخت، روی دکمه زیر کلیک کن:
+        `,
+        parse_mode: 'Markdown',
+        ...craftKeyboard()
+    });
 });
 
 // ساخت آیتم
-bot.onText(/^(.+) ساخت (.+)$/, (msg, match) => {
+bot.onText(/^(.+) 🔨 ساخت (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
@@ -214,69 +361,143 @@ bot.onText(/^(.+) ساخت (.+)$/, (msg, match) => {
     
     const itemName = match[2];
     const result = craftItem(p, itemName);
-    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...craftMenu() });
+    
+    // عکس آیتم ساخته شده
+    const itemKey = itemName.includes('تبر') ? 'axe' : 
+                    itemName.includes('شمشیر') ? 'sword' : 
+                    itemName.includes('زره') ? 'armor' : 
+                    itemName.includes('کلبه') ? 'house' : 
+                    itemName.includes('تیروکمان') ? 'bow' : null;
+    
+    if (result.success && itemKey && config.images.resources[itemKey]) {
+        await bot.sendPhoto(chatId, config.images.resources[itemKey].file_id, {
+            caption: result.message,
+            parse_mode: 'Markdown',
+            ...craftKeyboard()
+        });
+    } else {
+        await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...craftKeyboard() });
+    }
 });
 
-// 🏪 بازار
-bot.onText(/🏪 بازار/, (msg) => {
+// 🏪 💰 بازار
+bot.onText(/🏪 💰 بازار تجارت/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
-    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!', mainMenu());
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
     
     if (p.location !== 'village') {
         return bot.sendMessage(chatId, '🏪 بازار فقط توی روستای باستانیه! برو نقشه و بیا روستا.', mainMenu());
     }
     
-    bot.sendMessage(chatId, showShopMenu(), { parse_mode: 'Markdown', ...shopMenu() });
+    const merchant = config.images.npcs.merchant;
+    
+    await bot.sendPhoto(chatId, merchant.file_id, {
+        caption: `
+╔══════════════════════╗
+    🏪 *بازار باستانی* 🏪
+╚══════════════════════╝
+
+🧑‍🌾 تاجر: "سلام قهرمان! چی لازم داری؟"
+
+💰 *کیف پول:* 👑 ${p.inventory.gold} طلا
+
+📥 *خرید:*
+🪵 چوب ۲👑 | 🪨 سنگ ۳👑 | 🍖 گوشت ۳👑
+💧 آب ۱👑 | 🦴 پوست ۵👑 | ⛏️ آهن ۸👑
+
+📤 *فروش با نصف قیمت*
+        `,
+        parse_mode: 'Markdown',
+        ...shopKeyboard()
+    });
 });
 
-// خرید از بازار
-bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
+// خرید
+bot.onText(/^(.+) خرید (.+) \((\d+)👑\)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
     if (!p) return;
     
+    const itemMap = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
     const itemName = match[2];
-    const itemMap = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'طلا': 'gold' };
     const result = buyItem(p, itemMap[itemName]);
-    bot.sendMessage(chatId, result.message, shopMenu());
+    
+    if (result.success && config.images.resources[itemMap[itemName]]) {
+        await bot.sendPhoto(chatId, config.images.resources[itemMap[itemName]].file_id, {
+            caption: result.message,
+            ...shopKeyboard()
+        });
+    } else {
+        await bot.sendMessage(chatId, result.message, shopKeyboard());
+    }
 });
 
 // 📤 فروش
-bot.onText(/📤 فروش/, (msg) => {
+bot.onText(/📤 📦 فروش منابع/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
     if (!p) return;
     
-    bot.sendMessage(chatId, '📤 چی می‌خوای بفروشی؟', sellMenu());
+    await bot.sendMessage(chatId, `
+📤 *فروش منابع*
+
+چی می‌خوای بفروشی؟
+👑 طلا: ${p.inventory.gold}
+    `, { parse_mode: 'Markdown', ...sellKeyboard() });
 });
 
 // فروش آیتم
-bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
+bot.onText(/^(.+) فروش (.+) \((\d+)👑\)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     
     if (!p) return;
     
+    const itemMap = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
     const itemName = match[2];
-    const itemMap = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'طلا': 'gold' };
     const result = sellItem(p, itemMap[itemName]);
-    bot.sendMessage(chatId, result.message, sellMenu());
+    
+    await bot.sendMessage(chatId, result.message, sellKeyboard());
 });
 
-// 🔙 بازگشت
-bot.onText(/🔙 بازگشت/, (msg) => {
+// 🔙 برگشت
+bot.onText(/🔙 برگشت به منوی اصلی/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, '🏛️ منوی اصلی:', mainMenu());
+    bot.sendMessage(chatId, '🏛️ *منوی اصلی*', { parse_mode: 'Markdown', ...mainMenu() });
 });
 
-// 🔙 بازار
-bot.onText(/🔙 بازار/, (msg) => {
+bot.onText(/🔙 برگشت به بازار/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, showShopMenu(), { parse_mode: 'Markdown', ...shopMenu() });
+    const p = player.getPlayer(chatId);
+    bot.sendMessage(chatId, '🏪 *بازار* | 👑 طلا: ' + p.inventory.gold, { parse_mode: 'Markdown', ...shopKeyboard() });
 });
 
-console.log('✅ ربات بقای باستانی با منوی شیشه‌ای آماده شد!');
+// 🎒 📦 اینونتوری کامل
+bot.onText(/🎒 📦 اینونتوری کامل/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
+    
+    let inventoryMessage = `
+╔══════════════════════╗
+   🎒 *اینونتوری کامل* 🎒
+╚══════════════════════╝
+
+    `;
+    
+    for (let item in p.inventory) {
+        if (p.inventory[item] > 0 && config.images.resources[item]) {
+            const res = config.images.resources[item];
+            inventoryMessage += `${res.emoji} ${res.name}: ${p.inventory[item]}\n`;
+        }
+    }
+    
+    await bot.sendMessage(chatId, inventoryMessage, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+console.log('✅ ربات بقای باستانی با عکس و ایموجی آماده شد! 🎉');
