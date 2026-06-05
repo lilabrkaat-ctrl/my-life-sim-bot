@@ -5,13 +5,25 @@ function startFight(player) {
     const keys = config.locationEnemies[player.location];
     if (!keys || keys.length === 0) return { success: false, message: '⚠️ اینجا دشمنی نیست! برو یه جای دیگه!' };
 
-    const k = keys[Math.floor(Math.random() * keys.length)];
-    const d = config.images.enemies[k];
-    if (!d) return { success: false, message: '⚠️ دشمن پیدا نشد!' };
+    // انتخاب دشمن
+    let k = keys[Math.floor(Math.random() * keys.length)];
+    let d = config.images.enemies[k];
+    
+    // اگه دشمن توی images نبود، از بین همه دشمنان یکی انتخاب کن
+    if (!d) {
+        const allEnemies = Object.keys(config.images.enemies).filter(key => 
+            config.images.enemies[key] && config.images.enemies[key].hp
+        );
+        if (allEnemies.length === 0) return { success: false, message: '⚠️ دشمنی پیدا نشد!' };
+        k = allEnemies[Math.floor(Math.random() * allEnemies.length)];
+        d = config.images.enemies[k];
+    }
+    
+    if (!d || !d.hp) return { success: false, message: '⚠️ دشمن پیدا نشد!' };
     
     const enemy = {
-        key: k, name: d.name, emoji: d.emoji, file_id: d.file_id,
-        hp: d.hp, maxHp: d.hp, attack: d.attack,
+        key: k, name: d.name || 'دشمن ناشناس', emoji: d.emoji || '👾', file_id: d.file_id || null,
+        hp: d.hp || 20, maxHp: d.hp || 20, attack: d.attack || 5,
         reward: JSON.parse(JSON.stringify(d.reward || { xp: 10 })), status: 'fighting',
         isPlayer: false
     };
@@ -64,7 +76,7 @@ function playerAttack(player, enemy) {
         
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
-                player.inventory[rw] += enemy.reward[rw];
+                player.inventory[rw] += enemy.reward[rw] || 1;
                 log += `\n${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}`;
             }
         }
@@ -72,8 +84,8 @@ function playerAttack(player, enemy) {
         if (require('./player').checkLevelUp(player)) log += `\n⬆️ لول آپ! سطح ${player.level}!`;
         require('./player').checkUnlocks(player);
         
-        // شانس زندانی کردن NPC
-        const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard'];
+        // شانس زندانی کردن NPCها
+        const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen'];
         if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
             return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key };
         }
@@ -94,7 +106,6 @@ function playerAttack(player, enemy) {
 function enemyTurn(player, enemy, log) {
     if (enemy.status === 'trapped') return { battleOver: false, message: log };
     
-    const def = enemy.isPlayer ? (enemy.defense || 2) : 0;
     const dmg = Math.max(1, enemy.attack - Math.floor((player.defense || 2) / 3));
     player.hp -= dmg;
     if (player.hp < 0) player.hp = 0;
