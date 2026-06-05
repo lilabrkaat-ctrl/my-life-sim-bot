@@ -1,7 +1,6 @@
 const images = require('./images.json');
 
 module.exports = {
-    // تنظیمات اولیه بازیکن
     defaultPlayer: {
         name: 'بازمانده',
         level: 1,
@@ -17,7 +16,7 @@ module.exports = {
             water: 0,
             skin: 0,
             iron: 0,
-            gold: 0
+            gold: 10
         },
         equipment: {
             weapon: null,
@@ -25,10 +24,13 @@ module.exports = {
             house: null
         },
         location: 'village',
-        enemiesDefeated: 0
+        enemiesDefeated: 0,
+        travels: 0,
+        gathers: 0,
+        day: 1,
+        achievements: []
     },
 
-    // منابع قابل جمع‌آوری در هر مکان
     locationResources: {
         forest: [
             { item: 'wood', min: 2, max: 6, chance: 1.0 },
@@ -66,9 +68,8 @@ module.exports = {
         ]
     },
 
-    // دشمنان هر مکان
     locationEnemies: {
-        forest: ['wolf', 'snake'],
+        forest: ['wolf', 'snake', 'fairy'],
         mountain: ['wolf', 'bear'],
         river: ['snake', 'wolf'],
         plain: ['lion', 'bandit'],
@@ -77,7 +78,6 @@ module.exports = {
         village: []
     },
 
-    // دستور پخت‌ها
     recipes: {
         'تبر سنگی': { wood: 3, stone: 2, effect: 'weapon', bonus: 5, emoji: '🗡️' },
         'شمشیر آهنی': { wood: 2, iron: 5, effect: 'weapon', bonus: 15, emoji: '⚔️' },
@@ -86,7 +86,6 @@ module.exports = {
         'تیروکمان': { wood: 5, stone: 3, skin: 2, effect: 'weapon', bonus: 8, emoji: '🏹' }
     },
 
-    // قیمت‌های بازار
     shopPrices: {
         wood: { buy: 2, sell: 1, name: 'چوب', emoji: '🪵' },
         stone: { buy: 3, sell: 1, name: 'سنگ', emoji: '🪨' },
