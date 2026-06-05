@@ -108,18 +108,7 @@ bot.onText(/\/start/, async (msg) => {
     const loc = config.images.locations[p.location];
 
     await bot.sendPhoto(chatId, loc.file_id, {
-        caption: `
-╔══════════════════════╗
-    🏛️ *بقای باستانی* 🏛️
-╚══════════════════════╝
-
-✨ *${p.name}* به دنیای باستان خوش آمدی!
-
-📍 ${loc.emoji} *${loc.name}*
-${loc.description}
-
-⚔️ زنده بمون، بساز، بجنگ و افسانه شو!
-        `,
+        caption: `🏛️ *بقای باستانی*\n✨ ${p.name} به دنیای باستان خوش آمدی!\n📍 ${loc.emoji} ${loc.name}\n${loc.description}`,
         parse_mode: 'Markdown',
         ...mainMenu()
     });
@@ -146,12 +135,6 @@ bot.onText(/🌿 🪓 جمع‌آوری منابع/, async (msg) => {
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ اول /start بزن!', mainMenu());
     
-    const loc = config.images.locations[p.location];
-    await bot.sendPhoto(chatId, loc.file_id, {
-        caption: `🔍 در ${loc.emoji} *${loc.name}* مشغول جستجویی...`,
-        parse_mode: 'Markdown'
-    });
-    
     const result = gather(p);
     bot.sendMessage(chatId, result.message, mainMenu());
 });
@@ -164,7 +147,7 @@ bot.onText(/🗺️ 🚶 سفر به مکان جدید/, async (msg) => {
     
     const loc = config.images.locations[p.location];
     await bot.sendPhoto(chatId, loc.file_id, {
-        caption: `📍 ${loc.emoji} *${loc.name}*\n\nکجا می‌خوای بری؟`,
+        caption: `📍 ${loc.emoji} ${loc.name}\n\nکجا می‌خوای بری؟`,
         parse_mode: 'Markdown',
         ...locationMenu()
     });
@@ -185,7 +168,7 @@ bot.onText(/^(.+) سفر به (.+)$/, async (msg, match) => {
             const newLoc = config.images.locations[p.location];
             
             await bot.sendPhoto(chatId, newLoc.file_id, {
-                caption: result.message + `\n\n${newLoc.description}`,
+                caption: `${result.message}\n${newLoc.description}`,
                 parse_mode: 'Markdown',
                 ...mainMenu()
             });
@@ -222,26 +205,17 @@ bot.onText(/⚔️ 🗡️ حمله کن/, async (msg) => {
     const enemy = activeBattles[chatId];
     
     if (!p || !enemy) {
-        return bot.sendMessage(chatId, '⚔️ نبردی در جریان نیست! برو به نبرد با دشمنان.', mainMenu());
+        return bot.sendMessage(chatId, '⚔️ نبردی در جریان نیست!', mainMenu());
     }
     
     const result = playerAttack(p, enemy);
     
     if (result.battleOver) {
         delete activeBattles[chatId];
-        
-        if (result.playerWon && enemy.file_id) {
-            await bot.sendPhoto(chatId, enemy.file_id, {
-                caption: result.message,
-                parse_mode: 'Markdown',
-                ...mainMenu()
-            });
-        } else {
-            await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-        }
+        await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
     } else {
         await bot.sendPhoto(chatId, enemy.file_id, {
-            caption: formatBattleStatus(p, enemy) + '\n\n' + result.message,
+            caption: `⚔️ ${enemy.emoji} ${enemy.name}\n${result.message}\n\n${formatBattleStatus(p, enemy)}`,
             parse_mode: 'Markdown',
             ...getBattleKeyboard(enemy)
         });
@@ -265,7 +239,7 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
         await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
     } else {
         await bot.sendPhoto(chatId, enemy.file_id, {
-            caption: formatBattleStatus(p, enemy) + '\n\n' + result.message,
+            caption: `🏃 فرار...\n${result.message}\n\n${formatBattleStatus(p, enemy)}`,
             parse_mode: 'Markdown',
             ...getBattleKeyboard(enemy)
         });
