@@ -1,5 +1,10 @@
 const images = {
   locations: {
+    village: {
+      name: "روستای باستانی", emoji: "🏘️",
+      file_id: "AgACAgQAAxkBAAEqJKpqImgBS4-EpojqX7Ze5u5KjA_cQAACHQ5rG_JGEVHS9BRhnONEfgEAAwIAA3gAAzsE",
+      description: "محل امن برای تجارت"
+    },
     forest: {
       name: "جنگل انبوه", emoji: "🌲",
       file_id: "AgACAgQAAxkBAAEqJLFqImgBRr6egi64V6G9dtn2NTn4JAACJA5rG_JGEVH4izsi-XOlCAEAAwIAA3gAAzsE",
@@ -29,11 +34,6 @@ const images = {
       name: "بیابان", emoji: "🏜️",
       file_id: "AgACAgQAAxkBAAEqJKtqImgBPcnIrMBROLwfLkWNCv4Y-gACHw5rG_JGEVGMbWdYD-kp1gEAAwIAA3gAAzsE",
       description: "محیط خطرناک با دشمنان قوی"
-    },
-    village: {
-      name: "روستای باستانی", emoji: "🏘️",
-      file_id: "AgACAgQAAxkBAAEqJKpqImgBS4-EpojqX7Ze5u5KjA_cQAACHQ5rG_JGEVHS9BRhnONEfgEAAwIAA3gAAzsE",
-      description: "محل امن برای تجارت"
     }
   },
   resources: {
@@ -52,15 +52,15 @@ const images = {
   },
   enemies: {
     wolf: { name: "گرگ", emoji: "🐺", file_id: "AgACAgQAAxkBAAEqJVpqIncyS0fa-TDJ3r7OwAX3xHra7gACQw5rG_JGEVGAs1cAAWKLpy8BAAMCAAN4AAM7BA", hp: 30, attack: 5, reward: { xp: 10, skin: 2, meat: 3 } },
-    lion: { name: "شیر کوهی", emoji: "🦁", file_id: "AgACAgQAAxkBAAEqJVhqIncyJWzOj6N_yCUuQ924hTFEhwACQg5rG_JGEVFLd3MUVcjGwwEAAwIAA3gAAzsE", hp: 40, attack: 7, reward: { xp: 25, skin: 5, meat: 5 } },
+    snake: { name: "مار سمی", emoji: "🐍", file_id: "AgACAgQAAxkBAAEqJhhqIo37pQMh5UKyQveBi1ns-8cTGAACdg5rG_JGEVEW-PQkiigh3QEAAwIAA3gAAzsE", hp: 25, attack: 4, reward: { xp: 15, skin: 3, meat: 2 } },
     bandit: { name: "دزد مسلح", emoji: "🗡️", file_id: "AgACAgQAAxkBAAEqJVdqIncyLWavqrrxNX3Ij5vmvkpyIAACQQ5rG_JGEVG6NSLYnDmcJwEAAwIAA3gAAzsE", hp: 35, attack: 6, reward: { xp: 30, gold: 10, iron: 3 } },
-    soldier: { name: "سرباز مهاجم", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJVZqIncydAtMQCSNiJ-h3YHSH1-Z1AACQA5rG_JGEVEwgAbeLmUesgEAAwIAA3gAAzsE", hp: 50, attack: 10, reward: { xp: 50, gold: 20, iron: 5 } },
-    snake: { name: "مار سمی", emoji: "🐍", file_id: "AgACAgQAAxkBAAEqJVVqIncylbJVx0p3mv1zX6Ajt49e_gACPg5rG_JGEVGLhDw_oXK_CAEAAwIAA3gAAzsE", hp: 25, attack: 4, reward: { xp: 15, skin: 3, meat: 2 } },
+    lion: { name: "شیر کوهی", emoji: "🦁", file_id: "AgACAgQAAxkBAAEqJVhqIncyJWzOj6N_yCUuQ924hTFEhwACQg5rG_JGEVFLd3MUVcjGwwEAAwIAA3gAAzsE", hp: 40, attack: 7, reward: { xp: 25, skin: 5, meat: 5 } },
     bear: { name: "خرس", emoji: "🐻", file_id: "AgACAgQAAxkBAAEqJVRqIncy4xv7w6rRDlWnVOlnbZ7DCwACPQ5rG_JGEVGAYD7o2ph-nwEAAwIAA3gAAzsE", hp: 60, attack: 12, reward: { xp: 60, skin: 8, meat: 10 } },
+    soldier: { name: "سرباز مهاجم", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJVZqIncydAtMQCSNiJ-h3YHSH1-Z1AACQA5rG_JGEVEwgAbeLmUesgEAAwIAA3gAAzsE", hp: 50, attack: 10, reward: { xp: 50, gold: 20, iron: 5 } },
     fairy: { name: "پری جنگل", emoji: "🧚", file_id: "AgACAgQAAxkBAAEqJhRqIo37vyFfgD4HT5EB6GHs3_-oYQACcw5rG_JGEVE0IC9Ect_IWwEAAwIAA3gAAzsE", hp: 80, attack: 15, reward: { xp: 80, gold: 50, skin: 5 } },
-    dragon: { name: "اژدها", emoji: "🐉", file_id: "AgACAgQAAxkBAAEqJf5qIo3iSuF3PstMjttghF-Nt6HltAACbA5rG_JGEVGOgTOaPnP0FAEAAwIAA3gAAzsE", hp: 200, attack: 30, reward: { xp: 200, gold: 100, iron: 20 } },
-    skeleton: { name: "اسکلت سکسی", emoji: "💀", file_id: "AgACAgQAAxkBAAEqJwlqIpp5RCvngODaJC8ixr0HBWeatgACiQ5rG_JGEVGn_qAeMFt-OAEAAwIAA3gAAzsE", hp: 45, attack: 9, reward: { xp: 40, gold: 15, iron: 5 } },
     werewolf: { name: "گرگینه مخوف", emoji: "🐺", file_id: "AgACAgQAAxkBAAEqJwtqIpp55pTr_w3o8UtK3uPVxa0f2wACiw5rG_JGEVHs_YJDN3xsFwEAAwIAA3gAAzsE", hp: 90, attack: 18, reward: { xp: 90, gold: 40, skin: 10 } },
+    skeleton: { name: "اسکلت سکسی", emoji: "💀", file_id: "AgACAgQAAxkBAAEqJwlqIpp5RCvngODaJC8ixr0HBWeatgACiQ5rG_JGEVGn_qAeMFt-OAEAAwIAA3gAAzsE", hp: 45, attack: 9, reward: { xp: 40, gold: 15, iron: 5 } },
+    dragon: { name: "اژدها", emoji: "🐉", file_id: "AgACAgQAAxkBAAEqJf5qIo3iSuF3PstMjttghF-Nt6HltAACbA5rG_JGEVGOgTOaPnP0FAEAAwIAA3gAAzsE", hp: 200, attack: 30, reward: { xp: 200, gold: 100, iron: 20 } },
     scorpion: { name: "عقرب غول‌پیکر", emoji: "🦂", hp: 70, attack: 14, reward: { xp: 70, gold: 35, iron: 8 } },
     crocodile: { name: "تمساح", emoji: "🐊", hp: 65, attack: 13, reward: { xp: 65, gold: 30, skin: 6 } },
     eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE", hp: 55, attack: 11, reward: { xp: 55, gold: 25, skin: 4 } }
@@ -74,7 +74,7 @@ const images = {
     farmer: { name: "دهقان", emoji: "🧑‍🌾", file_id: "AgACAgQAAxkBAAEqJf9qIo3igsfhwjgxWk5ZToPTzPv5sgACbQ5rG_JGEVGuy62k6TDypgEAAwIAA3gAAzsE", role: "فروش غذا" },
     prince: { name: "شاهزاده", emoji: "🤴", file_id: "AgACAgQAAxkBAAEqJgFqIo3i7SHGYKsyAAGQ7lgvrOuoqxIAAm4OaxvyRhFRCG_JO0SSvSkBAAMCAAN4AAM7BA", role: "کمک کن جایزه بگیر" },
     witch: { name: "ساحره", emoji: "🧙‍♀️", file_id: "AgACAgQAAxkBAAEqJgRqIo3iav_63BkFNDtVYxsvX55CnAACcA5rG_JGEVGKM9iVGMze6QEAAwIAA3gAAzsE", role: "طلسم و جادو" },
-    ghost_sexy: { name: "روح سکسی", emoji: "👻", file_id: "AgACAgQAAxkBAAEqJxJqIpp50DxvPQWbpBIYWXwY2o01qQACjw5rG_JGEVFXBb7-24-CCAEAAwIAA3gAAzsE", role: "تسخیر روح" },
+    ghost_sexy: { name: "روح سکسی", emoji: "👻", file_id: "AgACAgQAAxkBAAEqJgJqIo3inEb2YF9jp4g_LIX39t4FZgACbw5rG_JGEVGUR7x_5WcAAWYBAAMCAAN4AAM7BA", role: "تسخیر روح" },
     jester: { name: "دلقک", emoji: "🎭", file_id: "AgACAgQAAxkBAAEqJgVqIo3iG7JggY2g_pOzxCqn2OK-fQACcQ5rG_JGEVFumcx57ak4NQEAAwIAA3gAAzsE", role: "شوخی و خنده" },
     wizard: { name: "جادوگر", emoji: "🧙‍♂️", file_id: "AgACAgQAAxkBAAEqJhNqIo36il--sb0izuaQwfKU0OdN_QACcg5rG_JGEVFEDvmLd-yShwEAAwIAA3gAAzsE", role: "جادوی تصادفی" },
     knight: { name: "شوالیه", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJhVqIo37tpLTu5IK1fIscxgNCAbVNAACdA5rG_JGEVG_bMdmP9f63AEAAwIAA3gAAzsE", role: "مبارزه دوستانه" },
