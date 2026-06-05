@@ -9,7 +9,7 @@ const sexyGifs = {
         'CgACAgQAAxkBAAEqL15qIyJW5AcK3OWO2Oyif7wI1aiDqQACgQMAAirVQQYo4gxrnlLz0zsE'
     ],
     kiss: 'CgACAgIAAxkBAAEqL2hqIyJnncLJlCKF2kJOT7jKi-7r_wACaAIAArqQoEtep7htQxIwxTsE',
-    sex: 'CgACAgQAAxkBAAEqL1xqIyJUx3yIRno4UZtix4SumGHwCgAC6p8AAkMXZAepPlY8DiidIDsE'
+    orgy: 'CgACAgQAAxkBAAEqL1xqIyJUx3yIRno4UZtix4SumGHwCgAC6p8AAkMXZAepPlY8DiidIDsE'
 };
 
 function initPrison(player) {
@@ -43,7 +43,7 @@ function getRelationPoints(player, npcId) {
 function getPrisonActions(player, npcId) {
     if (!player.prisonActions) player.prisonActions = {};
     if (!player.prisonActions[npcId]) {
-        player.prisonActions[npcId] = { touch: 0, kiss: 0, sex: 0 };
+        player.prisonActions[npcId] = { touch: 0, kiss: 0, orgy: 0 };
     }
     return player.prisonActions[npcId];
 }
@@ -64,7 +64,7 @@ function captureNpc(player, npcId) {
     });
     
     player.prisonRelations[npcId] = getStartingPoints(npcId);
-    player.prisonActions[npcId] = { touch: 0, kiss: 0, sex: 0 };
+    player.prisonActions[npcId] = { touch: 0, kiss: 0, orgy: 0 };
     
     return { success: true, message: `🔒 ${npc?.emoji || ''} *${npc?.name || npcId}* زندانی شد!\n⏰ ${days} روز تا فرار` };
 }
@@ -103,7 +103,6 @@ function kissPrisoner(player, npcId) {
     const relation = getRelationLevel(points);
     const actions = getPrisonActions(player, npcId);
     
-    // چک کن ۳ لمس کرده باشه
     if (actions.touch < 3) {
         return {
             success: false,
@@ -139,12 +138,11 @@ function kissPrisoner(player, npcId) {
     }
 }
 
-function sexPrisoner(player, npcId) {
+function orgyPrisoner(player, npcId) {
     const points = getRelationPoints(player, npcId);
     const relation = getRelationLevel(points);
     const actions = getPrisonActions(player, npcId);
     
-    // چک کن ۱۰ لمس و ۱۰ بوس کرده باشه
     if (actions.touch < 10 || actions.kiss < 10) {
         return {
             success: false,
@@ -161,15 +159,15 @@ function sexPrisoner(player, npcId) {
     const bonus = 25;
     player.prisonRelations[npcId] += bonus;
     player.hp = Math.min(player.maxHp, player.hp + 30);
-    actions.sex++;
+    actions.orgy++;
     
     const newRelation = getRelationLevel(player.prisonRelations[npcId]);
     
     return {
         success: true,
-        message: `🔥 *شب به یاد ماندنی...* +${bonus} رابطه\n❤️ +۳۰\n${newRelation.name}\n🖐️${actions.touch} 💋${actions.kiss} 🔥${actions.sex}`,
+        message: `🔥 *شب وحشی...* +${bonus} رابطه\n❤️ +۳۰\n${newRelation.name}\n🖐️${actions.touch} 💋${actions.kiss} 🔥${actions.orgy}`,
         relation: newRelation,
-        animation: sexyGifs.sex
+        animation: sexyGifs.orgy
     };
 }
 
@@ -231,7 +229,7 @@ function formatPrison(player) {
         const points = getRelationPoints(player, p.npcId);
         const relation = getRelationLevel(points);
         const actions = getPrisonActions(player, p.npcId);
-        msg += `${p.emoji} ${p.name} | ${relation.name}\n🖐️${actions.touch} 💋${actions.kiss} 🔥${actions.sex} | ⏰${p.daysUntilEscape} روز\n\n`;
+        msg += `${p.emoji} ${p.name} | ${relation.name}\n🖐️${actions.touch} 💋${actions.kiss} 🔥${actions.orgy} | ⏰${p.daysUntilEscape} روز\n\n`;
     }
     msg += `👥 ${player.prison.length} زندانی`;
     if (player.prison.length >= 10) msg += '\n👑 *سلطان زندان!*';
@@ -241,12 +239,12 @@ function formatPrison(player) {
 function getPrisonerKeyboard(player, npcId) {
     const actions = getPrisonActions(player, npcId);
     const canKiss = actions.touch >= 3;
-    const canSex = actions.touch >= 10 && actions.kiss >= 10;
+    const canOrgy = actions.touch >= 10 && actions.kiss >= 10;
     
     const buttons = [];
     buttons.push(['🖐️ لمس کن']);
     if (canKiss) buttons.push(['💋 ببوس']);
-    if (canSex) buttons.push(['🔥 سکس']);
+    if (canOrgy) buttons.push(['🔥 عیاشی']);
     buttons.push(['🔓 آزاد کن', '🔙 برگشت']);
     
     return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
@@ -254,6 +252,6 @@ function getPrisonerKeyboard(player, npcId) {
 
 module.exports = {
     initPrison, captureNpc, getRelationPoints, getRelationLevel,
-    touchPrisoner, kissPrisoner, sexPrisoner, releasePrisoner, checkEscapes,
+    touchPrisoner, kissPrisoner, orgyPrisoner, releasePrisoner, checkEscapes,
     formatPrison, getPrisonerKeyboard, getPrisonActions
 };
