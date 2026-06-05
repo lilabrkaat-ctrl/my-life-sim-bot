@@ -1,118 +1,147 @@
 const TelegramBot = require('node-telegram-bot-api');
-const fs = require('fs');
 const token = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE_PLACEHOLDER';
 const bot = new TelegramBot(token, { polling: true });
 
-// خوندن فایل images.json
-const images = JSON.parse(fs.readFileSync('./images.json', 'utf8'));
+const player = require('./player');
+const { gather } = require('./gather');
+const { travel, showTravelMenu } = require('./travel');
+const { showCraftMenu, craftItem } = require('./craft');
+const { fight } = require('./fight');
+const { showShopMenu, buyItem, sellItem } = require('./shop');
 
-// دستور /start
+// /start
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     
-    const message = `
+    if (!player.getPlayer(chatId)) {
+        player.createPlayer(chatId);
+    }
+
+    const welcome = `
 🏛️ *به دنیای بقای باستانی خوش آمدی!*
 
-📸 *تست عکس‌ها:*
-/locations - عکس مکان‌ها
-/resources - عکس منابع
-/enemies - عکس دشمنان
-/npcs - عکس شخصیت‌ها
-/all - همه عکس‌ها
+📋 *دستورات:*
+/status - وضعیت خودت
+/gather - جمع‌آوری منابع
+/map - نقشه سفر
+/craft - ساخت‌وساز
+/fight - نبرد
+/shop - بازار
 
-دستور مورد نظر رو بزن.
+⚔️ زنده بمون، قهرمان!
     `;
     
-    bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown' });
 });
 
-// نمایش مکان‌ها
-bot.onText(/\/locations/, async (msg) => {
+// /status
+bot.onText(/\/status/, (msg) => {
     const chatId = msg.chat.id;
-    const locs = images.locations;
+    const p = player.getPlayer(chatId);
     
-    for (let key in locs) {
-        const loc = locs[key];
-        await bot.sendPhoto(chatId, loc.file_id, {
-            caption: `${loc.emoji} ${loc.name} - ${loc.description}`
-        });
-    }
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
     
-    bot.sendMessage(chatId, '✅ همه مکان‌ها نمایش داده شد.');
+    bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown' });
 });
 
-// نمایش منابع
-bot.onText(/\/resources/, async (msg) => {
+// /gather
+bot.onText(/\/gather/, (msg) => {
     const chatId = msg.chat.id;
-    const res = images.resources;
+    const p = player.getPlayer(chatId);
     
-    for (let key in res) {
-        const item = res[key];
-        await bot.sendPhoto(chatId, item.file_id, {
-            caption: `${item.emoji} ${item.name}`
-        });
-    }
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
     
-    bot.sendMessage(chatId, '✅ همه منابع نمایش داده شد.');
+    const result = gather(p);
+    bot.sendMessage(chatId, result.message);
 });
 
-// نمایش دشمنان
-bot.onText(/\/enemies/, async (msg) => {
+// /map
+bot.onText(/\/map/, (msg) => {
     const chatId = msg.chat.id;
-    const enemies = images.enemies;
+    const p = player.getPlayer(chatId);
     
-    for (let key in enemies) {
-        const enemy = enemies[key];
-        await bot.sendPhoto(chatId, enemy.file_id, {
-            caption: `${enemy.emoji} ${enemy.name} | ❤️ ${enemy.hp} | ⚔️ ${enemy.attack}`
-        });
-    }
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
     
-    bot.sendMessage(chatId, '✅ همه دشمنان نمایش داده شد.');
+    bot.sendMessage(chatId, showTravelMenu(), { parse_mode: 'Markdown' });
 });
 
-// نمایش NPCها
-bot.onText(/\/npcs/, async (msg) => {
+// /travel_[location]
+bot.onText(/\/travel_(.+)/, (msg, match) => {
     const chatId = msg.chat.id;
-    const npcs = images.npcs;
+    const p = player.getPlayer(chatId);
     
-    for (let key in npcs) {
-        const npc = npcs[key];
-        await bot.sendPhoto(chatId, npc.file_id, {
-            caption: `${npc.emoji} ${npc.name} - ${npc.role}`
-        });
-    }
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
     
-    bot.sendMessage(chatId, '✅ همه شخصیت‌ها نمایش داده شد.');
+    const result = travel(p, match[1]);
+    bot.sendMessage(chatId, result.message);
 });
 
-// نمایش همه
-bot.onText(/\/all/, async (msg) => {
+// /craft
+bot.onText(/\/craft$/, (msg) => {
     const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
     
-    bot.sendMessage(chatId, '📸 در حال ارسال همه عکس‌ها...');
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
     
-    for (let key in images.locations) {
-        const loc = images.locations[key];
-        await bot.sendPhoto(chatId, loc.file_id, { caption: `🏞️ ${loc.emoji} ${loc.name}` });
-    }
-    
-    for (let key in images.resources) {
-        const item = images.resources[key];
-        await bot.sendPhoto(chatId, item.file_id, { caption: `🎒 ${item.emoji} ${item.name}` });
-    }
-    
-    for (let key in images.enemies) {
-        const enemy = images.enemies[key];
-        await bot.sendPhoto(chatId, enemy.file_id, { caption: `⚔️ ${enemy.emoji} ${enemy.name}` });
-    }
-    
-    for (let key in images.npcs) {
-        const npc = images.npcs[key];
-        await bot.sendPhoto(chatId, npc.file_id, { caption: `👤 ${npc.emoji} ${npc.name}` });
-    }
-    
-    bot.sendMessage(chatId, '✅ همه عکس‌ها نمایش داده شد.');
+    bot.sendMessage(chatId, showCraftMenu(), { parse_mode: 'Markdown' });
 });
 
-console.log('✅ ربات تست عکس‌ها آماده شد!');
+// /make [item]
+bot.onText(/\/make (.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
+    
+    const result = craftItem(p, match[1]);
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
+});
+
+// /fight
+bot.onText(/\/fight/, (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
+    
+    const result = fight(p);
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
+});
+
+// /shop
+bot.onText(/\/shop$/, (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
+    
+    if (p.location !== 'village') {
+        return bot.sendMessage(chatId, '🏪 بازار فقط توی روستای باستانیه! /travel_village');
+    }
+    
+    bot.sendMessage(chatId, showShopMenu(), { parse_mode: 'Markdown' });
+});
+
+// /buy_[item]
+bot.onText(/\/buy_(.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
+    
+    const result = buyItem(p, match[1]);
+    bot.sendMessage(chatId, result.message);
+});
+
+// /sell_[item]
+bot.onText(/\/sell_(.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    
+    if (!p) return bot.sendMessage(chatId, 'اول /start بزن!');
+    
+    const result = sellItem(p, match[1]);
+    bot.sendMessage(chatId, result.message);
+});
+
+console.log('✅ ربات بقای باستانی آماده شد!');
