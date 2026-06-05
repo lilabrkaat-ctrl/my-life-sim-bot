@@ -1,10 +1,10 @@
 const config = require('./config');
+const { triggerRandomEvent } = require('./events');
 
 function gather(player) {
     const resources = config.locationResources[player.location];
-    
     if (!resources || resources.length === 0) {
-        return { success: false, message: '❌ اینجا چیزی برای جمع‌آوری نیست!' };
+        return { success: false, message: '❌ اینجا چیزی نیست!' };
     }
 
     const results = [];
@@ -15,22 +15,32 @@ function gather(player) {
             const amount = Math.floor(Math.random() * (res.max - res.min + 1)) + res.min;
             if (amount > 0) {
                 player.inventory[res.item] += amount;
-                const itemData = config.images.resources[res.item];
-                results.push(`${amount} ${itemData.emoji} ${itemData.name}`);
+                results.push(`${config.images.resources[res.item].emoji} ${config.images.resources[res.item].name}: +${amount}`);
                 found = true;
             }
         }
     }
 
+    player.gathers++;
+
     if (!found) {
-        return { success: false, message: '❌ چیزی پیدا نکردی! شانس دفعه بعد...' };
+        const eventResult = triggerRandomEvent(player, 'gather');
+        if (eventResult) return eventResult;
+        return { success: false, message: '😞 چیزی پیدا نکردی...' };
     }
 
-    const loc = config.images.locations[player.location];
-    return {
-        success: true,
-        message: `🔍 در ${loc.emoji} ${loc.name} گشتی زدی:\n${results.join('\n')}`
-    };
+    if (Math.random() < 0.15) {
+        const eventResult = triggerRandomEvent(player, 'gather');
+        if (eventResult && eventResult.eventTriggered) {
+            return {
+                success: true,
+                message: `🎒 جمع‌آوری:\n${results.join('\n')}\n\n${eventResult.message}`,
+                eventImage: eventResult.image
+            };
+        }
+    }
+
+    return { success: true, message: `🎒 جمع‌آوری:\n${results.join('\n')}` };
 }
 
 module.exports = { gather };
