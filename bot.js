@@ -36,19 +36,23 @@ function mainMenu() {
     return { reply_markup: { keyboard: [
         ['👤 وضعیت', '🌿 جمع‌آوری'],
         ['🗺️ سفر', '⚔️ نبرد'],
-        ['🔨 ساخت‌وساز', '🏪 بازار'],
-        ['📊 رتبه‌بندی', '🏰 زندان']
+        ['👥 PvP', '🔨 ساخت‌وساز'],
+        ['🏪 بازار', '📊 رتبه‌بندی'],
+        ['🏰 زندان']
     ], resize_keyboard: true } };
 }
 
 function locationMenu(player) {
     const b = [];
     const unlocked = player?.unlocked?.locations || ['village'];
+    const locReqs = config.locationRequirements || {};
+    
     for (let k in config.images.locations) {
         if (unlocked.includes(k)) {
-            b.push([`${config.images.locations[k].emoji} سفر به ${config.images.locations[k].name}`]);
+            b.push([`✅ ${config.images.locations[k].emoji} ${config.images.locations[k].name}`]);
         } else {
-            b.push([`🔒 ??? (امتیاز بیشتر)`]);
+            const needed = (locReqs[k] || 9999) - (player.score || 0);
+            b.push([`🔒 نیاز به ${needed} امتیاز`]);
         }
     }
     b.push(['🔙 برگشت']);
@@ -77,7 +81,9 @@ bot.onText(/\/start/, async (msg) => {
     welcome += `✨ ${p.name} به دنیای باستان خوش آمدی!\n`;
     welcome += `📍 ${loc.emoji} ${loc.name}\n`;
     welcome += `🏆 امتیاز: ${p.score}\n\n`;
-    welcome += `🔒 مکان‌ها و دشمنان با امتیاز باز میشن!`;
+    welcome += `🐺 *مرحله اول: روستا*\n`;
+    welcome += `🎯 گرگ‌ها و مارها رو شکار کن!\n`;
+    welcome += `💡 با جمع‌آوری منابع امتیاز بگیر و مراحل جدید رو باز کن!`;
     
     if (p.unlockedMessage) {
         welcome += `\n\n${p.unlockedMessage}`;
@@ -155,18 +161,39 @@ bot.onText(/^🗺️ سفر$/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    await bot.sendMessage(chatId, '🗺️ *نقشه سفر*\n\n📍 کجا می‌خوای بری؟', { parse_mode: 'Markdown', ...locationMenu(p) });
+    
+    let mapMsg = '🗺️ *نقشه سفر*\n\n';
+    const locReqs = config.locationRequirements || {};
+    
+    for (let k in config.images.locations) {
+        const loc = config.images.locations[k];
+        if (p.unlocked?.locations?.includes(k)) {
+            mapMsg += `✅ ${loc.emoji} *${loc.name}*\n   ${loc.description}\n\n`;
+        } else {
+            const needed = (locReqs[k] || 9999) - (p.score || 0);
+            mapMsg += `🔒 ${loc.emoji} *???*\n   نیاز به ${needed} امتیاز دیگر\n\n`;
+        }
+    }
+    
+    mapMsg += '📍 روی نقشه کلیک کن:';
+    
+    await bot.sendMessage(chatId, mapMsg, { parse_mode: 'Markdown', ...locationMenu(p) });
 });
 
-bot.onText(/^(.+) سفر به (.+)$/, async (msg, match) => {
+bot.onText(/^✅ (.+) (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     if (!p) return;
     
+    const emoji = match[1];
+    const name = match[2];
+    
     for (let k in config.images.locations) {
-        if (config.images.locations[k].emoji === match[1] && config.images.locations[k].name === match[2]) {
+        const loc = config.images.locations[k];
+        if (loc.emoji === emoji && loc.name === name) {
             if (!p.unlocked?.locations?.includes(k)) {
-                return bot.sendMessage(chatId, '🔒 این مکان هنوز قفله! امتیاز بیشتری کسب کن.', mainMenu());
+                const needed = (config.locationRequirements[k] || 9999) - p.score;
+                return bot.sendMessage(chatId, `🔒 *${loc.name}* هنوز قفله!\n📊 نیاز به *${needed}* امتیاز دیگر.`, mainMenu());
             }
             
             const result = travel(p, k);
@@ -192,13 +219,12 @@ bot.onText(/^(.+) سفر به (.+)$/, async (msg, match) => {
             
             let extra = '';
             if (p.unlockedMessage) { extra = '\n\n' + p.unlockedMessage; p.unlockedMessage = null; }
-            return bot.sendMessage(chatId, '🏛️' + extra, { parse_mode: 'Markdown', ...mainMenu() });
+            return bot.sendMessage(chatId, '🏛️ انجام شد!' + extra, { parse_mode: 'Markdown', ...mainMenu() });
         }
     }
-    bot.sendMessage(chatId, '❌ مقصد نامعتبر!', mainMenu());
 });
 
-// ==================== نبرد ====================
+// ==================== نبرد PvE ====================
 bot.onText(/^⚔️ نبرد$/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
@@ -217,6 +243,36 @@ bot.onText(/⚔️ 🗡️ حمله کن/, async (msg) => {
     const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
     
+    // PvP
+    if (enemy.isPlayer) {
+        const result = playerAttack(p, enemy);
+        const opponent = player.getPlayer(enemy.opponentId);
+        if (opponent) {
+            opponent.hp = enemy.hp;
+        }
+        
+        if (result.battleOver) {
+            delete activeBattles[chatId];
+            if (enemy.opponentId) delete activeBattles[enemy.opponentId];
+            
+            if (result.playerWon) {
+                player.addScore(p, 50);
+                await bot.sendMessage(enemy.opponentId, `💀 تو باختی! ${p.name} برنده شد!`, mainMenu());
+            }
+            await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+        } else {
+            await bot.sendMessage(chatId, `${formatBattle(p, enemy)}\n\n${result.message}`, getBattleKeyboard(enemy));
+            if (enemy.opponentId) {
+                const opp = player.getPlayer(enemy.opponentId);
+                if (opp) {
+                    await bot.sendMessage(enemy.opponentId, `${formatBattle(opp, { name: p.name, emoji: '👤', hp: p.hp, maxHp: p.maxHp, attack: p.attack })}\n\nمنتظر حمله حریف...`, getBattleKeyboard({ status: 'fighting' }));
+                }
+            }
+        }
+        return;
+    }
+    
+    // PvE
     const result = playerAttack(p, enemy);
     
     if (result.battleOver) {
@@ -246,11 +302,58 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
     
     const result = playerEscape(p, enemy);
     if (result.battleOver) {
+        if (enemy.isPlayer && enemy.opponentId) {
+            delete activeBattles[enemy.opponentId];
+            await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد! تو برنده شدی!`, mainMenu());
+        }
         delete activeBattles[chatId];
         await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
     } else {
         await sendWithImage(chatId, `${formatBattle(p, enemy)}\n\n${result.message}`, enemy.file_id, getBattleKeyboard(enemy));
     }
+});
+
+// ==================== PvP ====================
+bot.onText(/^👥 PvP$/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    
+    const result = player.joinPvP(p);
+    
+    if (result.matched) {
+        const opponent = result.opponent;
+        activeBattles[chatId] = {
+            name: opponent.name,
+            emoji: '👤',
+            hp: opponent.hp,
+            maxHp: opponent.maxHp,
+            attack: opponent.attack,
+            isPlayer: true,
+            opponentId: opponent.chatId
+        };
+        activeBattles[opponent.chatId] = {
+            name: p.name,
+            emoji: '👤',
+            hp: p.hp,
+            maxHp: p.maxHp,
+            attack: p.attack,
+            isPlayer: true,
+            opponentId: chatId
+        };
+        
+        await bot.sendMessage(chatId, `⚔️ *نبرد PvP!*\n\n👤 حریف: ${opponent.name}\n❤️ ${opponent.hp}/${opponent.maxHp}\n⚔️ ${opponent.attack}\n\n🥊 تو اول حمله کن!`, { parse_mode: 'Markdown', ...getBattleKeyboard({ status: 'fighting' }) });
+        await bot.sendMessage(opponent.chatId, `⚔️ *نبرد PvP!*\n\n👤 حریف: ${p.name}\n❤️ ${p.hp}/${p.maxHp}\n⚔️ ${p.attack}\n\n⏳ منتظر حمله حریف...`, { parse_mode: 'Markdown', ...getBattleKeyboard({ status: 'fighting' }) });
+    } else {
+        await bot.sendMessage(chatId, '⏳ *منتظر حریف...*\n\nیه نفر دیگه هم باید PvP بزنه!\n📋 برای لغو: /cancel_pvp', { parse_mode: 'Markdown', ...mainMenu() });
+    }
+});
+
+bot.onText(/\/cancel_pvp/, (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    player.leavePvP(p);
+    bot.sendMessage(chatId, '❌ PvP لغو شد.', mainMenu());
 });
 
 // ==================== ساخت‌وساز ====================
@@ -281,7 +384,7 @@ bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     if (!p) return;
     
     if (!p.unlocked?.recipes?.includes(match[1])) {
-        return bot.sendMessage(chatId, '🔒 این دستور پخت هنوز قفله!', mainMenu());
+        return bot.sendMessage(chatId, '🔒 این دستور پخت هنوز قفله! امتیاز بیشتری کسب کن.', mainMenu());
     }
     
     const result = craftItem(p, match[1]);
@@ -294,18 +397,23 @@ bot.onText(/^🏪 بازار$/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    if (p.location !== 'village') return bot.sendMessage(chatId, '🏪 فقط تو روستا!', mainMenu());
+    if (p.location !== 'village') return bot.sendMessage(chatId, '🏪 بازار فقط توی روستای باستانیه!', mainMenu());
     
-    await bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory.gold}`, {
+    await bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 طلا: ${p.inventory.gold}`, {
         parse_mode: 'Markdown',
         reply_markup: {
-            keyboard: [['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], ['🦴 خرید پوست', '⛏️ خرید آهن'], ['📤 فروش', '🔙 برگشت']],
+            keyboard: [
+                ['🪵 خرید چوب (۲👑)', '🪨 خرید سنگ (۳👑)'],
+                ['🍖 خرید گوشت (۳👑)', '💧 خرید آب (۱👑)'],
+                ['🦴 خرید پوست (۵👑)', '⛏️ خرید آهن (۸👑)'],
+                ['📤 فروش', '🔙 برگشت']
+            ],
             resize_keyboard: true
         }
     });
 });
 
-bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
+bot.onText(/^(.+) خرید (.+) \((\d+)👑\)$/, (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     if (!p) return;
@@ -314,12 +422,20 @@ bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
 });
 
 bot.onText(/^📤 فروش$/, (msg) => {
-    bot.sendMessage(msg.chat.id, '📤 چی بفروشم؟', {
-        reply_markup: { keyboard: [['🪵 فروش چوب', '🪨 فروش سنگ'], ['🍖 فروش گوشت', '💧 فروش آب'], ['🦴 فروش پوست', '⛏️ فروش آهن'], ['🔙 بازار']], resize_keyboard: true }
+    bot.sendMessage(msg.chat.id, '📤 چی می‌خوای بفروشی؟', {
+        reply_markup: { 
+            keyboard: [
+                ['🪵 فروش چوب (۱👑)', '🪨 فروش سنگ (۱👑)'],
+                ['🍖 فروش گوشت (۲👑)', '💧 فروش آب (۱👑)'],
+                ['🦴 فروش پوست (۳👑)', '⛏️ فروش آهن (۴👑)'],
+                ['🔙 بازار']
+            ], 
+            resize_keyboard: true 
+        }
     });
 });
 
-bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
+bot.onText(/^(.+) فروش (.+) \((\d+)👑\)$/, (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     if (!p) return;
@@ -357,7 +473,6 @@ bot.onText(/^🏰 زندان$/, async (msg) => {
     }
 });
 
-// انتخاب زندانی (با فرمت 🔒)
 bot.onText(/^🔒 (.+) (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
@@ -386,7 +501,6 @@ bot.onText(/^🔒 (.+) (.+)$/, async (msg, match) => {
     await sendWithImage(chatId, caption, img, getPrisonerKeyboard());
 });
 
-// عملیات زندان
 bot.onText(/^🖐️ لمس کن$/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
@@ -429,7 +543,7 @@ bot.onText(/^🔓 آزاد کن$/, async (msg) => {
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
-// ==================== پاسخ دیالوگ محیط ====================
+// ==================== پاسخ دیالوگ ====================
 bot.onText(/^(🗡️|💋|🏃|🤝|🕯️|👂|💰|🕊️|💎|⚔️|❤️|👼|🎁|😘|🧪|😂|😐|🍖) (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
@@ -471,6 +585,16 @@ bot.onText(/^🔙 بازار$/, (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     bot.sendMessage(chatId, `🏪 *بازار* | 👑 ${p?.inventory?.gold || 0}`, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+bot.onText(/^🔙 زندان$/, (msg) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId, '🏰', mainMenu());
+});
+
+// ==================== خطا ====================
+bot.on('polling_error', (error) => {
+    console.log('Polling error:', error.message);
 });
 
 console.log('✅ ربات بقای باستانی آماده شد! 🎉');
