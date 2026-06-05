@@ -1,47 +1,38 @@
 const config = require('./config');
 
 function showCraftMenu() {
-    let menu = '🔨 *کارگاه ساخت‌وساز*\n\n*قابل ساخت:*\n';
-    
+    let menu = '🔨 *کارگاه ساخت‌وساز*\n\n';
     for (let itemName in config.recipes) {
-        const recipe = config.recipes[itemName];
+        const r = config.recipes[itemName];
         let costs = [];
-        for (let resource in recipe) {
-            if (resource !== 'effect' && resource !== 'bonus' && resource !== 'emoji') {
-                costs.push(`${recipe[resource]} ${resource}`);
+        for (let res in r) {
+            if (res !== 'effect' && res !== 'bonus' && res !== 'emoji') {
+                costs.push(`${r[res]} ${config.images.resources[res]?.emoji || res}`);
             }
         }
-        menu += `${recipe.emoji} ${itemName}: ${costs.join(' + ')} (${recipe.effect === 'weapon' ? '⚔️+' + recipe.bonus : '🛡️+' + recipe.bonus})\n`;
+        menu += `${r.emoji} *${itemName}*: ${costs.join(' + ')}\n`;
     }
-    
-    menu += '\nبرای ساخت: /make [اسم]\nمثال: /make تبر سنگی';
     return menu;
 }
 
 function craftItem(player, itemName) {
     const recipe = config.recipes[itemName];
-    
-    if (!recipe) {
-        return { success: false, message: '❌ این آیتم رو نمی‌شناسم! /craft رو ببین.' };
-    }
+    if (!recipe) return { success: false, message: '❌ این آیتم رو نمی‌شناسم!' };
 
-    // چک کردن منابع
-    for (let resource in recipe) {
-        if (resource !== 'effect' && resource !== 'bonus' && resource !== 'emoji') {
-            if (player.inventory[resource] < recipe[resource]) {
-                return { success: false, message: `❌ ${resource} کافی نداری! نیاز: ${recipe[resource]}` };
+    for (let res in recipe) {
+        if (res !== 'effect' && res !== 'bonus' && res !== 'emoji') {
+            if (player.inventory[res] < recipe[res]) {
+                return { success: false, message: `❌ ${res} کافی نداری!` };
             }
         }
     }
 
-    // کم کردن منابع
-    for (let resource in recipe) {
-        if (resource !== 'effect' && resource !== 'bonus' && resource !== 'emoji') {
-            player.inventory[resource] -= recipe[resource];
+    for (let res in recipe) {
+        if (res !== 'effect' && res !== 'bonus' && res !== 'emoji') {
+            player.inventory[res] -= recipe[res];
         }
     }
 
-    // اعمال افکت
     if (recipe.effect === 'weapon') {
         player.equipment.weapon = itemName;
         player.attack = 5 + recipe.bonus;
@@ -55,10 +46,7 @@ function craftItem(player, itemName) {
         player.defense += recipe.bonus;
     }
 
-    return {
-        success: true,
-        message: `✅ ${recipe.emoji} *${itemName}* ساخته شد!\n⚔️ حمله: ${player.attack} | 🛡️ دفاع: ${player.defense}`
-    };
+    return { success: true, message: `✅ ${recipe.emoji} *${itemName}* ساخته شد!` };
 }
 
 module.exports = { showCraftMenu, craftItem };
