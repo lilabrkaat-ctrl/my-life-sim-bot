@@ -305,14 +305,40 @@ bot.onText(/^🏪 بازار$/, async (msg) => {
     });
 });
 
-bot.onText(/(.+) خرید (.+) \((\d+)👑\)/, (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
-    const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
-    const itemName = match[2].trim();
-    if (!m[itemName]) return;
-    bot.sendMessage(chatId, buyItem(p, m[itemName]).message, mainMenu());
+// هندلر خرید - فقط وقتی که تو منوی بازار هستیم
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    if (!text) return;
+    
+    // چک کن تو بازار هست یا نه
+    const p = player.getPlayer(chatId);
+    if (!p || p.location !== 'village') return;
+    
+    // خرید
+    const buyMatch = text.match(/(.+) خرید (.+) \((\d+)👑\)/);
+    if (buyMatch) {
+        const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
+        const itemName = buyMatch[2].trim();
+        if (m[itemName]) {
+            const result = buyItem(p, m[itemName]);
+            return bot.sendMessage(chatId, result.message, mainMenu());
+        }
+    }
+    
+    // فروش
+    const sellMatch = text.match(/(.+) فروش (.+) \((\d+)👑\)/);
+    if (sellMatch) {
+        const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
+        const itemName = sellMatch[2].trim();
+        if (m[itemName]) {
+            const result = sellItem(p, m[itemName]);
+            return bot.sendMessage(chatId, result.message, mainMenu());
+        }
+    }
 });
 
+// هندلر فروش
 bot.onText(/^📤 فروش$/, (msg) => {
     bot.sendMessage(msg.chat.id, '📤 چی بفروشی؟', {
         reply_markup: { keyboard: [
@@ -322,14 +348,6 @@ bot.onText(/^📤 فروش$/, (msg) => {
             ['🔙 بازار']
         ], resize_keyboard: true }
     });
-});
-
-bot.onText(/(.+) فروش (.+) \((\d+)👑\)/, (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
-    const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
-    const itemName = match[2].trim();
-    if (!m[itemName]) return;
-    bot.sendMessage(chatId, sellItem(p, m[itemName]).message, mainMenu());
 });
 
 // ==================== زندان ====================
