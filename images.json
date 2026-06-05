@@ -110,8 +110,8 @@
       "name": "گرگ",
       "emoji": "🐺",
       "file_id": "AgACAgQAAxkBAAEqJVpqIncyS0fa-TDJ3r7OwAX3xHra7gACQw5rG_JGEVGAs1cAAWKLpy8BAAMCAAN4AAM7BA",
-      "hp": 20,
-      "attack": 3,
+      "hp": 30,
+      "attack": 5,
       "reward": { "xp": 10, "skin": 2, "meat": 3 }
     },
     "lion": {
@@ -143,7 +143,7 @@
       "emoji": "🐍",
       "file_id": "AgACAgQAAxkBAAEqJVVqIncylbJVx0p3mv1zX6Ajt49e_gACPg5rG_JGEVGLhDw_oXK_CAEAAwIAA3gAAzsE",
       "hp": 25,
-      "attack": 5,
+      "attack": 4,
       "reward": { "xp": 15, "skin": 3, "meat": 2 }
     },
     "bear": {
@@ -153,6 +153,22 @@
       "hp": 60,
       "attack": 12,
       "reward": { "xp": 60, "skin": 8, "meat": 10 }
+    },
+    "fairy": {
+      "name": "پری جنگل",
+      "emoji": "🧚",
+      "file_id": "AgACAgQAAxkBAAEqJhRqIo37vyFfgD4HT5EB6GHs3_-oYQACcw5rG_JGEVE0IC9Ect_IWwEAAwIAA3gAAzsE",
+      "hp": 80,
+      "attack": 15,
+      "reward": { "xp": 80, "gold": 50, "skin": 5 }
+    },
+    "dragon": {
+      "name": "اژدها",
+      "emoji": "🐉",
+      "file_id": "AgACAgQAAxkBAAEqJf5qIo3iSuF3PstMjttghF-Nt6HltAACbA5rG_JGEVGOgTOaPnP0FAEAAwIAA3gAAzsE",
+      "hp": 200,
+      "attack": 30,
+      "reward": { "xp": 200, "gold": 100, "iron": 20 }
     }
   },
   "npcs": {
@@ -185,6 +201,110 @@
       "emoji": "👩‍🦰",
       "file_id": "AgACAgQAAxkBAAEqJWZqInlFosXt271VzP3LFIz_s6UBZQACRg5rG_JGEVFx4xgfZ4kvnAEAAwIAA3gAAzsE",
       "role": "آواتار"
+    },
+    "farmer": {
+      "name": "دهقان",
+      "emoji": "🧑‍🌾",
+      "file_id": "AgACAgQAAxkBAAEqJf9qIo3igsfhwjgxWk5ZToPTzPv5sgACbQ5rG_JGEVGuy62k6TDypgEAAwIAA3gAAzsE",
+      "role": "فروش غذا با قیمت ارزون"
+    },
+    "prince": {
+      "name": "شاهزاده",
+      "emoji": "🤴",
+      "file_id": "AgACAgQAAxkBAAEqJgFqIo3i7SHGYKsyAAGQ7lgvrOuoqxIAAm4OaxvyRhFRCG_JO0SSvSkBAAMCAAN4AAM7BA",
+      "role": "کمک کن ۱۰۰👑 جایزه بگیر"
+    },
+    "witch": {
+      "name": "ساحره",
+      "emoji": "🧙‍♀️",
+      "file_id": "AgACAgQAAxkBAAEqJgRqIo3iav_63BkFNDtVYxsvX55CnAACcA5rG_JGEVGKM9iVGMze6QEAAwIAA3gAAzsE",
+      "role": "طلسم: یا قوی میشی یا ضعیف"
+    },
+    "ghost": {
+      "name": "روح",
+      "emoji": "👻",
+      "file_id": "AgACAgQAAxkBAAEqJgJqIo3inEb2YF9jp4g_LIX39t4FZgACbw5rG_JGEVGUR7x_5WcAAWYBAAMCAAN4AAM7BA",
+      "role": "۵۰٪ کمک، ۵۰٪ آسیب"
+    },
+    "jester": {
+      "name": "دلقک",
+      "emoji": "🎭",
+      "file_id": "AgACAgQAAxkBAAEqJgVqIo3iG7JggY2g_pOzxCqn2OK-fQACcQ5rG_JGEVFumcx57ak4NQEAAwIAA3gAAzsE",
+      "role": "شوخی و +۵❤️"
+    },
+    "wizard": {
+      "name": "جادوگر",
+      "emoji": "🧙‍♂️",
+      "file_id": "AgACAgQAAxkBAAEqJhNqIo36il--sb0izuaQwfKU0OdN_QACcg5rG_JGEVFEDvmLd-yShwEAAwIAA3gAAzsE",
+      "role": "جادوی تصادفی"
+    },
+    "knight": {
+      "name": "شوالیه",
+      "emoji": "⚔️",
+      "file_id": "AgACAgQAAxkBAAEqJhVqIo37tpLTu5IK1fIscxgNCAbVNAACdA5rG_JGEVG_bMdmP9f63AEAAwIAA3gAAzsE",
+      "role": "مبارزه دوستانه (۵۰👑 جایزه)"
+    }
+  },
+  "events": {
+    "snow": {
+      "name": "برف",
+      "emoji": "❄️",
+      "file_id": "AgACAgQAAxkBAAEqJflqIo3iscMnnOLF_KiGIdbxZTgGvQACaA5rG_JGEVE85ygEE2xfZQEAAwIAA3gAAzsE",
+      "type": "weather"
+    },
+    "beehive": {
+      "name": "کندوی عسل",
+      "emoji": "🍯",
+      "file_id": "AgACAgQAAxkBAAEqJfpqIo3iVDwjbvcrn7eo_cH1GG6V9gACaQ5rG_JGEVGLSgILIFpatAEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "rainbow": {
+      "name": "رنگین‌کمان",
+      "emoji": "🌈",
+      "file_id": "AgACAgQAAxkBAAEqJfxqIo3ioZxuzub5XooJiHidB9xKswACaw5rG_JGEVHdCO7gUnB4oAEAAwIAA3gAAzsE",
+      "type": "weather"
+    },
+    "fire": {
+      "name": "آتش",
+      "emoji": "🔥",
+      "file_id": "AgACAgQAAxkBAAEqJftqIo3iymNms8_qjVhecVoydz8VvQACag5rG_JGEVF_wKTFsSbJ6QEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "treasure": {
+      "name": "گنج",
+      "emoji": "💰",
+      "file_id": "AgACAgQAAxkBAAEqJhdqIo37BaQBz28rMiOit_WJpqZMHQACdQ5rG_JGEVH0qlQ5DDS6HwEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "snake_event": {
+      "name": "مار",
+      "emoji": "🐍",
+      "file_id": "AgACAgQAAxkBAAEqJhhqIo37pQMh5UKyQveBi1ns-8cTGAACdg5rG_JGEVEW-PQkiigh3QEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "eagle": {
+      "name": "عقاب",
+      "emoji": "🦅",
+      "file_id": "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "eagle_vs_snake": {
+      "name": "نبرد عقاب و مار",
+      "emoji": "🦅🐍",
+      "file_id": "AgACAgQAAxkBAAEqJh1qIo37U72ZDZF36vJYOC7fK0akowACeQ5rG_JGEVFQHAJLLH0G2wEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "eagle_vs_lion": {
+      "name": "نبرد عقاب و شیر",
+      "emoji": "🦅🦁",
+      "file_id": "AgACAgQAAxkBAAEqJhpqIo37M0sDdsg_0FysHGNnfC2M4gACdw5rG_JGEVFK0vGUkIW8eAEAAwIAA3gAAzsE",
+      "type": "event"
+    },
+    "eagle_vs_bear": {
+      "name": "نبرد عقاب و خرس",
+      "emoji": "🦅🐻",
+      "file_id": "AgACAgQAAxkBAAEqJhtqIo377HQWaGveSEO-KkbxO9i-QgACeA5rG_JGEVEBU_xqdkRSAAEBAAMCAAN4AAM7BA",
+      "type": "event"
     }
   }
 }
