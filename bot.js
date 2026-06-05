@@ -5,7 +5,7 @@ const bot = new TelegramBot(token, { polling: true });
 const player = require('./player');
 const { savePlayers, autoSave } = require('./storage');
 
-// ذخیره خودکار هر ۳۰ ثانیه
+// ذخیره خودکار هر ۳۰ ثانیه - اطلاعات نمی‌پره!
 autoSave(player.players, 30000);
 
 const { gather } = require('./gather');
@@ -15,7 +15,7 @@ const { activeBattles, startFight, startPvPFight, playerAttack, playerEscape, fo
 const { showShopMenu, startBuy, startSell, processAmount, cancelShop, getShopState } = require('./shop');
 const { getDialogue, getPrisonDialogue, getNpcConfig, handleAction } = require('./dialogue');
 const { isAdmin, adminCommand } = require('./admin');
-const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, sexPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
+const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, orgyPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
 const config = require('./config');
 
 const activeDialogues = {};
@@ -434,10 +434,10 @@ bot.onText(/^💋 ببوس$/, async (msg) => {
     else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
 
-bot.onText(/^🔥 سکس$/, async (msg) => {
+bot.onText(/^🔥 عیاشی$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
     if (!p || !npcId) return;
-    const result = sexPrisoner(p, npcId);
+    const result = orgyPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
     
     if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
