@@ -3,8 +3,6 @@ const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 const { savePlayers, autoSave } = require('./storage');
-
-// ذخیره خودکار هر ۳۰ ثانیه
 autoSave(player.players, 30000);
 const { gather } = require('./gather');
 const { travel } = require('./travel');
