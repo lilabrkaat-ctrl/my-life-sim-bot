@@ -54,7 +54,7 @@ module.exports = {
         ]
     },
     locationEnemies: {
-        forest: ['wolf', 'snake', 'fairy'],
+        forest: ['wolf', 'snake', 'fairy', 'werewolf'],
         mountain: ['wolf', 'bear'],
         river: ['snake', 'wolf'],
         plain: ['lion', 'bandit'],
