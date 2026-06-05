@@ -6,7 +6,7 @@ const player = require('./player');
 const { gather } = require('./gather');
 const { travel } = require('./travel');
 const { showCraftMenu, craftItem } = require('./craft');
-const { activeBattles, startFight, playerAttack, playerEscape, formatBattle, getBattleKeyboard } = require('./fight');
+const { activeBattles, startFight, startPvPFight, playerAttack, playerEscape, formatBattle, getBattleKeyboard } = require('./fight');
 const { showShopMenu, buyItem, sellItem } = require('./shop');
 const { getDialogue, getPrisonDialogue, getNpcConfig, handleAction } = require('./dialogue');
 const { isAdmin, adminCommand } = require('./admin');
@@ -15,14 +15,14 @@ const config = require('./config');
 
 const activeDialogues = {};
 const activePrisoner = {};
+const pvpSearching = {};
 
 function mainMenu() {
     return { reply_markup: { keyboard: [
         ['👤 وضعیت', '🌿 جمع‌آوری'],
         ['🗺️ سفر', '⚔️ نبرد'],
-        ['👥 PvP', '🔨 ساخت‌وساز'],
-        ['🏪 بازار', '📊 رتبه‌بندی'],
-        ['🏰 زندان']
+        ['🔨 ساخت‌وساز', '🏪 بازار'],
+        ['📊 رتبه‌بندی', '🏰 زندان']
     ], resize_keyboard: true } };
 }
 
@@ -45,10 +45,7 @@ function locationMenu(player) {
 
 async function sendWithImage(chatId, caption, fileId, keyboard) {
     if (fileId) {
-        try {
-            await bot.sendPhoto(chatId, fileId, { caption, parse_mode: 'Markdown', ...keyboard });
-            return;
-        } catch (e) {}
+        try { await bot.sendPhoto(chatId, fileId, { caption, parse_mode: 'Markdown', ...keyboard }); return; } catch (e) {}
     }
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
@@ -61,18 +58,9 @@ bot.onText(/\/start/, async (msg) => {
     player.checkUnlocks(p);
     
     const loc = config.images.locations[p.location];
-    let welcome = `🏛️ *بقای باستانی*\n\n`;
-    welcome += `✨ ${p.name} به دنیای باستان خوش آمدی!\n`;
-    welcome += `📍 ${loc.emoji} ${loc.name}\n`;
-    welcome += `🏆 امتیاز: ${p.score}\n\n`;
-    welcome += `🐺 *مرحله اول: روستا*\n`;
-    welcome += `🎯 گرگ‌ها، مارها و دزدها رو شکار کن!\n`;
-    welcome += `💡 جمع‌آوری کن، امتیاز بگیر و مراحل جدید رو باز کن!`;
+    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n🏆 امتیاز: ${p.score}\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!\n💰 جمع‌آوری کن و مراحل جدید رو باز کن!`;
     
-    if (p.unlockedMessage) {
-        welcome += `\n\n${p.unlockedMessage}`;
-        p.unlockedMessage = null;
-    }
+    if (p.unlockedMessage) { welcome += `\n\n${p.unlockedMessage}`; p.unlockedMessage = null; }
     
     await sendWithImage(chatId, welcome, loc.file_id, mainMenu());
 });
@@ -81,17 +69,15 @@ bot.onText(/\/start/, async (msg) => {
 bot.onText(/\/admin (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAdmin(chatId)) return;
-    const p = player.getPlayer(chatId);
-    if (!p) return;
-    const args = match[1].split(' ');
-    const result = adminCommand(p, args.shift(), args);
+    const p = player.getPlayer(chatId); if (!p) return;
+    const args = match[1].split(' '); const cmd = args.shift();
+    const result = adminCommand(p, cmd, args);
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 // ==================== وضعیت ====================
 bot.onText(/^👤 وضعیت$/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     await bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown', ...mainMenu() });
 });
@@ -104,16 +90,14 @@ bot.onText(/^📊 رتبه‌بندی$/, async (msg) => {
 
 // ==================== جمع‌آوری ====================
 bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
     const result = gather(p);
-    player.addScore(p, 5);
-    player.checkUnlocks(p);
+    player.addScore(p, 5); player.checkUnlocks(p);
     
-    let extraMsg = '';
-    if (p.unlockedMessage) { extraMsg = '\n\n' + p.unlockedMessage; p.unlockedMessage = null; }
+    let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
+    if (p.unlockedMessage) p.unlockedMessage = null;
     
     if (result.npcEncounter) {
         const npcId = result.npcEncounter;
@@ -121,67 +105,61 @@ bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
         p.npcEncounters[npcId] = (p.npcEncounters[npcId] || 0) + 1;
         const dialogue = getDialogue(npcId, p.npcEncounters[npcId] - 1);
         
-        await bot.sendMessage(chatId, result.message + extraMsg, { parse_mode: 'Markdown' });
+        await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown' });
         
         if (dialogue) {
             activeDialogues[chatId] = { npcId, encounter: p.npcEncounters[npcId] - 1 };
             const npc = getNpcConfig(npcId);
             let img = npc?.image ? (config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id) : null;
-            const keyboard = { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } };
-            await sendWithImage(chatId, dialogue.text, img, keyboard);
+            await sendWithImage(chatId, dialogue.text, img, { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } });
             return;
         }
         return bot.sendMessage(chatId, '🤐 حرفی نداره...', mainMenu());
     }
     
-    await bot.sendMessage(chatId, result.message + extraMsg, { parse_mode: 'Markdown', ...mainMenu() });
+    if (result.eventImage) await sendWithImage(chatId, result.message + extra, result.eventImage, mainMenu());
+    else await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 // ==================== سفر ====================
 bot.onText(/^🗺️ سفر$/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
     let mapMsg = '🗺️ *نقشه سفر*\n\n';
     const locReqs = config.locationRequirements || {};
-    
     for (let k in config.images.locations) {
         const loc = config.images.locations[k];
-        if (p.unlocked?.locations?.includes(k)) {
-            mapMsg += `✅ ${loc.emoji} *${loc.name}*\n   ${loc.description}\n\n`;
-        } else {
-            const needed = (locReqs[k] || 9999) - (p.score || 0);
-            mapMsg += `🔒 ${loc.emoji} *???*\n   نیاز به *${needed}* امتیاز دیگر\n\n`;
-        }
+        if (p.unlocked?.locations?.includes(k)) mapMsg += `✅ ${loc.emoji} *${loc.name}*\n   ${loc.description}\n\n`;
+        else mapMsg += `🔒 ${loc.emoji} *???*\n   نیاز به *${(locReqs[k]||9999)-p.score}* امتیاز\n\n`;
     }
-    
     mapMsg += '📍 روی نقشه کلیک کن:';
     await bot.sendMessage(chatId, mapMsg, { parse_mode: 'Markdown', ...locationMenu(p) });
 });
 
-// سفر به مکان - پشتیبانی از اسم‌های ۲ و ۳ کلمه‌ای
 bot.onText(/^✅ (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
-    if (!p) return;
-    
-    const fullText = match[1]; // مثلاً: "🌲 جنگل انبوه" یا "🏘️ روستای باستانی"
-    const parts = fullText.split(' ');
-    const emoji = parts[0];
-    const name = parts.slice(1).join(' ');
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
     
     for (let k in config.images.locations) {
         const loc = config.images.locations[k];
         if (loc.emoji === emoji && loc.name === name) {
             if (!p.unlocked?.locations?.includes(k)) {
-                const needed = (config.locationRequirements[k] || 9999) - p.score;
-                return bot.sendMessage(chatId, `🔒 *${loc.name}* هنوز قفله!\n📊 نیاز به *${needed}* امتیاز دیگر.`, mainMenu());
+                const needed = (config.locationRequirements[k]||9999) - p.score;
+                return bot.sendMessage(chatId, `🔒 *${loc.name}* قفله!\n📊 نیاز به *${needed}* امتیاز`, mainMenu());
             }
             
             const result = travel(p, k);
-            player.addScore(p, 10);
-            player.checkUnlocks(p);
+            player.addScore(p, 10); player.checkUnlocks(p);
+            
+            // کمین تو راه
+            if (result.ambush) {
+                const fightResult = startFight(p);
+                if (fightResult.success) {
+                    activeBattles[chatId] = fightResult.enemy;
+                    return await sendWithImage(chatId, result.message + '\n' + fightResult.message, fightResult.enemy?.file_id, getBattleKeyboard(fightResult.enemy));
+                }
+            }
             
             await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
             
@@ -194,97 +172,94 @@ bot.onText(/^✅ (.+)$/, async (msg, match) => {
                     activeDialogues[chatId] = { npcId, encounter: p.npcEncounters[npcId] - 1 };
                     const npc = getNpcConfig(npcId);
                     let img = npc?.image ? (config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id) : null;
-                    const keyboard = { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } };
-                    await sendWithImage(chatId, dialogue.text, img, keyboard);
+                    await sendWithImage(chatId, dialogue.text, img, { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } });
                     return;
                 }
             }
             
-            let extra = '';
-            if (p.unlockedMessage) { extra = '\n\n' + p.unlockedMessage; p.unlockedMessage = null; }
-            return bot.sendMessage(chatId, '🏛️ انجام شد!' + extra, { parse_mode: 'Markdown', ...mainMenu() });
+            let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
+            if (p.unlockedMessage) p.unlockedMessage = null;
+            return bot.sendMessage(chatId, '🏛️ سفر تموم شد!' + extra, { parse_mode: 'Markdown', ...mainMenu() });
         }
     }
 });
 
-// ==================== نبرد PvE ====================
+// ==================== نبرد ====================
 bot.onText(/^⚔️ نبرد$/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
-    const result = startFight(p);
-    if (!result.success) return bot.sendMessage(chatId, result.message, mainMenu());
+    // PvP - ۵ ثانیه جستجو
+    pvpSearching[chatId] = setTimeout(async () => {
+        delete pvpSearching[chatId];
+        const result = startFight(p);
+        if (!result.success) return bot.sendMessage(chatId, result.message, mainMenu());
+        activeBattles[chatId] = result.enemy;
+        await sendWithImage(chatId, result.message, result.enemy?.file_id, getBattleKeyboard(result.enemy));
+    }, 5000);
     
-    activeBattles[chatId] = result.enemy;
-    await sendWithImage(chatId, result.message, result.enemy?.file_id, getBattleKeyboard(result.enemy));
+    await bot.sendMessage(chatId, '⏳ *۵ ثانیه دنبال حریف آنلاین...*\nاگه کسی نبود، با دشمن عادی می‌جنگی!', { parse_mode: 'Markdown', ...mainMenu() });
+    
+    // چک کن کس دیگه‌ای هم توی صفه
+    for (let id in pvpSearching) {
+        if (id != chatId) {
+            clearTimeout(pvpSearching[id]);
+            clearTimeout(pvpSearching[chatId]);
+            delete pvpSearching[id];
+            delete pvpSearching[chatId];
+            
+            const opponent = player.getPlayer(parseInt(id));
+            if (opponent) {
+                const { enemy1, enemy2 } = startPvPFight(p, opponent);
+                activeBattles[chatId] = enemy1;
+                activeBattles[id] = enemy2;
+                
+                await bot.sendMessage(chatId, `⚔️ *PvP پیدا شد!*\n👤 ${opponent.name}\n❤️ ${opponent.hp}/${opponent.maxHp}\n🥊 تو اول بزن!`, { parse_mode: 'Markdown', ...getBattleKeyboard(enemy1) });
+                await bot.sendMessage(id, `⚔️ *PvP پیدا شد!*\n👤 ${p.name}\n❤️ ${p.hp}/${p.maxHp}\n⏳ منتظر حمله...`, { parse_mode: 'Markdown', ...getBattleKeyboard(enemy2) });
+                return;
+            }
+        }
+    }
 });
 
 bot.onText(/⚔️ 🗡️ حمله کن/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
-    const enemy = activeBattles[chatId];
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
     
-    // PvP
-    if (enemy.isPlayer) {
-        const result = playerAttack(p, enemy);
-        const opponent = player.getPlayer(enemy.opponentId);
-        if (opponent) opponent.hp = enemy.hp;
-        
-        if (result.battleOver) {
-            delete activeBattles[chatId];
-            if (enemy.opponentId) delete activeBattles[enemy.opponentId];
-            if (result.playerWon) {
-                player.addScore(p, 50);
-                await bot.sendMessage(enemy.opponentId, `💀 تو باختی! ${p.name} برنده شد!`, mainMenu());
-            }
-            await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-        } else {
-            await bot.sendMessage(chatId, `${formatBattle(p, enemy)}\n\n${result.message}`, getBattleKeyboard(enemy));
-            if (enemy.opponentId) {
-                const opp = player.getPlayer(enemy.opponentId);
-                if (opp) {
-                    await bot.sendMessage(enemy.opponentId, `⏳ منتظر حمله ${p.name}...`, getBattleKeyboard({ status: 'fighting' }));
-                }
-            }
-        }
-        return;
-    }
-    
-    // PvE
     const result = playerAttack(p, enemy);
     
     if (result.battleOver) {
         delete activeBattles[chatId];
-        if (result.playerWon) {
-            player.addScore(p, 20);
-            player.checkUnlocks(p);
+        if (enemy.isPlayer && enemy.opponentId) {
+            delete activeBattles[enemy.opponentId];
+            await bot.sendMessage(enemy.opponentId, `💀 باختی! ${p.name} برنده شد!`, mainMenu());
         }
-        let extra = '';
-        if (p.unlockedMessage) { extra = '\n\n' + p.unlockedMessage; p.unlockedMessage = null; }
+        if (result.playerWon) { player.addScore(p, enemy.isPlayer ? 50 : 20); player.checkUnlocks(p); }
+        let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
+        if (p.unlockedMessage) p.unlockedMessage = null;
         await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
-        
-        if (result.canCapture && result.npcId) {
-            const captureResult = captureNpc(p, result.npcId);
-            await bot.sendMessage(chatId, captureResult.message, { parse_mode: 'Markdown' });
-        }
+        if (result.canCapture) await bot.sendMessage(chatId, captureNpc(p, result.npcId).message, mainMenu());
     } else {
-        await sendWithImage(chatId, `${formatBattle(p, enemy)}\n\n${result.message}`, enemy.file_id, getBattleKeyboard(enemy));
+        const cap = `${formatBattle(p, enemy)}\n\n${result.message}`;
+        if (enemy.isPlayer) await bot.sendMessage(chatId, cap, getBattleKeyboard(enemy));
+        else await sendWithImage(chatId, cap, enemy.file_id, getBattleKeyboard(enemy));
+        
+        if (enemy.isPlayer && enemy.opponentId) {
+            const opp = player.getPlayer(enemy.opponentId);
+            if (opp) await bot.sendMessage(enemy.opponentId, `⏳ منتظر حمله ${p.name}...`, getBattleKeyboard({ status: 'fighting' }));
+        }
     }
 });
 
 bot.onText(/🏃 💨 فرار کن/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
-    const enemy = activeBattles[chatId];
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
     
     const result = playerEscape(p, enemy);
     if (result.battleOver) {
         if (enemy.isPlayer && enemy.opponentId) {
             delete activeBattles[enemy.opponentId];
-            await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد! تو برنده شدی!`, mainMenu());
+            await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد! تو بردی!`, mainMenu());
         }
         delete activeBattles[chatId];
         await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
@@ -293,40 +268,14 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
     }
 });
 
-// ==================== PvP ====================
-bot.onText(/^👥 PvP$/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
-    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    
-    const result = player.joinPvP(p);
-    
-    if (result.matched) {
-        const opponent = result.opponent;
-        activeBattles[chatId] = { name: opponent.name, emoji: '👤', hp: opponent.hp, maxHp: opponent.maxHp, attack: opponent.attack, isPlayer: true, opponentId: opponent.chatId };
-        activeBattles[opponent.chatId] = { name: p.name, emoji: '👤', hp: p.hp, maxHp: p.maxHp, attack: p.attack, isPlayer: true, opponentId: chatId };
-        
-        await bot.sendMessage(chatId, `⚔️ *نبرد PvP!*\n\n👤 حریف: ${opponent.name}\n❤️ ${opponent.hp}/${opponent.maxHp}\n⚔️ ${opponent.attack}\n\n🥊 تو اول حمله کن!`, { parse_mode: 'Markdown', ...getBattleKeyboard({ status: 'fighting' }) });
-        await bot.sendMessage(opponent.chatId, `⚔️ *نبرد PvP!*\n\n👤 حریف: ${p.name}\n❤️ ${p.hp}/${p.maxHp}\n⚔️ ${p.attack}\n\n⏳ منتظر حمله حریف...`, { parse_mode: 'Markdown', ...getBattleKeyboard({ status: 'fighting' }) });
-    } else {
-        await bot.sendMessage(chatId, '⏳ *منتظر حریف...*\n\n📋 برای لغو: /cancel_pvp', { parse_mode: 'Markdown', ...mainMenu() });
-    }
-});
-
-bot.onText(/\/cancel_pvp/, (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); player.leavePvP(p); bot.sendMessage(chatId, '❌ PvP لغو شد.', mainMenu()); });
-
 // ==================== ساخت‌وساز ====================
 bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
-    const chatId = msg.chat.id;
-    const p = player.getPlayer(chatId);
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
-    const unlocked = p.unlocked?.recipes || [];
-    const buttons = [];
-    for (let r of Object.keys(config.recipes)) {
-        if (unlocked.includes(r)) buttons.push([`🔨 ساخت ${r}`]);
-        else buttons.push([`🔒 ??? (قفل)`]);
-    }
+    const buttons = Object.keys(config.recipes).map(r => 
+        p.unlocked?.recipes?.includes(r) ? [`🔨 ساخت ${r}`] : [`🔒 ??? (قفل)`]
+    );
     buttons.push(['🔙 برگشت']);
     
     await bot.sendMessage(chatId, showCraftMenu(), { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
@@ -334,8 +283,7 @@ bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
 
 bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    if (!p.unlocked?.recipes?.includes(match[1])) return bot.sendMessage(chatId, '🔒 قفله!', mainMenu());
+    if (!p || !p.unlocked?.recipes?.includes(match[1])) return bot.sendMessage(chatId, '🔒 قفله!', mainMenu());
     const result = craftItem(p, match[1]);
     if (result.success) player.addScore(p, 30);
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
@@ -365,7 +313,7 @@ bot.onText(/^(.+) خرید (.+) \((\d+)👑\)$/, (msg, match) => {
 });
 
 bot.onText(/^📤 فروش$/, (msg) => {
-    bot.sendMessage(msg.chat.id, '📤 چی می‌خوای بفروشی؟', {
+    bot.sendMessage(msg.chat.id, '📤 چی بفروشی؟', {
         reply_markup: { keyboard: [
             ['🪵 فروش چوب (۱👑)', '🪨 فروش سنگ (۱👑)'],
             ['🍖 فروش گوشت (۲👑)', '💧 فروش آب (۱👑)'],
@@ -387,8 +335,7 @@ bot.onText(/^🏰 زندان$/, async (msg) => {
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
     initPrison(p);
-    const escaped = checkEscapes(p);
-    for (let e of escaped) await bot.sendMessage(chatId, `🏃 ${e.emoji} *${e.name}* فرار کرد!`, { parse_mode: 'Markdown' });
+    for (let e of checkEscapes(p)) await bot.sendMessage(chatId, `🏃 ${e.emoji} *${e.name}* فرار کرد!`, { parse_mode: 'Markdown' });
     
     if (p.prison?.length > 0) {
         const buttons = p.prison.map(pr => [`🔒 ${pr.emoji} ${pr.name}`]);
@@ -400,14 +347,8 @@ bot.onText(/^🏰 زندان$/, async (msg) => {
 });
 
 bot.onText(/^🔒 (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p?.prison) return;
-    
-    const text = match[1];
-    const parts = text.split(' ');
-    const emoji = parts[0];
-    const name = parts.slice(1).join(' ');
-    
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p?.prison) return;
+    const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
     const prisoner = p.prison.find(pr => pr.emoji === emoji && pr.name === name);
     if (!prisoner) return;
     
@@ -416,10 +357,8 @@ bot.onText(/^🔒 (.+)$/, async (msg, match) => {
     const dialogue = getPrisonDialogue(prisoner.npcId, relation.level);
     activePrisoner[chatId] = prisoner.npcId;
     
-    let img = null;
-    const npc = getNpcConfig(prisoner.npcId);
+    let img = null; const npc = getNpcConfig(prisoner.npcId);
     if (npc?.image) img = config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id;
-    
     await sendWithImage(chatId, `${prisoner.emoji} *${prisoner.name}* | ${relation.name}\n\n${dialogue.text}`, img, getPrisonerKeyboard());
 });
 
@@ -448,33 +387,38 @@ bot.onText(/^🔓 آزاد کن$/, async (msg) => {
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
-// ==================== پاسخ دیالوگ ====================
+// ==================== دیالوگ ====================
 bot.onText(/^(🗡️|💋|🏃|🤝|🕯️|👂|💰|🕊️|💎|⚔️|❤️|👼|🎁|😘|🧪|😂|😐|🍖) (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    const dialogue = activeDialogues[chatId]; if (!p || !dialogue) return;
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const dialogue = activeDialogues[chatId];
+    if (!p || !dialogue) return;
     
-    const currentDialogue = getDialogue(dialogue.npcId, dialogue.encounter); if (!currentDialogue) return;
-    const selectedOption = currentDialogue.options.find(o => o.text.startsWith(match[1])); if (!selectedOption) return;
+    const current = getDialogue(dialogue.npcId, dialogue.encounter); if (!current) return;
+    const option = current.options.find(o => o.text.startsWith(match[1])); if (!option) return;
     
-    const result = handleAction(p, dialogue.npcId, selectedOption.action);
+    const result = handleAction(p, dialogue.npcId, option.action);
     delete activeDialogues[chatId];
     
     if (result.battleStart) {
-        const fightResult = startFight(p);
-        if (fightResult.success) {
-            activeBattles[chatId] = fightResult.enemy;
-            await sendWithImage(chatId, `${result.message}\n\n${fightResult.message}`, fightResult.enemy?.file_id, getBattleKeyboard(fightResult.enemy));
-        } else {
-            await bot.sendMessage(chatId, fightResult.message, mainMenu());
-        }
+        const fr = startFight(p);
+        if (fr.success) { activeBattles[chatId] = fr.enemy; await sendWithImage(chatId, result.message + '\n' + fr.message, fr.enemy?.file_id, getBattleKeyboard(fr.enemy)); }
+        else await bot.sendMessage(chatId, fr.message, mainMenu());
     } else {
         await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
     }
 });
 
 // ==================== برگشت ====================
-bot.onText(/^🔙 برگشت$/, (msg) => { const chatId = msg.chat.id; delete activeBattles[chatId]; delete activeDialogues[chatId]; delete activePrisoner[chatId]; bot.sendMessage(chatId, '🏛️ *منوی اصلی*', { parse_mode: 'Markdown', ...mainMenu() }); });
-bot.onText(/^🔙 بازار$/, (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); bot.sendMessage(chatId, `🏪 *بازار* | 👑 ${p?.inventory?.gold || 0}`, { parse_mode: 'Markdown', ...mainMenu() }); });
+bot.onText(/^🔙 برگشت$/, (msg) => {
+    const chatId = msg.chat.id;
+    if (pvpSearching[chatId]) { clearTimeout(pvpSearching[chatId]); delete pvpSearching[chatId]; }
+    delete activeBattles[chatId]; delete activeDialogues[chatId]; delete activePrisoner[chatId];
+    bot.sendMessage(chatId, '🏛️ *منوی اصلی*', { parse_mode: 'Markdown', ...mainMenu() });
+});
 
-bot.on('polling_error', (error) => console.log('Polling error:', error.message));
+bot.onText(/^🔙 بازار$/, (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    bot.sendMessage(chatId, `🏪 *بازار* | 👑 ${p?.inventory?.gold || 0}`, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+bot.on('polling_error', (e) => console.log('Polling error:', e.message));
 console.log('✅ ربات بقای باستانی آماده شد! 🎉');
