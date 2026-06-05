@@ -2,8 +2,12 @@ const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
+const player = require('./player');
 const { savePlayers, autoSave } = require('./storage');
+
+// ذخیره خودکار هر ۳۰ ثانیه
 autoSave(player.players, 30000);
+
 const { gather } = require('./gather');
 const { travel } = require('./travel');
 const { showCraftMenu, craftItem } = require('./craft');
@@ -11,7 +15,7 @@ const { activeBattles, startFight, startPvPFight, playerAttack, playerEscape, fo
 const { showShopMenu, startBuy, startSell, processAmount, cancelShop, getShopState } = require('./shop');
 const { getDialogue, getPrisonDialogue, getNpcConfig, handleAction } = require('./dialogue');
 const { isAdmin, adminCommand } = require('./admin');
-const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
+const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, sexPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
 const config = require('./config');
 
 const activeDialogues = {};
@@ -61,8 +65,8 @@ bot.onText(/\/start/, async (msg) => {
     player.checkUnlocks(p);
     p.chatId = chatId;
     
-    const loc = config.images.locations[p.location];
-    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n🏆 امتیاز: ${p.score}\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
+    const loc = config.images.locations[p.location] || config.images.locations.village;
+    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n🏆 امتیاز: ${p.score||0}\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
     if (p.unlockedMessage) { welcome += `\n\n${p.unlockedMessage}`; p.unlockedMessage = null; }
     
     await sendPhoto(chatId, loc.file_id, welcome, mainMenu());
@@ -343,7 +347,6 @@ bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
-// وارد کردن تعداد برای خرید/فروش
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -354,7 +357,7 @@ bot.on('message', (msg) => {
         text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') ||
         text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('✅') ||
         text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') ||
-        text.startsWith('🔓') || text.startsWith('🏃')) return;
+        text.startsWith('🔥') || text.startsWith('🔓') || text.startsWith('🏃')) return;
     
     const p = player.getPlayer(chatId);
     if (!p) return;
@@ -379,8 +382,6 @@ bot.onText(/\/cancel/, (msg) => {
 });
 
 // ==================== زندان ====================
-const { sexPrisoner, getPrisonActions } = require('./prison');
-
 bot.onText(/^🏰 زندان$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -419,11 +420,8 @@ bot.onText(/^🖐️ لمس کن$/, async (msg) => {
     const result = touchPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
     
-    if (result.animation) {
-        await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
-    } else {
-        await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
-    }
+    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
+    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
 
 bot.onText(/^💋 ببوس$/, async (msg) => {
@@ -432,11 +430,8 @@ bot.onText(/^💋 ببوس$/, async (msg) => {
     const result = kissPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
     
-    if (result.animation) {
-        await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
-    } else {
-        await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
-    }
+    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
+    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
 
 bot.onText(/^🔥 سکس$/, async (msg) => {
@@ -445,52 +440,8 @@ bot.onText(/^🔥 سکس$/, async (msg) => {
     const result = sexPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
     
-    if (result.animation) {
-        await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
-    } else {
-        await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
-    }
-});
-
-bot.onText(/^🔓 آزاد کن$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
-    if (!p || !npcId) return;
-    const result = releasePrisoner(p, npcId);
-    delete activePrisoner[chatId];
-    if (result.loyal) player.addScore(p, 50);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.onText(/^🔒 (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p?.prison) return;
-    const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
-    const prisoner = p.prison.find(pr => pr.emoji === emoji && pr.name === name);
-    if (!prisoner) return;
-    
-    const points = getRelationPoints(p, prisoner.npcId);
-    const relation = getRelationLevel(points);
-    const dialogue = getPrisonDialogue(prisoner.npcId, relation.level);
-    activePrisoner[chatId] = prisoner.npcId;
-    
-    let img = null; const npc = getNpcConfig(prisoner.npcId);
-    if (npc?.image) img = config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id;
-    await sendPhoto(chatId, img, `${prisoner.emoji} *${prisoner.name}* | ${relation.name}\n\n${dialogue.text}`, getPrisonerKeyboard());
-});
-
-bot.onText(/^🖐️ لمس کن$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
-    if (!p || !npcId) return;
-    const result = touchPrisoner(p, npcId);
-    const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
-    await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard() });
-});
-
-bot.onText(/^💋 ببوس$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
-    if (!p || !npcId) return;
-    const result = kissPrisoner(p, npcId);
-    const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
-    await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard() });
+    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
+    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
 
 bot.onText(/^🔓 آزاد کن$/, async (msg) => {
@@ -551,4 +502,4 @@ bot.onText(/^🔙 بازار$/, (msg) => {
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی با بازار جدید و انیمیشن آماده شد! 🎉');
+console.log('✅ ربات بقای باستانی با ذخیره‌سازی آماده شد! 🎉');
