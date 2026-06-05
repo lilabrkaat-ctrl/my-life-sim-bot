@@ -63,37 +63,40 @@ const images = {
     dragon: { name: "اژدها", emoji: "🐉", file_id: "AgACAgQAAxkBAAEqJf5qIo3iSuF3PstMjttghF-Nt6HltAACbA5rG_JGEVGOgTOaPnP0FAEAAwIAA3gAAzsE", hp: 200, attack: 30, reward: { xp: 200, gold: 100, iron: 20 } },
     scorpion: { name: "عقرب غول‌پیکر", emoji: "🦂", hp: 70, attack: 14, reward: { xp: 70, gold: 35, iron: 8 } },
     crocodile: { name: "تمساح", emoji: "🐊", hp: 65, attack: 13, reward: { xp: 65, gold: 30, skin: 6 } },
-    eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE", hp: 55, attack: 11, reward: { xp: 55, gold: 25, skin: 4 } }
+    eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE", hp: 55, attack: 11, reward: { xp: 55, gold: 25, skin: 4 } },
+    knight_enemy: { name: "شوالیه سکسی", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJhVqIo37tpLTu5IK1fIscxgNCAbVNAACdA5rG_JGEVG_bMdmP9f63AEAAwIAA3gAAzsE", hp: 100, attack: 16, reward: { xp: 80, gold: 60, iron: 10 } },
+    queen: { name: "ملکه کویین", emoji: "👑", file_id: "AgACAgQAAxkBAAEqLJVqIukWP_o9xpx9YezKy-MaZdOMPQACYw5rG34REFGgpxlUgjBLCwEAAwIAA3gAAzsE", hp: 250, attack: 35, reward: { xp: 300, gold: 200, iron: 30 } }
   },
   npcs: {
     merchant: { name: "تاجر", emoji: "🧑‍🌾", file_id: "AgACAgQAAxkBAAEqJWtqInlFp_yyDCXIPhDAbsjeWrv2jAACSg5rG_JGEVG9Nj82OfQAAfQBAAMCAAN4AAM7BA", role: "خرید و فروش" },
     blacksmith: { name: "آهنگر", emoji: "⚒️", file_id: "AgACAgQAAxkBAAEqJWlqInlFpP2TnFNz4EoRh30sv3zONQACSQ5rG_JGEVHq9ormgsxajwEAAwIAA3gAAzsE", role: "ساخت‌وساز" },
-    sage: { name: "پیر فرزانه", emoji: "🧙", file_id: "AgACAgQAAxkBAAEqJWhqInlFWKR-CPfBpGtnFUSI241yRAACSA5rG_JGEVGcvKjFhvXgiQEAAwIAA3gAAzsE", role: "راهنمایی" },
+    sage: { name: "حکیم دانا", emoji: "🧙", file_id: "AgACAgQAAxkBAAEqJWhqInlFWKR-CPfBpGtnFUSI241yRAACSA5rG_JGEVGcvKjFhvXgiQEAAwIAA3gAAzsE", role: "راهنمایی" },
     male_survivor: { name: "بازمانده مرد", emoji: "💪", file_id: "AgACAgQAAxkBAAEqJWdqInlFZpYKTYPN_AP75AOOaWM0KwACRw5rG_JGEVGtq7U5wnmFKwEAAwIAA3gAAzsE", role: "آواتار" },
     female_survivor: { name: "بازمانده زن", emoji: "👩‍🦰", file_id: "AgACAgQAAxkBAAEqJWZqInlFosXt271VzP3LFIz_s6UBZQACRg5rG_JGEVFx4xgfZ4kvnAEAAwIAA3gAAzsE", role: "آواتار" },
-    farmer: { name: "دهقان", emoji: "🧑‍🌾", file_id: "AgACAgQAAxkBAAEqJf9qIo3igsfhwjgxWk5ZToPTzPv5sgACbQ5rG_JGEVGuy62k6TDypgEAAwIAA3gAAzsE", role: "فروش غذا" },
-    prince: { name: "شاهزاده", emoji: "🤴", file_id: "AgACAgQAAxkBAAEqJgFqIo3i7SHGYKsyAAGQ7lgvrOuoqxIAAm4OaxvyRhFRCG_JO0SSvSkBAAMCAAN4AAM7BA", role: "کمک کن جایزه بگیر" },
-    witch: { name: "ساحره", emoji: "🧙‍♀️", file_id: "AgACAgQAAxkBAAEqJgRqIo3iav_63BkFNDtVYxsvX55CnAACcA5rG_JGEVGKM9iVGMze6QEAAwIAA3gAAzsE", role: "طلسم و جادو" },
-    ghost_sexy: { name: "روح سکسی", emoji: "👻", file_id: "AgACAgQAAxkBAAEqJgJqIo3inEb2YF9jp4g_LIX39t4FZgACbw5rG_JGEVGUR7x_5WcAAWYBAAMCAAN4AAM7BA", role: "تسخیر روح" },
-    jester: { name: "دلقک", emoji: "🎭", file_id: "AgACAgQAAxkBAAEqJgVqIo3iG7JggY2g_pOzxCqn2OK-fQACcQ5rG_JGEVFumcx57ak4NQEAAwIAA3gAAzsE", role: "شوخی و خنده" },
+    farmer: { name: "دهقان پیرمرد", emoji: "🧑‍🌾", file_id: "AgACAgQAAxkBAAEqJf9qIo3igsfhwjgxWk5ZToPTzPv5sgACbQ5rG_JGEVGuy62k6TDypgEAAwIAA3gAAzsE", role: "فروش غذا" },
+    prince: { name: "پرنسس", emoji: "🤴", file_id: "AgACAgQAAxkBAAEqJgFqIo3i7SHGYKsyAAGQ7lgvrOuoqxIAAm4OaxvyRhFRCG_JO0SSvSkBAAMCAAN4AAM7BA", role: "کمک کن جایزه بگیر" },
+    witch: { name: "جن سکسی ساحره", emoji: "🧙‍♀️", file_id: "AgACAgQAAxkBAAEqJgRqIo3iav_63BkFNDtVYxsvX55CnAACcA5rG_JGEVGKM9iVGMze6QEAAwIAA3gAAzsE", role: "طلسم و جادو" },
+    ghost_sexy: { name: "روح محجبه سکسی", emoji: "👻", file_id: "AgACAgQAAxkBAAEqJxJqIpp50DxvPQWbpBIYWXwY2o01qQACjw5rG_JGEVFXBb7-24-CCAEAAwIAA3gAAzsE", role: "تسخیر روح" },
+    jester: { name: "دلقک سکسی", emoji: "🎭", file_id: "AgACAgQAAxkBAAEqJgVqIo3iG7JggY2g_pOzxCqn2OK-fQACcQ5rG_JGEVFumcx57ak4NQEAAwIAA3gAAzsE", role: "شوخی و خنده" },
     wizard: { name: "جادوگر", emoji: "🧙‍♂️", file_id: "AgACAgQAAxkBAAEqJhNqIo36il--sb0izuaQwfKU0OdN_QACcg5rG_JGEVFEDvmLd-yShwEAAwIAA3gAAzsE", role: "جادوی تصادفی" },
-    knight: { name: "شوالیه", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJhVqIo37tpLTu5IK1fIscxgNCAbVNAACdA5rG_JGEVG_bMdmP9f63AEAAwIAA3gAAzsE", role: "مبارزه دوستانه" },
-    angel: { name: "فرشته شفابخش", emoji: "👼", file_id: "AgACAgQAAxkBAAEqJwpqIpp5g1URTtLeAnDw-j44-Nkl4gACig5rG_JGEVHZSXvcqkESOgEAAwIAA3gAAzsE", role: "شفای کامل" }
+    knight: { name: "سرباز سکسی", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJhVqIo37tpLTu5IK1fIscxgNCAbVNAACdA5rG_JGEVG_bMdmP9f63AEAAwIAA3gAAzsE", role: "مبارزه دوستانه" },
+    angel: { name: "فرشته خانوم", emoji: "👼", file_id: "AgACAgQAAxkBAAEqJwpqIpp5g1URTtLeAnDw-j44-Nkl4gACig5rG_JGEVHZSXvcqkESOgEAAwIAA3gAAzsE", role: "شفای کامل" }
   },
   events: {
     snow: { name: "برف", emoji: "❄️", file_id: "AgACAgQAAxkBAAEqJflqIo3iscMnnOLF_KiGIdbxZTgGvQACaA5rG_JGEVE85ygEE2xfZQEAAwIAA3gAAzsE" },
     beehive: { name: "کندوی عسل", emoji: "🍯", file_id: "AgACAgQAAxkBAAEqJfpqIo3iVDwjbvcrn7eo_cH1GG6V9gACaQ5rG_JGEVGLSgILIFpatAEAAwIAA3gAAzsE" },
-    rainbow: { name: "رنگین‌کمان", emoji: "🌈", file_id: "AgACAgQAAxkBAAEqJfxqIo3ioZxuzub5XooJiHidB9xKswACaw5rG_JGEVHdCO7gUnB4oAEAAwIAA3gAAzsE" },
+    rainbow: { name: "رنگین کمان", emoji: "🌈", file_id: "AgACAgQAAxkBAAEqJfxqIo3ioZxuzub5XooJiHidB9xKswACaw5rG_JGEVHdCO7gUnB4oAEAAwIAA3gAAzsE" },
     fire: { name: "آتش", emoji: "🔥", file_id: "AgACAgQAAxkBAAEqJftqIo3iymNms8_qjVhecVoydz8VvQACag5rG_JGEVF_wKTFsSbJ6QEAAwIAA3gAAzsE" },
-    treasure: { name: "گنج", emoji: "💰", file_id: "AgACAgQAAxkBAAEqJhdqIo37BaQBz28rMiOit_WJpqZMHQACdQ5rG_JGEVH0qlQ5DDS6HwEAAwIAA3gAAzsE" },
-    snake_event: { name: "مار", emoji: "🐍", file_id: "AgACAgQAAxkBAAEqJhhqIo37pQMh5UKyQveBi1ns-8cTGAACdg5rG_JGEVEW-PQkiigh3QEAAwIAA3gAAzsE" },
-    eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE" },
-    treasure_chest: { name: "صندوق گنج", emoji: "📦", file_id: "AgACAgQAAxkBAAEqJwhqIpp5sutvCbHhbpVVMVnlMb9yPQACiA5rG_JGEVH6TYF05_Z5UQEAAwIAA3gAAzsE" },
+    treasure: { name: "گنج کوچیک", emoji: "💰", file_id: "AgACAgQAAxkBAAEqJhdqIo37BaQBz28rMiOit_WJpqZMHQACdQ5rG_JGEVH0qlQ5DDS6HwEAAwIAA3gAAzsE" },
+    treasure_chest: { name: "گنج پر ارزش", emoji: "📦", file_id: "AgACAgQAAxkBAAEqJwhqIpp5sutvCbHhbpVVMVnlMb9yPQACiA5rG_JGEVH6TYF05_Z5UQEAAwIAA3gAAzsE" },
     tornado: { name: "گردباد", emoji: "🌪", file_id: "AgACAgQAAxkBAAEqJwxqIpp5tEHiiEaBRI-NA1MhvpxUywACjA5rG_JGEVF-L-rpWYGISgEAAwIAA3gAAzsE" },
     magic_mushroom: { name: "قارچ جادویی", emoji: "🍄", file_id: "AgACAgQAAxkBAAEqJw9qIpp5GiZucMPGrW26xzi1jQX87QACjg5rG_JGEVGwJzyfb5VL2QEAAwIAA3gAAzsE" },
-    diamond: { name: "الماس", emoji: "💎", file_id: "AgACAgQAAxkBAAEqJw5qIpp5T1nreUsLupszKuPXwZb4mwACjQ5rG_JGEVGMLsH182AukAEAAwIAA3gAAzsE" },
-    crystal: { name: "کریستال جادویی", emoji: "🔮", file_id: "AgACAgQAAxkBAAEqJxRqIpp50EXwfJk57IMYlMjucRpFWAACkA5rG_JGEVF3TRdCAvEdxAEAAwIAA3gAAzsE" },
-    magic_potion: { name: "معجون جادویی", emoji: "🧪", file_id: "AgACAgQAAxkBAAEqJxVqIpp5QUP1yoYaqdmAL6fYaJDzUgACkQ5rG_JGEVEuFcMrjd1oXwEAAwIAA3gAAzsE" }
+    diamond: { name: "صندوق الماس", emoji: "💎", file_id: "AgACAgQAAxkBAAEqJw5qIpp5T1nreUsLupszKuPXwZb4mwACjQ5rG_JGEVGMLsH182AukAEAAwIAA3gAAzsE" },
+    crystal: { name: "کریستال", emoji: "🔮", file_id: "AgACAgQAAxkBAAEqJxRqIpp50EXwfJk57IMYlMjucRpFWAACkA5rG_JGEVF3TRdCAvEdxAEAAwIAA3gAAzsE" },
+    magic_potion: { name: "طلسم جادوگر", emoji: "🧪", file_id: "AgACAgQAAxkBAAEqJxVqIpp5QUP1yoYaqdmAL6fYaJDzUgACkQ5rG_JGEVEuFcMrjd1oXwEAAwIAA3gAAzsE" },
+    lightning: { name: "رعد و برق", emoji: "⚡", file_id: "AgACAgQAAxkBAAEqLHFqIukDvoCE2le-2yWWEL0xxLBHaAACZQ5rG34REFEm_io0XRkHLwEAAwIAA3gAAzsE" },
+    snake_event: { name: "مار", emoji: "🐍", file_id: "AgACAgQAAxkBAAEqJhhqIo37pQMh5UKyQveBi1ns-8cTGAACdg5rG_JGEVEW-PQkiigh3QEAAwIAA3gAAzsE" },
+    eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE" }
   }
 };
 
@@ -140,9 +143,9 @@ module.exports = {
         forest: ['wolf', 'snake', 'fairy', 'werewolf'],
         mountain: ['wolf', 'bear', 'bandit', 'eagle'],
         river: ['snake', 'wolf', 'crocodile'],
-        plain: ['lion', 'bandit', 'knight', 'werewolf'],
+        plain: ['lion', 'bandit', 'knight_enemy', 'werewolf'],
         cave: ['snake', 'bear', 'skeleton', 'dragon'],
-        desert: ['bandit', 'soldier', 'lion', 'scorpion']
+        desert: ['bandit', 'soldier', 'lion', 'scorpion', 'queen']
     },
     locationRequirements: {
         village: 0, forest: 100, river: 300, mountain: 600, plain: 1000, cave: 1500, desert: 2500
