@@ -15,52 +15,73 @@ module.exports = {
         enemiesDefeated: 0,
         travels: 0,
         gathers: 0,
-        day: 1
+        score: 0,
+        day: 1,
+        isNight: false,
+        pvpQueue: false,
+        unlocked: { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] }
     },
     locationResources: {
+        village: [
+            { item: 'wood', min: 1, max: 3, chance: 0.8 },
+            { item: 'water', min: 1, max: 2, chance: 0.7 },
+            { item: 'meat', min: 1, max: 2, chance: 0.5 },
+            { item: 'stone', min: 1, max: 2, chance: 0.4 }
+        ],
         forest: [
-            { item: 'wood', min: 2, max: 6, chance: 1.0 },
-            { item: 'meat', min: 1, max: 2, chance: 0.4 },
-            { item: 'water', min: 1, max: 2, chance: 0.3 }
+            { item: 'wood', min: 3, max: 8, chance: 1.0 },
+            { item: 'meat', min: 2, max: 4, chance: 0.6 },
+            { item: 'water', min: 1, max: 3, chance: 0.4 },
+            { item: 'skin', min: 1, max: 2, chance: 0.3 }
         ],
         mountain: [
-            { item: 'stone', min: 2, max: 5, chance: 1.0 },
-            { item: 'iron', min: 1, max: 2, chance: 0.5 },
-            { item: 'gold', min: 1, max: 1, chance: 0.2 }
+            { item: 'stone', min: 3, max: 7, chance: 1.0 },
+            { item: 'iron', min: 1, max: 3, chance: 0.6 },
+            { item: 'gold', min: 1, max: 2, chance: 0.3 },
+            { item: 'skin', min: 1, max: 2, chance: 0.2 }
         ],
         river: [
-            { item: 'water', min: 2, max: 5, chance: 1.0 },
-            { item: 'meat', min: 1, max: 3, chance: 0.5 }
-        ],
-        plain: [
-            { item: 'meat', min: 2, max: 5, chance: 0.8 },
-            { item: 'skin', min: 1, max: 3, chance: 0.6 },
-            { item: 'wood', min: 1, max: 2, chance: 0.3 }
-        ],
-        cave: [
-            { item: 'iron', min: 2, max: 5, chance: 0.8 },
-            { item: 'gold', min: 1, max: 3, chance: 0.5 },
-            { item: 'stone', min: 1, max: 3, chance: 0.4 }
-        ],
-        desert: [
-            { item: 'gold', min: 2, max: 5, chance: 0.4 },
-            { item: 'iron', min: 1, max: 3, chance: 0.3 },
+            { item: 'water', min: 3, max: 7, chance: 1.0 },
+            { item: 'meat', min: 2, max: 5, chance: 0.7 },
             { item: 'stone', min: 1, max: 2, chance: 0.3 }
         ],
-        village: [
-            { item: 'wood', min: 1, max: 2, chance: 0.5 },
-            { item: 'water', min: 1, max: 2, chance: 0.5 },
-            { item: 'meat', min: 1, max: 1, chance: 0.3 }
+        plain: [
+            { item: 'meat', min: 3, max: 7, chance: 0.9 },
+            { item: 'skin', min: 2, max: 5, chance: 0.7 },
+            { item: 'wood', min: 1, max: 3, chance: 0.4 },
+            { item: 'gold', min: 1, max: 2, chance: 0.2 }
+        ],
+        cave: [
+            { item: 'iron', min: 3, max: 7, chance: 0.9 },
+            { item: 'gold', min: 2, max: 5, chance: 0.6 },
+            { item: 'stone', min: 2, max: 4, chance: 0.5 },
+            { item: 'skin', min: 1, max: 3, chance: 0.3 }
+        ],
+        desert: [
+            { item: 'gold', min: 3, max: 8, chance: 0.7 },
+            { item: 'iron', min: 2, max: 5, chance: 0.5 },
+            { item: 'stone', min: 2, max: 4, chance: 0.4 },
+            { item: 'skin', min: 1, max: 3, chance: 0.3 }
         ]
     },
     locationEnemies: {
+        village: ['wolf', 'snake', 'bandit'],
         forest: ['wolf', 'snake', 'fairy', 'werewolf'],
-        mountain: ['wolf', 'bear'],
-        river: ['snake', 'wolf'],
-        plain: ['lion', 'bandit'],
-        cave: ['snake', 'bear', 'skeleton'],
-        desert: ['bandit', 'soldier', 'lion'],
-        village: []
+        mountain: ['wolf', 'bear', 'bandit', 'eagle'],
+        river: ['snake', 'wolf', 'crocodile'],
+        plain: ['lion', 'bandit', 'knight', 'werewolf'],
+        cave: ['snake', 'bear', 'skeleton', 'dragon'],
+        desert: ['bandit', 'soldier', 'lion', 'scorpion'],
+    },
+    // نیازمندی امتیاز برای باز کردن مکان‌ها
+    locationRequirements: {
+        village: 0,
+        forest: 100,
+        river: 300,
+        mountain: 600,
+        plain: 1000,
+        cave: 1500,
+        desert: 2500
     },
     recipes: {
         'تبر سنگی': { wood: 3, stone: 2, effect: 'weapon', bonus: 5, emoji: '🗡️' },
