@@ -7,7 +7,7 @@ const { gather } = require('./gather');
 const { travel } = require('./travel');
 const { showCraftMenu, craftItem } = require('./craft');
 const { activeBattles, startFight, startPvPFight, playerAttack, playerEscape, formatBattle, getBattleKeyboard, animations } = require('./fight');
-const { showShopMenu, buyItem, sellItem } = require('./shop');
+const { showShopMenu, startBuy, startSell, processAmount, cancelShop, getShopState } = require('./shop');
 const { getDialogue, getPrisonDialogue, getNpcConfig, handleAction } = require('./dialogue');
 const { isAdmin, adminCommand } = require('./admin');
 const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
@@ -58,6 +58,7 @@ bot.onText(/\/start/, async (msg) => {
     if (!player.getPlayer(chatId)) player.createPlayer(chatId);
     const p = player.getPlayer(chatId);
     player.checkUnlocks(p);
+    p.chatId = chatId;
     
     const loc = config.images.locations[p.location];
     let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n🏆 امتیاز: ${p.score}\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
@@ -71,6 +72,7 @@ bot.onText(/\/admin (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAdmin(chatId)) return;
     const p = player.getPlayer(chatId); if (!p) return;
+    p.chatId = chatId;
     const args = match[1].split(' '); const cmd = args.shift();
     bot.sendMessage(chatId, adminCommand(p, cmd, args).message, { parse_mode: 'Markdown', ...mainMenu() });
 });
@@ -91,6 +93,7 @@ bot.onText(/^📊 رتبه‌بندی$/, async (msg) => {
 bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    p.chatId = chatId;
     
     const result = gather(p);
     player.addScore(p, 5); player.checkUnlocks(p);
@@ -102,15 +105,13 @@ bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
         if (!p.npcEncounters) p.npcEncounters = {};
         p.npcEncounters[npcId] = (p.npcEncounters[npcId] || 0) + 1;
         const dialogue = getDialogue(npcId, p.npcEncounters[npcId] - 1);
-        
         await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown' });
         
         if (dialogue) {
             activeDialogues[chatId] = { npcId, encounter: p.npcEncounters[npcId] - 1 };
             const npc = getNpcConfig(npcId);
             let img = npc?.image ? (config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id) : null;
-            const keyboard = { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } };
-            await sendPhoto(chatId, img, dialogue.text, keyboard);
+            await sendPhoto(chatId, img, dialogue.text, { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } });
             return;
         }
         return bot.sendMessage(chatId, '🤐 حرفی نداره...', mainMenu());
@@ -215,7 +216,6 @@ bot.onText(/^⚔️ نبرد$/, async (msg) => {
     }
 });
 
-// ==================== حمله ====================
 bot.onText(/⚔️ 🗡️ حمله کن/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
@@ -248,7 +248,6 @@ bot.onText(/⚔️ 🗡️ حمله کن/, async (msg) => {
     }
 });
 
-// ==================== فرار ====================
 bot.onText(/🏃 💨 فرار کن/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
@@ -293,61 +292,89 @@ bot.onText(/^🏪 بازار$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     if (p.location !== 'village') return bot.sendMessage(chatId, '🏪 فقط تو روستا!', mainMenu());
+    p.chatId = chatId;
     
     await bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory.gold}`, {
         parse_mode: 'Markdown',
         reply_markup: { keyboard: [
-            ['🪵 خرید چوب (۲👑)', '🪨 خرید سنگ (۳👑)'],
-            ['🍖 خرید گوشت (۳👑)', '💧 خرید آب (۱👑)'],
-            ['🦴 خرید پوست (۵👑)', '⛏️ خرید آهن (۸👑)'],
+            ['🪵 خرید چوب', '🪨 خرید سنگ'],
+            ['🍖 خرید گوشت', '💧 خرید آب'],
+            ['🦴 خرید پوست', '⛏️ خرید آهن'],
             ['📤 فروش', '🔙 برگشت']
         ], resize_keyboard: true }
     });
 });
 
-// هندلر خرید - فقط وقتی که تو منوی بازار هستیم
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
-    if (!text) return;
-    
-    // چک کن تو بازار هست یا نه
-    const p = player.getPlayer(chatId);
+bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p || p.location !== 'village') return;
+    p.chatId = chatId;
     
-    // خرید
-    const buyMatch = text.match(/(.+) خرید (.+) \((\d+)👑\)/);
-    if (buyMatch) {
-        const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
-        const itemName = buyMatch[2].trim();
-        if (m[itemName]) {
-            const result = buyItem(p, m[itemName]);
-            return bot.sendMessage(chatId, result.message, mainMenu());
-        }
-    }
+    const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
+    const itemName = match[2].trim();
+    if (!m[itemName]) return;
     
-    // فروش
-    const sellMatch = text.match(/(.+) فروش (.+) \((\d+)👑\)/);
-    if (sellMatch) {
-        const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
-        const itemName = sellMatch[2].trim();
-        if (m[itemName]) {
-            const result = sellItem(p, m[itemName]);
-            return bot.sendMessage(chatId, result.message, mainMenu());
-        }
-    }
+    const result = startBuy(p, m[itemName]);
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
-// هندلر فروش
 bot.onText(/^📤 فروش$/, (msg) => {
-    bot.sendMessage(msg.chat.id, '📤 چی بفروشی؟', {
+    bot.sendMessage(msg.chat.id, '📤 چی می‌خوای بفروشی؟', {
         reply_markup: { keyboard: [
-            ['🪵 فروش چوب (۱👑)', '🪨 فروش سنگ (۱👑)'],
-            ['🍖 فروش گوشت (۲👑)', '💧 فروش آب (۱👑)'],
-            ['🦴 فروش پوست (۳👑)', '⛏️ فروش آهن (۴👑)'],
+            ['🪵 فروش چوب', '🪨 فروش سنگ'],
+            ['🍖 فروش گوشت', '💧 فروش آب'],
+            ['🦴 فروش پوست', '⛏️ فروش آهن'],
             ['🔙 بازار']
         ], resize_keyboard: true }
     });
+});
+
+bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p || p.location !== 'village') return;
+    p.chatId = chatId;
+    
+    const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
+    const itemName = match[2].trim();
+    if (!m[itemName]) return;
+    
+    const result = startSell(p, m[itemName]);
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+// وارد کردن تعداد برای خرید/فروش
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    if (!text || text.startsWith('/') || text.startsWith('🪵') || text.startsWith('🪨') || 
+        text.startsWith('🍖') || text.startsWith('💧') || text.startsWith('🦴') || 
+        text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') ||
+        text.startsWith('🔙') || text.startsWith('👤') || text.startsWith('🌿') ||
+        text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') ||
+        text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('✅') ||
+        text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') ||
+        text.startsWith('🔓') || text.startsWith('🏃')) return;
+    
+    const p = player.getPlayer(chatId);
+    if (!p) return;
+    p.chatId = chatId;
+    
+    const state = getShopState(p);
+    if (!state) return;
+    
+    const result = processAmount(p, text);
+    if (result.message) {
+        bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    }
+});
+
+bot.onText(/\/cancel/, (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    if (!p) return;
+    p.chatId = chatId;
+    const result = cancelShop(p);
+    bot.sendMessage(chatId, result.message, mainMenu());
 });
 
 // ==================== زندان ====================
@@ -436,13 +463,25 @@ bot.onText(/^🔙 برگشت$/, (msg) => {
     const chatId = msg.chat.id;
     if (pvpSearching[chatId]) { clearTimeout(pvpSearching[chatId]); delete pvpSearching[chatId]; }
     delete activeBattles[chatId]; delete activeDialogues[chatId]; delete activePrisoner[chatId];
+    const p = player.getPlayer(chatId); if (p) cancelShop(p);
     bot.sendMessage(chatId, '🏛️ *منوی اصلی*', { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/^🔙 بازار$/, (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    bot.sendMessage(chatId, `🏪 *بازار* | 👑 ${p?.inventory?.gold || 0}`, { parse_mode: 'Markdown', ...mainMenu() });
+    if (!p || p.location !== 'village') return bot.sendMessage(chatId, '🏪 فقط تو روستا!', mainMenu());
+    p.chatId = chatId;
+    cancelShop(p);
+    bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory.gold}`, {
+        parse_mode: 'Markdown',
+        reply_markup: { keyboard: [
+            ['🪵 خرید چوب', '🪨 خرید سنگ'],
+            ['🍖 خرید گوشت', '💧 خرید آب'],
+            ['🦴 خرید پوست', '⛏️ خرید آهن'],
+            ['📤 فروش', '🔙 برگشت']
+        ], resize_keyboard: true }
+    });
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی با انیمیشن آماده شد! 🎉');
+console.log('✅ ربات بقای باستانی با بازار جدید و انیمیشن آماده شد! 🎉');
