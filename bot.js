@@ -2,7 +2,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-const player = require('./player');
+const { savePlayers, autoSave } = require('./storage');
+
+// ذخیره خودکار هر ۳۰ ثانیه
+autoSave(player.players, 30000);
 const { gather } = require('./gather');
 const { travel } = require('./travel');
 const { showCraftMenu, craftItem } = require('./craft');
