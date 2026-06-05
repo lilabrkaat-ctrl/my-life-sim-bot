@@ -1,0 +1,190 @@
+{
+  "locations": {
+    "forest": {
+      "name": "جنگل انبوه",
+      "emoji": "🌲",
+      "file_id": "AgACAgQAAxkBAAEqJLFqImgBRr6egi64V6G9dtn2NTn4JAACJA5rG_JGEVH4izsi-XOlCAEAAwIAA3gAAzsE",
+      "description": "جایی برای جمع‌آوری چوب"
+    },
+    "mountain": {
+      "name": "کوهستان سنگی",
+      "emoji": "⛰️",
+      "file_id": "AgACAgQAAxkBAAEqJLBqImgBHaP5wsytI0iH4hom1STMFwACIw5rG_JGEVEFGX2QG5KEiwEAAwIAA3gAAzsE",
+      "description": "معدن سنگ و آهن"
+    },
+    "river": {
+      "name": "رودخانه",
+      "emoji": "🌊",
+      "file_id": "AgACAgQAAxkBAAEqJK9qImgBrtw-ly3r4FRhQuEFITDvXgACIg5rG_JGEVFH-WLEPGeJVgEAAwIAA3gAAzsE",
+      "description": "منبع آب و ماهی"
+    },
+    "plain": {
+      "name": "دشت باز",
+      "emoji": "🌾",
+      "file_id": "AgACAgQAAxkBAAEqJK5qImgBV7keC3wKzuUwxD5Br_96UQACIQ5rG_JGEVHeuU1s4y0hSQEAAwIAA3gAAzsE",
+      "description": "محل شکار حیوانات"
+    },
+    "cave": {
+      "name": "غار تاریک",
+      "emoji": "🕳️",
+      "file_id": "AgACAgQAAxkBAAEqJKxqImgB3vBluHkUjvTLCW0VpBVGQwACIA5rG_JGEVEHSyCpNnErHQEAAwIAA3gAAzsE",
+      "description": "استخراج آهن و طلا"
+    },
+    "desert": {
+      "name": "بیابان",
+      "emoji": "🏜️",
+      "file_id": "AgACAgQAAxkBAAEqJKtqImgBPcnIrMBROLwfLkWNCv4Y-gACHw5rG_JGEVGMbWdYD-kp1gEAAwIAA3gAAzsE",
+      "description": "محیط خطرناک با دشمنان قوی"
+    },
+    "village": {
+      "name": "روستای باستانی",
+      "emoji": "🏘️",
+      "file_id": "AgACAgQAAxkBAAEqJKpqImgBS4-EpojqX7Ze5u5KjA_cQAACHQ5rG_JGEVHS9BRhnONEfgEAAwIAA3gAAzsE",
+      "description": "محل امن برای تجارت"
+    }
+  },
+  "resources": {
+    "wood": {
+      "name": "چوب",
+      "emoji": "🪵",
+      "file_id": "AgACAgQAAxkBAAEqJTtqInS78A3Jzc7hHMXVv12Knf-fXwACPA5rG_JGEVEeHn8thHeX_QEAAwIAA3gAAzsE"
+    },
+    "stone": {
+      "name": "سنگ",
+      "emoji": "🪨",
+      "file_id": "AgACAgQAAxkBAAEqJTlqInS7P__40lw1rCrPHzzVLCrYIwACOw5rG_JGEVGRW-z7FpKj3QEAAwIAA3gAAzsE"
+    },
+    "meat": {
+      "name": "گوشت",
+      "emoji": "🍖",
+      "file_id": "AgACAgQAAxkBAAEqJTdqInS7zpR9SH5-lUoQdmQAASJvlqYAAjoOaxvyRhFRk2_QxYYxX0QBAAMCAAN4AAM7BA"
+    },
+    "water": {
+      "name": "آب",
+      "emoji": "💧",
+      "file_id": "AgACAgQAAxkBAAEqJTZqInS7wO5bNHMzY-UYeTKP_DPb5AACOQ5rG_JGEVERfH6zNeVMXgEAAwIAA3gAAzsE"
+    },
+    "skin": {
+      "name": "پوست",
+      "emoji": "🦴",
+      "file_id": "AgACAgQAAxkBAAEqJTRqInS7ULrCGG-r_CoRFJcBM7LvPAACOA5rG_JGEVEefsYQ53mcZQEAAwIAA3gAAzsE"
+    },
+    "iron": {
+      "name": "آهن",
+      "emoji": "⛏️",
+      "file_id": "AgACAgQAAxkBAAEqJTJqInS7cJAcptUNcuad8CyTNi7XWQACNw5rG_JGEVF7zjSI9E9uMAEAAwIAA3gAAzsE"
+    },
+    "gold": {
+      "name": "طلا",
+      "emoji": "👑",
+      "file_id": "AgACAgQAAxkBAAEqJTFqInS7FSMHbJwq-TCapuO_uxyk0gACNg5rG_JGEVFWthGXGpTb0gEAAwIAA3gAAzsE"
+    },
+    "axe": {
+      "name": "تبر سنگی",
+      "emoji": "🗡️",
+      "file_id": "AgACAgQAAxkBAAEqJS1qInS7avdJj81uVh7L-Q_OsIix0QACNA5rG_JGEVE9L_GxDtAP-AEAAwIAA3gAAzsE"
+    },
+    "sword": {
+      "name": "شمشیر آهنی",
+      "emoji": "⚔️",
+      "file_id": "AgACAgQAAxkBAAEqJStqInS7IcBkkdVklmz5D5X3xQeCmgACMw5rG_JGEVHNL3BqxrJ6gQEAAwIAA3gAAzsE"
+    },
+    "armor": {
+      "name": "زره چرمی",
+      "emoji": "🛡️",
+      "file_id": "AgACAgQAAxkBAAEqJSpqInS77IsH4tUpmIqYOP_12OOiFwACMg5rG_JGEVF2e4AOHnPKlAEAAwIAA3gAAzsE"
+    },
+    "house": {
+      "name": "کلبه چوبی",
+      "emoji": "🏠",
+      "file_id": "AgACAgQAAxkBAAEqJSlqInS7yHaFdePs76RKoqehjp8G9gACMQ5rG_JGEVGNSZ2koJ3MXgEAAwIAA3gAAzsE"
+    },
+    "bow": {
+      "name": "تیروکمان",
+      "emoji": "🏹",
+      "file_id": "AgACAgQAAxkBAAEqJShqInS7D4Mz1Se6X2uh7iQ9URctAQACMA5rG_JGEVEE29m0GFlCcQEAAwIAA3gAAzsE"
+    }
+  },
+  "enemies": {
+    "wolf": {
+      "name": "گرگ",
+      "emoji": "🐺",
+      "file_id": "AgACAgQAAxkBAAEqJVpqIncyS0fa-TDJ3r7OwAX3xHra7gACQw5rG_JGEVGAs1cAAWKLpy8BAAMCAAN4AAM7BA",
+      "hp": 20,
+      "attack": 3,
+      "reward": { "xp": 10, "skin": 2, "meat": 3 }
+    },
+    "lion": {
+      "name": "شیر کوهی",
+      "emoji": "🦁",
+      "file_id": "AgACAgQAAxkBAAEqJVhqIncyJWzOj6N_yCUuQ924hTFEhwACQg5rG_JGEVFLd3MUVcjGwwEAAwIAA3gAAzsE",
+      "hp": 40,
+      "attack": 7,
+      "reward": { "xp": 25, "skin": 5, "meat": 5 }
+    },
+    "bandit": {
+      "name": "دزد مسلح",
+      "emoji": "🗡️",
+      "file_id": "AgACAgQAAxkBAAEqJVdqIncyLWavqrrxNX3Ij5vmvkpyIAACQQ5rG_JGEVG6NSLYnDmcJwEAAwIAA3gAAzsE",
+      "hp": 35,
+      "attack": 6,
+      "reward": { "xp": 30, "gold": 10, "iron": 3 }
+    },
+    "soldier": {
+      "name": "سرباز مهاجم",
+      "emoji": "⚔️",
+      "file_id": "AgACAgQAAxkBAAEqJVZqIncydAtMQCSNiJ-h3YHSH1-Z1AACQA5rG_JGEVEwgAbeLmUesgEAAwIAA3gAAzsE",
+      "hp": 50,
+      "attack": 10,
+      "reward": { "xp": 50, "gold": 20, "iron": 5 }
+    },
+    "snake": {
+      "name": "مار سمی",
+      "emoji": "🐍",
+      "file_id": "AgACAgQAAxkBAAEqJVVqIncylbJVx0p3mv1zX6Ajt49e_gACPg5rG_JGEVGLhDw_oXK_CAEAAwIAA3gAAzsE",
+      "hp": 25,
+      "attack": 5,
+      "reward": { "xp": 15, "skin": 3, "meat": 2 }
+    },
+    "bear": {
+      "name": "خرس",
+      "emoji": "🐻",
+      "file_id": "AgACAgQAAxkBAAEqJVRqIncy4xv7w6rRDlWnVOlnbZ7DCwACPQ5rG_JGEVGAYD7o2ph-nwEAAwIAA3gAAzsE",
+      "hp": 60,
+      "attack": 12,
+      "reward": { "xp": 60, "skin": 8, "meat": 10 }
+    }
+  },
+  "npcs": {
+    "merchant": {
+      "name": "تاجر",
+      "emoji": "🧑‍🌾",
+      "file_id": "AgACAgQAAxkBAAEqJWtqInlFp_yyDCXIPhDAbsjeWrv2jAACSg5rG_JGEVG9Nj82OfQAAfQBAAMCAAN4AAM7BA",
+      "role": "خرید و فروش"
+    },
+    "blacksmith": {
+      "name": "آهنگر",
+      "emoji": "⚒️",
+      "file_id": "AgACAgQAAxkBAAEqJWlqInlFpP2TnFNz4EoRh30sv3zONQACSQ5rG_JGEVHq9ormgsxajwEAAwIAA3gAAzsE",
+      "role": "ساخت‌وساز"
+    },
+    "sage": {
+      "name": "پیر فرزانه",
+      "emoji": "🧙",
+      "file_id": "AgACAgQAAxkBAAEqJWhqInlFWKR-CPfBpGtnFUSI241yRAACSA5rG_JGEVGcvKjFhvXgiQEAAwIAA3gAAzsE",
+      "role": "راهنمایی"
+    },
+    "male_survivor": {
+      "name": "بازمانده مرد",
+      "emoji": "💪",
+      "file_id": "AgACAgQAAxkBAAEqJWdqInlFZpYKTYPN_AP75AOOaWM0KwACRw5rG_JGEVGtq7U5wnmFKwEAAwIAA3gAAzsE",
+      "role": "آواتار"
+    },
+    "female_survivor": {
+      "name": "بازمانده زن",
+      "emoji": "👩‍🦰",
+      "file_id": "AgACAgQAAxkBAAEqJWZqInlFosXt271VzP3LFIz_s6UBZQACRg5rG_JGEVFx4xgfZ4kvnAEAAwIAA3gAAzsE",
+      "role": "آواتار"
+    }
+  }
+}
