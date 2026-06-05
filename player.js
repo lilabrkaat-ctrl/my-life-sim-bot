@@ -3,6 +3,8 @@ const players = {};
 
 function createPlayer(chatId) {
     players[chatId] = JSON.parse(JSON.stringify(config.defaultPlayer));
+    players[chatId].npcEncounters = {};
+    players[chatId].seduced = {};
     return players[chatId];
 }
 
@@ -28,6 +30,7 @@ function formatStatus(p) {
 🛡️ *تجهیزات:*
 🏠 ${p.equipment.house || '❌'} | 🗡️ ${p.equipment.weapon || '❌'} | 🛡️ ${p.equipment.armor || '❌'}
 🏆 شکست‌خورده: ${p.enemiesDefeated}
+💋 تصاحب شده: ${Object.keys(p.seduced || {}).length} نفر
     `;
 }
 
