@@ -378,6 +378,8 @@ bot.onText(/\/cancel/, (msg) => {
 });
 
 // ==================== زندان ====================
+const { sexPrisoner, getPrisonActions } = require('./prison');
+
 bot.onText(/^🏰 زندان$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -392,6 +394,70 @@ bot.onText(/^🏰 زندان$/, async (msg) => {
     } else {
         await bot.sendMessage(chatId, formatPrison(p), { parse_mode: 'Markdown', ...mainMenu() });
     }
+});
+
+bot.onText(/^🔒 (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p?.prison) return;
+    const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
+    const prisoner = p.prison.find(pr => pr.emoji === emoji && pr.name === name);
+    if (!prisoner) return;
+    
+    const points = getRelationPoints(p, prisoner.npcId);
+    const relation = getRelationLevel(points);
+    const dialogue = getPrisonDialogue(prisoner.npcId, relation.level);
+    activePrisoner[chatId] = prisoner.npcId;
+    
+    let img = null; const npc = getNpcConfig(prisoner.npcId);
+    if (npc?.image) img = config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id;
+    await sendPhoto(chatId, img, `${prisoner.emoji} *${prisoner.name}* | ${relation.name}\n\n${dialogue.text}`, getPrisonerKeyboard(p, prisoner.npcId));
+});
+
+bot.onText(/^🖐️ لمس کن$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
+    if (!p || !npcId) return;
+    const result = touchPrisoner(p, npcId);
+    const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
+    
+    if (result.animation) {
+        await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
+    } else {
+        await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
+    }
+});
+
+bot.onText(/^💋 ببوس$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
+    if (!p || !npcId) return;
+    const result = kissPrisoner(p, npcId);
+    const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
+    
+    if (result.animation) {
+        await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
+    } else {
+        await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
+    }
+});
+
+bot.onText(/^🔥 سکس$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
+    if (!p || !npcId) return;
+    const result = sexPrisoner(p, npcId);
+    const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
+    
+    if (result.animation) {
+        await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
+    } else {
+        await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
+    }
+});
+
+bot.onText(/^🔓 آزاد کن$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
+    if (!p || !npcId) return;
+    const result = releasePrisoner(p, npcId);
+    delete activePrisoner[chatId];
+    if (result.loyal) player.addScore(p, 50);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/^🔒 (.+)$/, async (msg, match) => {
