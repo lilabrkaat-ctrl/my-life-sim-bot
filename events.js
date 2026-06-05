@@ -108,43 +108,46 @@ function checkNpcEncounter(player, action, location) {
     const r = Math.random();
     let npcId = null;
 
+    // فقط NPCهایی که توی config.images.npcs هستن
+    const validNpcs = config.images.npcs ? Object.keys(config.images.npcs) : [];
+
     if (action === 'gather' && location === 'forest') {
-        if (r < 0.08) npcId = 'witch';
-        else if (r < 0.13) npcId = 'fairy';
-        else if (r < 0.16) npcId = 'werewolf';
-        else if (r < 0.19) npcId = 'sage';
+        if (r < 0.08 && validNpcs.includes('witch')) npcId = 'witch';
+        else if (r < 0.13 && validNpcs.includes('fairy')) npcId = 'fairy';
+        else if (r < 0.16 && validNpcs.includes('werewolf')) npcId = 'werewolf';
+        else if (r < 0.19 && validNpcs.includes('sage')) npcId = 'sage';
     }
     if (action === 'gather' && location === 'cave') {
-        if (r < 0.10) npcId = 'ghost_sexy';
-        else if (r < 0.18) npcId = 'skeleton';
-        else if (r < 0.22) npcId = 'wizard';
+        if (r < 0.10 && validNpcs.includes('ghost_sexy')) npcId = 'ghost_sexy';
+        else if (r < 0.18 && validNpcs.includes('skeleton')) npcId = 'skeleton';
+        else if (r < 0.22 && validNpcs.includes('wizard')) npcId = 'wizard';
     }
     if (action === 'travel') {
-        if (r < 0.06) npcId = 'knight';
-        else if (r < 0.11) npcId = 'prince';
-        else if (r < 0.16) npcId = 'wizard';
-        else if (r < 0.19) npcId = 'sage';
-        else if (r < 0.22) npcId = 'farmer';
-        else if (r < 0.25) npcId = 'jester';
-        else if (r < 0.28) npcId = 'angel';
+        if (r < 0.06 && validNpcs.includes('knight')) npcId = 'knight';
+        else if (r < 0.11 && validNpcs.includes('prince')) npcId = 'prince';
+        else if (r < 0.16 && validNpcs.includes('wizard')) npcId = 'wizard';
+        else if (r < 0.19 && validNpcs.includes('sage')) npcId = 'sage';
+        else if (r < 0.22 && validNpcs.includes('farmer')) npcId = 'farmer';
+        else if (r < 0.25 && validNpcs.includes('jester')) npcId = 'jester';
+        else if (r < 0.28 && validNpcs.includes('angel')) npcId = 'angel';
     }
     if (action === 'gather' && location === 'village') {
-        if (r < 0.05) npcId = 'angel';
-        else if (r < 0.10) npcId = 'jester';
-        else if (r < 0.15) npcId = 'merchant';
-        else if (r < 0.18) npcId = 'farmer';
+        if (r < 0.05 && validNpcs.includes('angel')) npcId = 'angel';
+        else if (r < 0.10 && validNpcs.includes('jester')) npcId = 'jester';
+        else if (r < 0.15 && validNpcs.includes('merchant')) npcId = 'merchant';
+        else if (r < 0.18 && validNpcs.includes('farmer')) npcId = 'farmer';
     }
     if (action === 'gather' && location === 'mountain') {
-        if (r < 0.08) npcId = 'blacksmith';
-        else if (r < 0.13) npcId = 'knight';
+        if (r < 0.08 && validNpcs.includes('blacksmith')) npcId = 'blacksmith';
+        else if (r < 0.13 && validNpcs.includes('knight')) npcId = 'knight';
     }
     if (action === 'gather' && location === 'plain') {
-        if (r < 0.08) npcId = 'knight';
-        else if (r < 0.13) npcId = 'prince';
+        if (r < 0.08 && validNpcs.includes('knight')) npcId = 'knight';
+        else if (r < 0.13 && validNpcs.includes('prince')) npcId = 'prince';
     }
     if (action === 'gather' && location === 'desert') {
-        if (r < 0.10) npcId = 'queen';
-        else if (r < 0.15) npcId = 'witch';
+        if (r < 0.10 && validNpcs.includes('witch')) npcId = 'witch';
+        else if (r < 0.15 && validNpcs.includes('prince')) npcId = 'prince';
     }
 
     return npcId;
