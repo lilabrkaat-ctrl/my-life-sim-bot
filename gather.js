@@ -1,11 +1,10 @@
 const config = require('./config');
-const { triggerRandomEvent } = require('./events');
+const { triggerRandomEvent, checkNpcEncounter } = require('./events');
 
 function gather(player) {
     const resources = config.locationResources[player.location];
-    
     if (!resources || resources.length === 0) {
-        return { success: false, message: '❌ اینجا چیزی برای جمع‌آوری نیست!' };
+        return { success: false, message: '❌ اینجا چیزی نیست!' };
     }
 
     const results = [];
@@ -17,44 +16,30 @@ function gather(player) {
             if (amount > 0) {
                 player.inventory[res.item] += amount;
                 const itemData = config.images.resources[res.item];
-                if (itemData) {
-                    results.push(`${itemData.emoji} ${itemData.name}: +${amount}`);
-                }
+                if (itemData) results.push(`${itemData.emoji} +${amount}`);
                 found = true;
             }
         }
     }
 
-    player.gathers = (player.gathers || 0) + 1;
+    const npcEncounter = checkNpcEncounter(player, 'gather', player.location);
+    if (npcEncounter) {
+        const npc = config.images.npcs[npcEncounter];
+        const msg = found ? `🎒 ${results.join(' | ')}\n\n${npc?.emoji || ''} *${npc?.name || npcEncounter}* ظاهر شد!\nمی‌خوای باهاش حرف بزنی؟ 💬` : `${npc?.emoji || ''} *${npc?.name || npcEncounter}* پیداش کردی!\nمی‌خوای باهاش حرف بزنی؟ 💬`;
+        return { success: true, message: msg, npcEncounter: npcEncounter, npcImage: npc?.file_id };
+    }
 
     if (!found) {
-        const eventResult = triggerRandomEvent(player, 'gather');
-        if (eventResult && eventResult.eventTriggered) {
-            return { 
-                success: true, 
-                message: `😞 چیزی پیدا نکردی...\n\n${eventResult.message}`,
-                eventImage: eventResult.image 
-            };
-        }
-        return { success: false, message: '😞 چیزی پیدا نکردی... شانس دفعه بعد!' };
+        const event = triggerRandomEvent(player, 'gather');
+        if (event) return { success: true, message: `😞 چیزی پیدا نکردی...\n${event.msg}`, eventImage: event.img };
+        return { success: false, message: '😞 چیزی پیدا نکردی!' };
     }
 
-    // شانس رویداد تصادفی
-    if (Math.random() < 0.20) {
-        const eventResult = triggerRandomEvent(player, 'gather');
-        if (eventResult && eventResult.eventTriggered) {
-            return {
-                success: true,
-                message: `🎒 *جمع‌آوری:*\n${results.join('\n')}\n\n${eventResult.message}`,
-                eventImage: eventResult.image
-            };
-        }
-    }
-
-    return { 
-        success: true, 
-        message: `🎒 *جمع‌آوری:*\n${results.join('\n')}` 
-    };
+    const event = Math.random() < 0.20 ? triggerRandomEvent(player, 'gather') : null;
+    const msg = `🎒 ${results.join(' | ')}`;
+    
+    if (event) return { success: true, message: `${msg}\n\n${event.msg}`, eventImage: event.img };
+    return { success: true, message: msg };
 }
 
 module.exports = { gather };
