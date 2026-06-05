@@ -1,42 +1,45 @@
 const config = require('./config');
-const { triggerRandomEvent } = require('./events');
+const { triggerRandomEvent, checkNpcEncounter } = require('./events');
 
 function travel(player, destination) {
     const locations = config.images.locations;
-    
     if (!locations || !locations[destination]) {
         return { success: false, message: '❌ این مکان وجود نداره!' };
     }
-
     if (player.location === destination) {
-        return { success: false, message: '⚠️ تو همین جا هستی!' };
+        return { success: false, message: '⚠️ همین جا هستی!' };
     }
 
-    player.travels = (player.travels || 0) + 1;
     const oldLoc = locations[player.location];
     player.location = destination;
     const newLoc = locations[destination];
 
-    let baseMessage = `🚶 از ${oldLoc.emoji} ${oldLoc.name} به ${newLoc.emoji} ${newLoc.name} سفر کردی!\n📝 ${newLoc.description}`;
+    let msg = `🚶 ${oldLoc.emoji}→${newLoc.emoji} ${newLoc.name}\n${newLoc.description}`;
 
-    // شانس رویداد تصادفی در سفر
-    if (Math.random() < 0.35) {
-        const eventResult = triggerRandomEvent(player, 'travel');
-        if (eventResult && eventResult.eventTriggered) {
-            return {
-                success: true,
-                message: `${baseMessage}\n\n${eventResult.message}`,
-                travelImage: newLoc.file_id,
-                eventImage: eventResult.image
-            };
-        }
+    const npcEncounter = checkNpcEncounter(player, 'travel', destination);
+    if (npcEncounter) {
+        const npc = config.images.npcs[npcEncounter];
+        return {
+            success: true,
+            message: `${msg}\n\n${npc?.emoji || ''} *${npc?.name || npcEncounter}* سر راهت سبز شد!\nمی‌خوای باهاش حرف بزنی؟ 💬`,
+            travelImage: newLoc.file_id,
+            npcEncounter: npcEncounter,
+            npcImage: npc?.file_id
+        };
     }
 
-    return {
-        success: true,
-        message: baseMessage,
-        travelImage: newLoc.file_id
-    };
+    const event = Math.random() < 0.30 ? triggerRandomEvent(player, 'travel') : null;
+    if (event) {
+        if (event.teleport) {
+            const allLocs = Object.keys(locations).filter(k => k !== player.location);
+            const randomLoc = allLocs[Math.floor(Math.random() * allLocs.length)];
+            player.location = randomLoc;
+            return { success: true, message: `${msg}\n\n${event.msg}\n📍 الان در ${locations[randomLoc].emoji} ${locations[randomLoc].name} هستی!`, travelImage: newLoc.file_id, eventImage: event.img };
+        }
+        return { success: true, message: `${msg}\n\n${event.msg}`, travelImage: newLoc.file_id, eventImage: event.img };
+    }
+    
+    return { success: true, message: msg, travelImage: newLoc.file_id };
 }
 
 module.exports = { travel };
