@@ -1,11 +1,11 @@
 const config = require('./config');
 const { loadPlayers } = require('./storage');
 
-// بارگذاری اطلاعات از فایل
 const players = loadPlayers();
 
-function createPlayer(chatId) {
+function createPlayer(chatId, firstName) {
     players[chatId] = JSON.parse(JSON.stringify(config.defaultPlayer));
+    players[chatId].name = 'بازمانده ' + (firstName || 'گمنام');
     players[chatId].npcEncounters = {};
     players[chatId].seduced = {};
     players[chatId].prison = [];
@@ -57,10 +57,10 @@ function checkUnlocks(player) {
 }
 
 function formatStatus(p) {
-    const loc = config.images.locations[p.location];
+    const loc = config.images.locations[p.location] || config.images.locations.village;
     const pHpBar = '█'.repeat(Math.max(0, Math.floor((p.hp||100) / (p.maxHp||100) * 10))) + '░'.repeat(Math.max(0, 10 - Math.floor((p.hp||100) / (p.maxHp||100) * 10)));
     
-    return `👤 *${p.name}* | ⭐ Lv.${p.level}\n❤️ ${pHpBar} ${p.hp||100}/${p.maxHp||100}\n⚔️ ${p.attack||5} | 🛡️ ${p.defense||2}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n🏆 امتیاز: ${p.score||0}\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندانی: ${p.prison?.length||0}`;
+    return `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n❤️ ${pHpBar} ${p.hp||100}/${p.maxHp||100}\n⚔️ ${p.attack||5} | 🛡️ ${p.defense||2}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n🏆 امتیاز: ${p.score||0}\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندانی: ${p.prison?.length||0}`;
 }
 
 function formatLeaderboard() {
