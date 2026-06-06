@@ -1,40 +1,12 @@
 const images = {
   locations: {
-    village: {
-      name: "روستای باستانی", emoji: "🏘️",
-      file_id: "AgACAgQAAxkBAAEqJKpqImgBS4-EpojqX7Ze5u5KjA_cQAACHQ5rG_JGEVHS9BRhnONEfgEAAwIAA3gAAzsE",
-      description: "محل امن برای تجارت"
-    },
-    forest: {
-      name: "جنگل انبوه", emoji: "🌲",
-      file_id: "AgACAgQAAxkBAAEqJLFqImgBRr6egi64V6G9dtn2NTn4JAACJA5rG_JGEVH4izsi-XOlCAEAAwIAA3gAAzsE",
-      description: "جایی برای جمع‌آوری چوب"
-    },
-    mountain: {
-      name: "کوهستان سنگی", emoji: "⛰️",
-      file_id: "AgACAgQAAxkBAAEqJLBqImgBHaP5wsytI0iH4hom1STMFwACIw5rG_JGEVEFGX2QG5KEiwEAAwIAA3gAAzsE",
-      description: "معدن سنگ و آهن"
-    },
-    river: {
-      name: "رودخانه", emoji: "🌊",
-      file_id: "AgACAgQAAxkBAAEqJK9qImgBrtw-ly3r4FRhQuEFITDvXgACIg5rG_JGEVFH-WLEPGeJVgEAAwIAA3gAAzsE",
-      description: "منبع آب و ماهی"
-    },
-    plain: {
-      name: "دشت باز", emoji: "🌾",
-      file_id: "AgACAgQAAxkBAAEqJK5qImgBV7keC3wKzuUwxD5Br_96UQACIQ5rG_JGEVHeuU1s4y0hSQEAAwIAA3gAAzsE",
-      description: "محل شکار حیوانات"
-    },
-    cave: {
-      name: "غار تاریک", emoji: "🕳️",
-      file_id: "AgACAgQAAxkBAAEqJKxqImgB3vBluHkUjvTLCW0VpBVGQwACIA5rG_JGEVEHSyCpNnErHQEAAwIAA3gAAzsE",
-      description: "استخراج آهن و طلا"
-    },
-    desert: {
-      name: "بیابان", emoji: "🏜️",
-      file_id: "AgACAgQAAxkBAAEqJKtqImgBPcnIrMBROLwfLkWNCv4Y-gACHw5rG_JGEVGMbWdYD-kp1gEAAwIAA3gAAzsE",
-      description: "محیط خطرناک با دشمنان قوی"
-    }
+    village: { name: "روستای باستانی", emoji: "🏘️", file_id: "AgACAgQAAxkBAAEqJKpqImgBS4-EpojqX7Ze5u5KjA_cQAACHQ5rG_JGEVHS9BRhnONEfgEAAwIAA3gAAzsE", description: "محل امن برای تجارت" },
+    forest: { name: "جنگل انبوه", emoji: "🌲", file_id: "AgACAgQAAxkBAAEqJLFqImgBRr6egi64V6G9dtn2NTn4JAACJA5rG_JGEVH4izsi-XOlCAEAAwIAA3gAAzsE", description: "جایی برای جمع‌آوری چوب" },
+    mountain: { name: "کوهستان سنگی", emoji: "⛰️", file_id: "AgACAgQAAxkBAAEqJLBqImgBHaP5wsytI0iH4hom1STMFwACIw5rG_JGEVEFGX2QG5KEiwEAAwIAA3gAAzsE", description: "معدن سنگ و آهن" },
+    river: { name: "رودخانه", emoji: "🌊", file_id: "AgACAgQAAxkBAAEqJK9qImgBrtw-ly3r4FRhQuEFITDvXgACIg5rG_JGEVFH-WLEPGeJVgEAAwIAA3gAAzsE", description: "منبع آب و ماهی" },
+    plain: { name: "دشت باز", emoji: "🌾", file_id: "AgACAgQAAxkBAAEqJK5qImgBV7keC3wKzuUwxD5Br_96UQACIQ5rG_JGEVHeuU1s4y0hSQEAAwIAA3gAAzsE", description: "محل شکار حیوانات" },
+    cave: { name: "غار تاریک", emoji: "🕳️", file_id: "AgACAgQAAxkBAAEqJKxqImgB3vBluHkUjvTLCW0VpBVGQwACIA5rG_JGEVEHSyCpNnErHQEAAwIAA3gAAzsE", description: "استخراج آهن و طلا" },
+    desert: { name: "بیابان", emoji: "🏜️", file_id: "AgACAgQAAxkBAAEqJKtqImgBPcnIrMBROLwfLkWNCv4Y-gACHw5rG_JGEVGMbWdYD-kp1gEAAwIAA3gAAzsE", description: "محیط خطرناک با دشمنان قوی" }
   },
   resources: {
     wood: { name: "چوب", emoji: "🪵", file_id: "AgACAgQAAxkBAAEqJTtqInS78A3Jzc7hHMXVv12Knf-fXwACPA5rG_JGEVEeHn8thHeX_QEAAwIAA3gAAzsE" },
@@ -65,7 +37,14 @@ const images = {
     crocodile: { name: "تمساح", emoji: "🐊", hp: 65, attack: 13, reward: { xp: 65, gold: 30, skin: 6 } },
     eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqJh5qIo37vOOHZq0SV_F_o0Bep-XbRwACeg5rG_JGEVHWI1OCwYEhgAEAAwIAA3gAAzsE", hp: 55, attack: 11, reward: { xp: 55, gold: 25, skin: 4 } },
     knight_enemy: { name: "شوالیه سکسی", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqJhVqIo37tpLTu5IK1fIscxgNCAbVNAACdA5rG_JGEVG_bMdmP9f63AEAAwIAA3gAAzsE", hp: 100, attack: 16, reward: { xp: 80, gold: 60, iron: 10 } },
-    queen: { name: "ملکه کویین", emoji: "👑", file_id: "AgACAgQAAxkBAAEqLJVqIukWP_o9xpx9YezKy-MaZdOMPQACYw5rG34REFGgpxlUgjBLCwEAAwIAA3gAAzsE", hp: 250, attack: 35, reward: { xp: 300, gold: 200, iron: 30 } }
+    queen: { name: "ملکه کویین", emoji: "👑", file_id: "AgACAgQAAxkBAAEqLJVqIukWP_o9xpx9YezKy-MaZdOMPQACYw5rG34REFGgpxlUgjBLCwEAAwIAA3gAAzsE", hp: 250, attack: 35, reward: { xp: 300, gold: 200, iron: 30 } },
+    bride: { name: "عروس فراری", emoji: "👰", hp: 80, attack: 8, reward: { xp: 40, gold: 50, ring: 1 } },
+    mermaid: { name: "پری دریایی", emoji: "🧜‍♀️", hp: 120, attack: 14, reward: { xp: 60, gold: 30, tear: 1 } },
+    young_witch: { name: "جادوگر جوان", emoji: "🧙‍♀️", hp: 110, attack: 12, reward: { xp: 55, gold: 25, spell: 1 } },
+    singer: { name: "زن خواننده", emoji: "👩‍🎤", hp: 60, attack: 6, reward: { xp: 30, gold: 15, song: 1 } },
+    vampire: { name: "خون‌آشام سکسی", emoji: "🧛‍♀️", hp: 130, attack: 16, reward: { xp: 70, gold: 35, blood: 1 } },
+    genie: { name: "جن صحرا", emoji: "🧝‍♀️", hp: 150, attack: 18, reward: { xp: 80, gold: 40, wish: 1 } },
+    bandit_female: { name: "راهزن زن", emoji: "🦹‍♀️", hp: 100, attack: 10, reward: { xp: 50, gold: 25, key: 1 } }
   },
   npcs: {
     merchant: { name: "تاجر", emoji: "🧑‍🌾", file_id: "AgACAgQAAxkBAAEqJWtqInlFp_yyDCXIPhDAbsjeWrv2jAACSg5rG_JGEVG9Nj82OfQAAfQBAAMCAAN4AAM7BA", role: "خرید و فروش" },
@@ -102,8 +81,8 @@ const images = {
 
 module.exports = {
     defaultPlayer: {
-        name: 'بازمانده', level: 1, xp: 0, hp: 100, maxHp: 100, attack: 5, defense: 2,
-        inventory: { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10 },
+        name: 'بازمانده گمنام', level: 1, xp: 0, hp: 100, maxHp: 100, attack: 5, defense: 2,
+        inventory: { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 0, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0 },
         equipment: { weapon: null, armor: null, house: null },
         location: 'village', enemiesDefeated: 0, travels: 0, gathers: 0, score: 0, day: 1,
         unlocked: { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] }
@@ -139,13 +118,13 @@ module.exports = {
         ]
     },
     locationEnemies: {
-        village: ['wolf', 'snake', 'bandit'],
+        village: ['wolf', 'snake', 'bandit', 'bride', 'singer'],
         forest: ['wolf', 'snake', 'fairy', 'werewolf'],
-        mountain: ['wolf', 'bear', 'bandit', 'eagle'],
-        river: ['snake', 'wolf', 'crocodile'],
-        plain: ['lion', 'bandit', 'knight_enemy', 'werewolf'],
-        cave: ['snake', 'bear', 'skeleton', 'dragon'],
-        desert: ['bandit', 'soldier', 'lion', 'scorpion', 'queen']
+        mountain: ['wolf', 'bear', 'bandit', 'eagle', 'young_witch'],
+        river: ['snake', 'wolf', 'crocodile', 'mermaid'],
+        plain: ['lion', 'bandit', 'knight_enemy', 'werewolf', 'bandit_female'],
+        cave: ['snake', 'bear', 'skeleton', 'dragon', 'vampire'],
+        desert: ['bandit', 'soldier', 'lion', 'scorpion', 'queen', 'genie']
     },
     locationRequirements: {
         village: 0, forest: 100, river: 300, mountain: 600, plain: 1000, cave: 1500, desert: 2500
