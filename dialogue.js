@@ -211,6 +211,10 @@ function handleAction(player, npcId, action) {
         case 'treasure': player.inventory.gold = (player.inventory.gold || 0) + 50; result.message = `💰 +۵۰👑`; break;
         case 'free': player.xp = (player.xp || 0) + 30; result.message = `🕊️ +۳۰✨`; break;
         case 'craft': result.message = `🔨 برو به بخش ساخت‌وساز!`; break;
+        case 'propose': 
+            player.inventory.ring = (player.inventory.ring || 0) + 1;
+            result.message = `💍 ${npc.emoji} حلقه نامزدی رو گرفت!\n🎁 +۱ 💍 حلقه نامزدی`;
+            break;
         default: result.message = `🤔 ${npc.emoji} منتظر تصمیم توئه...`;
     }
 
