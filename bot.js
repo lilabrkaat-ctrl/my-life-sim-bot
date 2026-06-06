@@ -3,12 +3,26 @@ const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 const player = require('./player');
-const { savePlayers, autoSave } = require('./storage');
+const { savePlayers, autoSave, setBot, loadFromChannel } = require('./storage');
 
-// ذخیره خودکار هر ۳۰ ثانیه
-autoSave(player.players, 30000);
-// ذخیره فوری هر ۵ ثانیه
-setInterval(() => savePlayers(player.players), 5000);
+// تنظیم bot برای ذخیره توی کانال
+setBot(bot);
+
+// ذخیره خودکار هر ۶۰ ثانیه
+autoSave(player.players, 60000);
+
+// بارگذاری از کانال موقع استارت
+(async () => {
+    const channelData = await loadFromChannel();
+    if (channelData) {
+        for (let id in channelData) {
+            if (!player.players[id] || channelData[id].score > (player.players[id]?.score || 0)) {
+                player.players[id] = channelData[id];
+            }
+        }
+        console.log('✅ اطلاعات کانال بارگذاری شد!');
+    }
+})();
 
 const { gather } = require('./gather');
 const { travel } = require('./travel');
@@ -508,4 +522,4 @@ bot.onText(/^🔙 بازار$/, (msg) => {
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی با ذخیره‌سازی آماده شد! 🎉');
+console.log('✅ ربات بقای باستانی با ذخیره‌سازی کانال آماده شد! 🎉');
