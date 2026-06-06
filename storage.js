@@ -10,7 +10,6 @@ try {
     }
 } catch (e) {}
 
-// ذخیره توی کانال تلگرام
 let botInstance = null;
 const CHANNEL_ID = -1003035245907;
 let lastMessageId = null;
@@ -32,24 +31,23 @@ async function saveToChannel(players) {
         
         const data = JSON.stringify(toSave);
         
-        // اگه پیام قبلی هست، ادیتش کن
         if (lastMessageId) {
             try {
                 await botInstance.editMessageText('💾 ' + data, {
                     chat_id: CHANNEL_ID,
                     message_id: lastMessageId
                 });
-                console.log('💾 آپدیت شد توی کانال');
                 return true;
             } catch (e) {
-                // پیام قبلی پیدا نشد، پیام جدید بفرست
+                lastMessageId = null;
             }
         }
         
-        // پیام جدید بفرست
-        const msg = await botInstance.sendMessage(CHANNEL_ID, '💾 ' + data);
-        lastMessageId = msg.message_id;
-        console.log('💾 ذخیره شد توی کانال');
+        if (!lastMessageId) {
+            const msg = await botInstance.sendMessage(CHANNEL_ID, '💾 ' + data);
+            lastMessageId = msg.message_id;
+        }
+        
         return true;
         
     } catch (e) {
@@ -62,7 +60,6 @@ async function loadFromChannel() {
     if (!botInstance) return null;
     
     try {
-        // آخرین پیام کانال رو بخون
         const updates = await botInstance.getUpdates({ limit: 100 });
         let latestData = null;
         
@@ -78,11 +75,10 @@ async function loadFromChannel() {
         
         if (latestData) {
             const players = JSON.parse(latestData);
-            console.log('📂 بارگذاری از کانال:', Object.keys(players).length, 'کاربر');
             return players;
         }
     } catch (e) {
-        console.log('❌ خطا در بارگذاری از کانال:', e.message);
+        console.log('❌ خطا در بارگذاری کانال:', e.message);
     }
     return null;
 }
@@ -97,14 +93,12 @@ function savePlayers(players) {
         }
         const data = JSON.stringify(toSave, null, 2);
         fs.writeFileSync(PLAYERS_FILE, data, 'utf8');
-        console.log('💾 ذخیره فایل:', Object.keys(toSave).length, 'کاربر');
         
-        // ذخیره توی کانال هم
         saveToChannel(players);
         
         return true;
     } catch (e) {
-        console.log('❌ خطا:', e.message);
+        console.log('❌ خطا در ذخیره:', e.message);
         return false;
     }
 }
@@ -115,20 +109,15 @@ function loadPlayers() {
             const data = fs.readFileSync(PLAYERS_FILE, 'utf8');
             const players = JSON.parse(data);
             if (Object.keys(players).length > 0) {
-                console.log('📂 بارگذاری فایل:', Object.keys(players).length, 'کاربر');
                 return players;
             }
         }
-    } catch (e) {
-        console.log('❌ خطا:', e.message);
-    }
-    console.log('📂 شروع جدید');
+    } catch (e) {}
     return {};
 }
 
-function autoSave(players, interval = 60000) {
+function autoSave(players, interval = 21600000) {
     setInterval(() => savePlayers(players), interval);
-    console.log('⏰ ذخیره خودکار هر', interval/1000, 'ثانیه');
 }
 
 module.exports = { savePlayers, loadPlayers, autoSave, setBot, loadFromChannel };
