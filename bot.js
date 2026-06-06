@@ -5,8 +5,10 @@ const bot = new TelegramBot(token, { polling: true });
 const player = require('./player');
 const { savePlayers, autoSave } = require('./storage');
 
-// ذخیره خودکار هر ۳۰ ثانیه - اطلاعات نمی‌پره!
+// ذخیره خودکار هر ۳۰ ثانیه
 autoSave(player.players, 30000);
+// ذخیره فوری هر ۵ ثانیه
+setInterval(() => savePlayers(player.players), 5000);
 
 const { gather } = require('./gather');
 const { travel } = require('./travel');
@@ -60,7 +62,11 @@ async function sendPhoto(chatId, fileId, caption, keyboard) {
 // ==================== /start ====================
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    if (!player.getPlayer(chatId)) player.createPlayer(chatId);
+    const firstName = msg.chat.first_name || 'گمنام';
+    
+    if (!player.getPlayer(chatId)) {
+        player.createPlayer(chatId, firstName);
+    }
     const p = player.getPlayer(chatId);
     player.checkUnlocks(p);
     p.chatId = chatId;
