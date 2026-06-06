@@ -56,6 +56,27 @@ const dialogues = {
     ],
     merchant: [
         { text: "🧑‍🌾 تاجر: جنس دارم، جنس مرغوب! از شیراز آوردیم!", options: [{ text: "💰 خرید", action: "trade" }, { text: "🤝 تخفیف", action: "gift" }] }
+    ],
+    bride: [
+        { text: "👰 عروس فراری: از عروسی فرار کردم... نمی‌خوام با اون ازدواج کنم... شاید تو...", options: [{ text: "💍 خواستگاری", action: "propose" }, { text: "🤝 کمک", action: "help" }, { text: "🏃 برو", action: "flee" }] }
+    ],
+    mermaid: [
+        { text: "🧜‍♀️ پری دریایی: سلام مسافر... آواز منو شنیدی؟ می‌تونی آرزوت رو بگی...", options: [{ text: "🎵 گوش کن", action: "listen" }, { text: "💋 عشق", action: "seduce" }, { text: "🏃 برو", action: "flee" }] }
+    ],
+    young_witch: [
+        { text: "🧙‍♀️ جادوگر جوان: هنوز خیلی چیزا یاد نگرفتم... می‌خوای کمکت کنم؟", options: [{ text: "🔮 طلسم", action: "potion" }, { text: "💋 عشق", action: "seduce" }, { text: "🏃 برو", action: "flee" }] }
+    ],
+    singer: [
+        { text: "👩‍🎤 خواننده: می‌خوای برات آواز بخونم؟ آوازای من جادو داره...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 عشق", action: "seduce" }, { text: "🏃 برو", action: "flee" }] }
+    ],
+    vampire: [
+        { text: "🧛‍♀️ خون‌آشام: گرسنمه... خون تو بوی خوبی میده... ولی شاید راه دیگه‌ای باشه...", options: [{ text: "🩸 خون بده", action: "gift" }, { text: "💋 عشق", action: "seduce" }, { text: "🗡️ حمله", action: "fight" }] }
+    ],
+    genie: [
+        { text: "🧝‍♀️ جن صحرا: آزادم کردی! ۳ تا آرزو می‌تونی بکنی...", options: [{ text: "💎 ثروت", action: "wealth" }, { text: "⚔️ قدرت", action: "power" }, { text: "💋 عشق", action: "seduce" }] }
+    ],
+    bandit_female: [
+        { text: "🦹‍♀️ راهزن زن: پولتو بده... یا شاید یه راه دیگه باشه... 😏", options: [{ text: "💰 بده", action: "trade" }, { text: "💋 عشق", action: "seduce" }, { text: "🗡️ حمله", action: "fight" }] }
     ]
 };
 
@@ -127,7 +148,14 @@ const npcConfig = {
     sage: { image: 'sage', emoji: '🧙', fightReward: { xp: 30, gold: 20 }, seduceReward: { hp: 20, xp: 10 }, startPoints: 40 },
     farmer: { image: 'farmer', emoji: '🧑‍🌾', fightReward: { xp: 15, gold: 10 }, seduceReward: { hp: 10, xp: 5 }, startPoints: 35 },
     blacksmith: { image: 'blacksmith', emoji: '⚒️', fightReward: { xp: 40, gold: 25 }, seduceReward: { hp: 15, xp: 10 }, startPoints: 30 },
-    merchant: { image: 'merchant', emoji: '🧑‍🌾', fightReward: { xp: 20, gold: 50 }, seduceReward: { hp: 10, xp: 5 }, startPoints: 35 }
+    merchant: { image: 'merchant', emoji: '🧑‍🌾', fightReward: { xp: 20, gold: 50 }, seduceReward: { hp: 10, xp: 5 }, startPoints: 35 },
+    bride: { image: null, emoji: '👰', fightReward: { xp: 40, gold: 50 }, seduceReward: { hp: 30, xp: 20 }, startPoints: 30 },
+    mermaid: { image: null, emoji: '🧜‍♀️', fightReward: { xp: 60, gold: 30 }, seduceReward: { hp: 40, xp: 25 }, startPoints: 25 },
+    young_witch: { image: null, emoji: '🧙‍♀️', fightReward: { xp: 55, gold: 25 }, seduceReward: { hp: 25, xp: 20 }, startPoints: 20 },
+    singer: { image: null, emoji: '👩‍🎤', fightReward: { xp: 30, gold: 15 }, seduceReward: { hp: 20, xp: 10 }, startPoints: 35 },
+    vampire: { image: null, emoji: '🧛‍♀️', fightReward: { xp: 70, gold: 35 }, seduceReward: { hp: 35, xp: 30 }, startPoints: 15 },
+    genie: { image: null, emoji: '🧝‍♀️', fightReward: { xp: 80, gold: 40 }, seduceReward: { hp: 45, xp: 35 }, startPoints: 10 },
+    bandit_female: { image: null, emoji: '🦹‍♀️', fightReward: { xp: 50, gold: 25 }, seduceReward: { hp: 25, xp: 15 }, startPoints: 20 }
 };
 
 function getDialogue(npcId, encounterCount) {
@@ -140,15 +168,11 @@ function getDialogue(npcId, encounterCount) {
 
 function getPrisonDialogue(npcId, relationLevel) {
     if (!npcId) return { text: "🤐 ...", level: "untrusted" };
-    
     const npcDialogues = prisonDialogues[npcId];
     if (!npcDialogues) return { text: "🤐 حرفی برای گفتن نداره...", level: relationLevel || "untrusted" };
-    
     const level = relationLevel || "untrusted";
     const levelDialogues = npcDialogues[level] || npcDialogues.untrusted || npcDialogues.wild || ["🤐 ..."];
-    
     if (!levelDialogues || levelDialogues.length === 0) return { text: "🤐 ...", level: level };
-    
     const text = levelDialogues[Math.floor(Math.random() * levelDialogues.length)];
     return { text: text || "🤐 ...", level: level };
 }
