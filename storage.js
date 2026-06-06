@@ -29,8 +29,14 @@ async function saveToChannel(players) {
             }
         }
         
+        // اگه هیچ کاربری نیست، هیچی نفرست
+        if (Object.keys(toSave).length === 0) {
+            return false;
+        }
+        
         const data = JSON.stringify(toSave);
         
+        // ادیت پیام قبلی
         if (lastMessageId) {
             try {
                 await botInstance.editMessageText('💾 ' + data, {
@@ -43,6 +49,7 @@ async function saveToChannel(players) {
             }
         }
         
+        // پیام جدید فقط اگه قبلی نباشه
         if (!lastMessageId) {
             const msg = await botInstance.sendMessage(CHANNEL_ID, '💾 ' + data);
             lastMessageId = msg.message_id;
@@ -51,7 +58,7 @@ async function saveToChannel(players) {
         return true;
         
     } catch (e) {
-        console.log('❌ خطا در ذخیره کانال:', e.message);
+        console.log('❌ خطا:', e.message);
         return false;
     }
 }
@@ -74,11 +81,10 @@ async function loadFromChannel() {
         }
         
         if (latestData) {
-            const players = JSON.parse(latestData);
-            return players;
+            return JSON.parse(latestData);
         }
     } catch (e) {
-        console.log('❌ خطا در بارگذاری کانال:', e.message);
+        console.log('❌ خطا:', e.message);
     }
     return null;
 }
@@ -93,12 +99,10 @@ function savePlayers(players) {
         }
         const data = JSON.stringify(toSave, null, 2);
         fs.writeFileSync(PLAYERS_FILE, data, 'utf8');
-        
         saveToChannel(players);
-        
         return true;
     } catch (e) {
-        console.log('❌ خطا در ذخیره:', e.message);
+        console.log('❌ خطا:', e.message);
         return false;
     }
 }
