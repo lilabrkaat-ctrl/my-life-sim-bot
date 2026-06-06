@@ -5,13 +5,9 @@ const bot = new TelegramBot(token, { polling: true });
 const player = require('./player');
 const { savePlayers, autoSave, setBot, loadFromChannel } = require('./storage');
 
-// تنظیم bot برای ذخیره توی کانال
 setBot(bot);
+autoSave(player.players, 21600000);
 
-// ذخیره خودکار هر ۶۰ ثانیه
-autoSave(player.players, 60000);
-
-// بارگذاری از کانال موقع استارت
 (async () => {
     const channelData = await loadFromChannel();
     if (channelData) {
@@ -20,7 +16,6 @@ autoSave(player.players, 60000);
                 player.players[id] = channelData[id];
             }
         }
-        console.log('✅ اطلاعات کانال بارگذاری شد!');
     }
 })();
 
@@ -73,14 +68,42 @@ async function sendPhoto(chatId, fileId, caption, keyboard) {
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
 
+// ==================== ارسال پیام کانال به کاربرا (بدون پیام ذخیره) ====================
+bot.on('channel_post', async (msg) => {
+    if (msg.chat.id === -1003035245907) {
+        const text = msg.text || msg.caption || '';
+        
+        // پیام‌های ذخیره‌سازی رو نفرست
+        if (text.startsWith('💾')) return;
+        
+        // برای همه کاربرا بفرست
+        for (let chatId in player.players) {
+            try {
+                if (msg.photo) {
+                    await bot.sendPhoto(chatId, msg.photo[msg.photo.length - 1].file_id, {
+                        caption: '📢 *بقای باستانی*\n\n' + text, parse_mode: 'Markdown'
+                    });
+                } else if (msg.video) {
+                    await bot.sendVideo(chatId, msg.video.file_id, {
+                        caption: '📢 *بقای باستانی*\n\n' + text, parse_mode: 'Markdown'
+                    });
+                } else if (msg.animation) {
+                    await bot.sendAnimation(chatId, msg.animation.file_id, {
+                        caption: '📢 *بقای باستانی*\n\n' + text, parse_mode: 'Markdown'
+                    });
+                } else if (text) {
+                    await bot.sendMessage(chatId, '📢 *بقای باستانی*\n\n' + text, { parse_mode: 'Markdown' });
+                }
+            } catch (e) {}
+        }
+    }
+});
+
 // ==================== /start ====================
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const firstName = msg.chat.first_name || 'گمنام';
-    
-    if (!player.getPlayer(chatId)) {
-        player.createPlayer(chatId, firstName);
-    }
+    if (!player.getPlayer(chatId)) player.createPlayer(chatId, firstName);
     const p = player.getPlayer(chatId);
     player.checkUnlocks(p);
     p.chatId = chatId;
@@ -232,7 +255,6 @@ bot.onText(/^⚔️ نبرد$/, async (msg) => {
             if (opponent) {
                 const { enemy1, enemy2 } = startPvPFight(p, opponent);
                 activeBattles[chatId] = enemy1; activeBattles[id] = enemy2;
-                
                 await bot.sendMessage(chatId, `⚔️ *PvP پیدا شد!*\n👤 ${opponent.name}\n❤️ ${opponent.hp}/${opponent.maxHp}\n🥊 تو اول بزن!`, { parse_mode: 'Markdown', ...getBattleKeyboard(enemy1) });
                 await bot.sendMessage(id, `⚔️ *PvP پیدا شد!*\n👤 ${p.name}\n❤️ ${p.hp}/${p.maxHp}\n⏳ منتظر حمله...`, { parse_mode: 'Markdown', ...getBattleKeyboard(enemy2) });
                 return;
@@ -296,10 +318,7 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
 bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    
-    const buttons = Object.keys(config.recipes).map(r => 
-        p.unlocked?.recipes?.includes(r) ? [`🔨 ساخت ${r}`] : [`🔒 ??? (قفل)`]
-    );
+    const buttons = Object.keys(config.recipes).map(r => p.unlocked?.recipes?.includes(r) ? [`🔨 ساخت ${r}`] : [`🔒 ??? (قفل)`]);
     buttons.push(['🔙 برگشت']);
     await bot.sendMessage(chatId, showCraftMenu(), { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
 });
@@ -318,15 +337,9 @@ bot.onText(/^🏪 بازار$/, async (msg) => {
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     if (p.location !== 'village') return bot.sendMessage(chatId, '🏪 فقط تو روستا!', mainMenu());
     p.chatId = chatId;
-    
     await bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory.gold}`, {
         parse_mode: 'Markdown',
-        reply_markup: { keyboard: [
-            ['🪵 خرید چوب', '🪨 خرید سنگ'],
-            ['🍖 خرید گوشت', '💧 خرید آب'],
-            ['🦴 خرید پوست', '⛏️ خرید آهن'],
-            ['📤 فروش', '🔙 برگشت']
-        ], resize_keyboard: true }
+        reply_markup: { keyboard: [['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], ['🦴 خرید پوست', '⛏️ خرید آهن'], ['📤 فروش', '🔙 برگشت']], resize_keyboard: true }
     });
 });
 
@@ -334,23 +347,15 @@ bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p || p.location !== 'village') return;
     p.chatId = chatId;
-    
     const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
     const itemName = match[2].trim();
     if (!m[itemName]) return;
-    
-    const result = startBuy(p, m[itemName]);
-    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    bot.sendMessage(chatId, startBuy(p, m[itemName]).message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/^📤 فروش$/, (msg) => {
     bot.sendMessage(msg.chat.id, '📤 چی می‌خوای بفروشی؟', {
-        reply_markup: { keyboard: [
-            ['🪵 فروش چوب', '🪨 فروش سنگ'],
-            ['🍖 فروش گوشت', '💧 فروش آب'],
-            ['🦴 فروش پوست', '⛏️ فروش آهن'],
-            ['🔙 بازار']
-        ], resize_keyboard: true }
+        reply_markup: { keyboard: [['🪵 فروش چوب', '🪨 فروش سنگ'], ['🍖 فروش گوشت', '💧 فروش آب'], ['🦴 فروش پوست', '⛏️ فروش آهن'], ['🔙 بازار']], resize_keyboard: true }
     });
 });
 
@@ -358,38 +363,24 @@ bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p || p.location !== 'village') return;
     p.chatId = chatId;
-    
     const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
     const itemName = match[2].trim();
     if (!m[itemName]) return;
-    
-    const result = startSell(p, m[itemName]);
-    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    bot.sendMessage(chatId, startSell(p, m[itemName]).message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
-    if (!text || text.startsWith('/') || text.startsWith('🪵') || text.startsWith('🪨') || 
-        text.startsWith('🍖') || text.startsWith('💧') || text.startsWith('🦴') || 
-        text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') ||
-        text.startsWith('🔙') || text.startsWith('👤') || text.startsWith('🌿') ||
-        text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') ||
-        text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('✅') ||
-        text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') ||
-        text.startsWith('🔥') || text.startsWith('🔓') || text.startsWith('🏃')) return;
+    if (!text || text.startsWith('/') || text.startsWith('🪵') || text.startsWith('🪨') || text.startsWith('🍖') || text.startsWith('💧') || text.startsWith('🦴') || text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') || text.startsWith('🔙') || text.startsWith('👤') || text.startsWith('🌿') || text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') || text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('✅') || text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || text.startsWith('🏃')) return;
     
     const p = player.getPlayer(chatId);
     if (!p) return;
     p.chatId = chatId;
-    
     const state = getShopState(p);
     if (!state) return;
-    
     const result = processAmount(p, text);
-    if (result.message) {
-        bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-    }
+    if (result.message) bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/\/cancel/, (msg) => {
@@ -397,18 +388,15 @@ bot.onText(/\/cancel/, (msg) => {
     const p = player.getPlayer(chatId);
     if (!p) return;
     p.chatId = chatId;
-    const result = cancelShop(p);
-    bot.sendMessage(chatId, result.message, mainMenu());
+    bot.sendMessage(chatId, cancelShop(p).message, mainMenu());
 });
 
 // ==================== زندان ====================
 bot.onText(/^🏰 زندان$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    
     initPrison(p);
     for (let e of checkEscapes(p)) await bot.sendMessage(chatId, `🏃 ${e.emoji} *${e.name}* فرار کرد!`, { parse_mode: 'Markdown' });
-    
     if (p.prison?.length > 0) {
         const buttons = p.prison.map(pr => [`🔒 ${pr.emoji} ${pr.name}`]);
         buttons.push(['🔙 برگشت']);
@@ -423,12 +411,10 @@ bot.onText(/^🔒 (.+)$/, async (msg, match) => {
     const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
     const prisoner = p.prison.find(pr => pr.emoji === emoji && pr.name === name);
     if (!prisoner) return;
-    
     const points = getRelationPoints(p, prisoner.npcId);
     const relation = getRelationLevel(points);
     const dialogue = getPrisonDialogue(prisoner.npcId, relation.level);
     activePrisoner[chatId] = prisoner.npcId;
-    
     let img = null; const npc = getNpcConfig(prisoner.npcId);
     if (npc?.image) img = config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id;
     await sendPhoto(chatId, img, `${prisoner.emoji} *${prisoner.name}* | ${relation.name}\n\n${dialogue.text}`, getPrisonerKeyboard(p, prisoner.npcId));
@@ -439,7 +425,6 @@ bot.onText(/^🖐️ لمس کن$/, async (msg) => {
     if (!p || !npcId) return;
     const result = touchPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
-    
     if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
     else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
@@ -449,7 +434,6 @@ bot.onText(/^💋 ببوس$/, async (msg) => {
     if (!p || !npcId) return;
     const result = kissPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
-    
     if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
     else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
@@ -459,7 +443,6 @@ bot.onText(/^🔥 عیاشی$/, async (msg) => {
     if (!p || !npcId) return;
     const result = orgyPrisoner(p, npcId);
     const dialogue = getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level);
-    
     if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue.text, getPrisonerKeyboard(p, npcId));
     else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue.text, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
 });
@@ -477,19 +460,13 @@ bot.onText(/^🔓 آزاد کن$/, async (msg) => {
 bot.onText(/^(🗡️|💋|🏃|🤝|🕯️|👂|💰|🕊️|💎|⚔️|❤️|👼|🎁|😘|🧪|😂|😐|🍖) (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const dialogue = activeDialogues[chatId];
     if (!p || !dialogue) return;
-    
     const current = getDialogue(dialogue.npcId, dialogue.encounter); if (!current) return;
     const option = current.options.find(o => o.text.startsWith(match[1])); if (!option) return;
-    
     const result = handleAction(p, dialogue.npcId, option.action);
     delete activeDialogues[chatId];
-    
     if (result.battleStart) {
         const fr = startFight(p);
-        if (fr.success) { 
-            activeBattles[chatId] = fr.enemy; 
-            await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, getBattleKeyboard(fr.enemy)); 
-        }
+        if (fr.success) { activeBattles[chatId] = fr.enemy; await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, getBattleKeyboard(fr.enemy)); }
         else await bot.sendMessage(chatId, fr.message, mainMenu());
     } else {
         await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
@@ -512,14 +489,9 @@ bot.onText(/^🔙 بازار$/, (msg) => {
     cancelShop(p);
     bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory.gold}`, {
         parse_mode: 'Markdown',
-        reply_markup: { keyboard: [
-            ['🪵 خرید چوب', '🪨 خرید سنگ'],
-            ['🍖 خرید گوشت', '💧 خرید آب'],
-            ['🦴 خرید پوست', '⛏️ خرید آهن'],
-            ['📤 فروش', '🔙 برگشت']
-        ], resize_keyboard: true }
+        reply_markup: { keyboard: [['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], ['🦴 خرید پوست', '⛏️ خرید آهن'], ['📤 فروش', '🔙 برگشت']], resize_keyboard: true }
     });
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی با ذخیره‌سازی کانال آماده شد! 🎉');
+console.log('✅ ربات بقای باستانی آماده شد! 🎉');
