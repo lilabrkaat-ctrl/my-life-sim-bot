@@ -83,16 +83,16 @@ function playerAttack(player, enemy) {
     else if (r > 0.85) { dmg = Math.floor(player.attack * 0.5); log += '😕 *ضعیف...* '; }
     else { dmg = player.attack; log += '🗡️ '; }
 
-    // برسرکر - وقتی HP زیر ۲۰٪
-    if (player.hp < player.maxHp * 0.20) {
+    // برسرکر - وقتی HP زیر ۴۰٪
+    if (player.hp < player.maxHp * 0.40) {
         dmg = Math.floor(dmg * 1.5);
         animation = animations.berserker;
         log += '🩸 *برسرکر!* ';
     }
 
-    // فینیشر - وقتی دشمن زیر ۱۰٪ و ضربه انتقادی
+    // فینیشر - وقتی دشمن زیر ۳۰٪ و ضربه انتقادی
     let finisherAnimation = null;
-    if (enemy.hp <= enemy.maxHp * 0.10 && r < 0.15) {
+    if (enemy.hp <= enemy.maxHp * 0.30 && r < 0.15) {
         finisherAnimation = animations.finishers[Math.floor(Math.random() * animations.finishers.length)];
         log += '💀 *فینیشر!* ';
     }
