@@ -85,7 +85,8 @@ module.exports = {
         inventory: { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 0, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0 },
         equipment: { weapon: null, armor: null, house: null },
         location: 'village', enemiesDefeated: 0, travels: 0, gathers: 0, score: 0, day: 1,
-        unlocked: { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] }
+        unlocked: { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] },
+        house: [], marry: null, enraged: {}
     },
     locationResources: {
         village: [
@@ -144,6 +145,11 @@ module.exports = {
         skin: { buy: 5, sell: 3, name: 'پوست', emoji: '🦴' },
         iron: { buy: 8, sell: 4, name: 'آهن', emoji: '⛏️' },
         gold: { buy: 1, sell: 1, name: 'طلا', emoji: '👑' }
+    },
+    // تنظیمات خونه و ازدواج
+    houseSettings: {
+        maxSlots: 3,
+        maxMarry: 1
     },
     images: images
 };
