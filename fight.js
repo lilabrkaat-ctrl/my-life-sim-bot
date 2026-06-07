@@ -21,24 +21,11 @@ const animations = {
         'CgACAgQAAxkBAAEqRWxqJYa2Ej-2qNGT0topYPHCv92E9AACoBkAAkAyMVE2H37n_FRKNjsE',
         'CgACAgQAAxkBAAEqRW5qJYa2yJzekFeRpBCj6Ltik2O72AACoRkAAkAyMVGfRbpmel7AcjsE'
     ],
-    bride: [
-        'CgACAgQAAxkBAAEqOj9qJG3NfiO1gkMUOrvCSNVIr6IEpQAC7x0AAn4RIFHFrkfbT_8nmzsE',
-        'CgACAgQAAxkBAAEqOkBqJG3N0cWnm1jquRG3VL_rXww-5AAC9R0AAn4RIFGZG58QxOaIxzsE',
-        'CgACAgQAAxkBAAEqOkJqJG3N5gz64qgv8PSjzapOl4CK6gAC9x0AAn4RIFHhRbdHVJmS2TsE'
-    ],
-    mermaid: [
-        'CgACAgQAAxkBAAEqOkNqJG3NvRCafTUH3p8CqA--bmCpggAC-R0AAn4RIFGVBmGKu14XzDsE',
-        'CgACAgQAAxkBAAEqOkRqJG3NeW_TbQm3-OM6cmZZrRsgfQAC-x0AAn4RIFHtLk6v0vB9sTsE',
-        'CgACAgQAAxkBAAEqOkZqJG3Nm0O_i1mqV_qHFy4y5gv5hAAC_B0AAn4RIFEJAXO72Rtg3DsE'
-    ],
-    young_witch: [
-        'CgACAgQAAxkBAAEqOkhqJG3NjA04jvxfyUlR414WjSPS6gACCB4AAn4RIFFVG52gsjKE2jsE',
-        'CgACAgQAAxkBAAEqOktqJG3Nzqtkl_I6-d18ab3-kGz9pQACCR4AAn4RIFG4veGbLRgkpjsE'
-    ],
-    singer: [
-        'CgACAgQAAxkBAAEqOkxqJG3NQFsxVEaNhpyaAxi4gevcaAACDx4AAn4RIFGYsb_3L6-ZoTsE',
-        'CgACAgQAAxkBAAEqOk5qJG3NaMmpiI8eIHxti3BHf2pWbgACEB4AAn4RIFEOZrUQKyFrmjsE'
-    ],
+    spell: 'CgACAgQAAxkBAAEqLflqIwn95lMF2X_HmipPQR6-l15QEwACsBwAAiiYGVEtH6Hh1OaSvTsE',
+    bride: ['CgACAgQAAxkBAAEqOj9qJG3NfiO1gkMUOrvCSNVIr6IEpQAC7x0AAn4RIFHFrkfbT_8nmzsE', 'CgACAgQAAxkBAAEqOkBqJG3N0cWnm1jquRG3VL_rXww-5AAC9R0AAn4RIFGZG58QxOaIxzsE', 'CgACAgQAAxkBAAEqOkJqJG3N5gz64qgv8PSjzapOl4CK6gAC9x0AAn4RIFHhRbdHVJmS2TsE'],
+    mermaid: ['CgACAgQAAxkBAAEqOkNqJG3NvRCafTUH3p8CqA--bmCpggAC-R0AAn4RIFGVBmGKu14XzDsE', 'CgACAgQAAxkBAAEqOkRqJG3NeW_TbQm3-OM6cmZZrRsgfQAC-x0AAn4RIFHtLk6v0vB9sTsE', 'CgACAgQAAxkBAAEqOkZqJG3Nm0O_i1mqV_qHFy4y5gv5hAAC_B0AAn4RIFEJAXO72Rtg3DsE'],
+    young_witch: ['CgACAgQAAxkBAAEqOkhqJG3NjA04jvxfyUlR414WjSPS6gACCB4AAn4RIFFVG52gsjKE2jsE', 'CgACAgQAAxkBAAEqOktqJG3Nzqtkl_I6-d18ab3-kGz9pQACCR4AAn4RIFG4veGbLRgkpjsE'],
+    singer: ['CgACAgQAAxkBAAEqOkxqJG3NQFsxVEaNhpyaAxi4gevcaAACDx4AAn4RIFGYsb_3L6-ZoTsE', 'CgACAgQAAxkBAAEqOk5qJG3NaMmpiI8eIHxti3BHf2pWbgACEB4AAn4RIFEOZrUQKyFrmjsE'],
     vampire: ['CgACAgQAAxkBAAEqOlNqJG3aUbWRUezNuDxvuptqxrZkLgAC4h0AAn4RIFHNPi8KsHaoFDsE'],
     genie: ['CgACAgQAAxkBAAEqOlRqJG3adXKT9fNQR1w6mroEDtH1jQAC5R0AAn4RIFFpF2eGhqofdDsE'],
     bandit_female: ['CgACAgQAAxkBAAEqOlVqJG3a13IUOAkh16KTgBAiWpDxFwAC5x0AAn4RIFGbxUIKqfWb0zsE']
@@ -175,6 +162,81 @@ function playerAttack(player, enemy) {
     return enemyTurn(player, enemy, log, animation);
 }
 
+function useSpell(player, enemy) {
+    if ((player.inventory?.spell || 0) < 1) {
+        return { success: false, message: '❌ طلسم نداری!' };
+    }
+    
+    player.inventory.spell--;
+    const dmg = Math.floor(enemy.maxHp * 0.25);
+    enemy.hp -= dmg;
+    if (enemy.hp < 0) enemy.hp = 0;
+    
+    let log = `📜 *طلسم!* -${dmg} ضربه جادویی!\n${hpBar(enemy.hp, enemy.maxHp)}\n`;
+    
+    if (enemy.hp <= 0) {
+        log += `💀 ${enemy.name} با طلسم کشته شد! 🎉 +${enemy.reward.xp}✨`;
+        player.xp += enemy.reward.xp || 10;
+        player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
+        player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+        
+        for (let rw in enemy.reward) {
+            if (rw !== 'xp' && player.inventory[rw] !== undefined) {
+                player.inventory[rw] += enemy.reward[rw] || 1;
+                log += `${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}\n`;
+            }
+        }
+        
+        const leveledUp = require('./player').checkLevelUp(player);
+        if (leveledUp) { log += '⬆️ لول آپ! '; }
+        require('./player').checkUnlocks(player);
+        
+        const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
+        if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
+            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animations.spell };
+        }
+        
+        return { battleOver: true, playerWon: true, message: log, animation: animations.spell };
+    }
+    
+    return { battleOver: false, message: log, animation: animations.spell };
+}
+
+function useFinisher(player, enemy) {
+    if ((player.inventory?.finisher || 0) < 1) {
+        return { success: false, message: '❌ فنیشر نداری!' };
+    }
+    
+    player.inventory.finisher--;
+    const dmg = enemy.hp;
+    enemy.hp = 0;
+    
+    const finisherAnimation = animations.finishers[Math.floor(Math.random() * animations.finishers.length)];
+    
+    let log = `💀 *فینیشر!* ${dmg} ضربه مرگبار!\n💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
+    player.xp += enemy.reward.xp || 10;
+    player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
+    player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+    
+    for (let rw in enemy.reward) {
+        if (rw !== 'xp' && player.inventory[rw] !== undefined) {
+            player.inventory[rw] += enemy.reward[rw] || 1;
+            log += `\n${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}`;
+        }
+    }
+    
+    const leveledUp = require('./player').checkLevelUp(player);
+    if (leveledUp) { log += '\n⬆️ لول آپ! '; }
+    require('./player').checkUnlocks(player);
+    
+    const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
+    if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
+        return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation };
+    }
+    
+    return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation };
+}
+
 function enemyTurn(player, enemy, log, animation) {
     if (enemy.status === 'trapped') return { battleOver: false, message: log, animation: null };
     const dmg = Math.max(1, enemy.attack - Math.floor((player.defense || 2) / 3));
@@ -229,10 +291,12 @@ function formatBattle(p, e) {
     return `⚔️ ${e.emoji} ${e.name}\n${hpBar(e.hp, e.maxHp)}\n👤 تو\n${hpBar(p.hp, p.maxHp)} | ⚔️${p.attack} 🛡️${p.defense}`;
 }
 
-function getBattleKeyboard(enemy) {
+function getBattleKeyboard(player, enemy) {
     const b = [['⚔️ 🗡️ حمله کن']];
+    if ((player.inventory?.spell || 0) > 0) b.push(['📜 طلسم']);
+    if ((player.inventory?.finisher || 0) > 0) b.push(['💀 فنیشر']);
     if (!enemy?.trapped_player) b.push(['🏃 💨 فرار کن']);
     return { reply_markup: { keyboard: b, resize_keyboard: true } };
 }
 
-module.exports = { activeBattles, startFight, startPvPFight, playerAttack, playerEscape, formatBattle, getBattleKeyboard, animations };
+module.exports = { activeBattles, startFight, startPvPFight, playerAttack, useSpell, useFinisher, playerEscape, formatBattle, getBattleKeyboard, animations };
