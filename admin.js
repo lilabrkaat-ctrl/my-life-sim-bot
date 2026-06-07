@@ -147,20 +147,27 @@ function adminCommand(player, command, args) {
             result = { success: true, message: `🔒 ${ct} NPC زندانی شدن!` };
             break;
 
-        // ==================== مدیریت کاربران ====================
+        // ==================== هدیه به کاربر ====================
         case 'gift': case 'sendgift':
+        case 'اهدای': case 'اهدا':
             const targetId = parseInt(args[0]);
             const giftItem = args[1];
             const giftAmt = parseInt(args[2]) || 1;
             const targetPlayer = allPlayers[targetId];
             if (!targetPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
+            
+            const gMap = { 'طلا': 'gold', 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'حلقه': 'ring', 'اشک': 'tear', 'طلسم': 'spell', 'آواز': 'song', 'خون': 'blood', 'آرزو': 'wish', 'کلید': 'key' };
+            const engItem = gMap[giftItem] || giftItem;
             const validItems = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key'];
-            if (!validItems.includes(giftItem)) { result = { success: false, message: `❌ آیتم نامعتبر!` }; break; }
-            targetPlayer.inventory[giftItem] = (targetPlayer.inventory[giftItem] || 0) + giftAmt;
-            result = { success: true, message: `🎁 هدیه به *${targetPlayer.name}*\n🎒 ${giftItem}: +${giftAmt}` };
+            
+            if (!validItems.includes(engItem)) { result = { success: false, message: `❌ آیتم نامعتبر!` }; break; }
+            targetPlayer.inventory[engItem] = (targetPlayer.inventory[engItem] || 0) + giftAmt;
+            result = { success: true, message: `🎁 هدیه به *${targetPlayer.name}*\n🎒 ${engItem}: +${giftAmt}` };
             break;
 
+        // ==================== اطلاعات ====================
         case 'info': case 'whois':
+        case 'اطلاعات':
             const infoId = parseInt(args[0]) || player.chatId;
             const infoPlayer = allPlayers[infoId];
             if (!infoPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
@@ -168,12 +175,14 @@ function adminCommand(player, command, args) {
             break;
 
         case 'users': case 'count':
+        case 'کاربران':
             const count = Object.keys(allPlayers).length;
             const active = Object.values(allPlayers).filter(p => p.score > 0).length;
             result = { success: true, message: `👥 *آمار کاربران*\n\n📊 کل: ${count}\n🎮 فعال: ${active}` };
             break;
 
         case 'top': case 'top10':
+        case 'برترین‌ها':
             const sorted = Object.entries(allPlayers).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)).slice(0, 10);
             let msg = '🏆 *۱۰ کاربر برتر:*\n\n';
             sorted.forEach((p, i) => { msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز\n`; });
@@ -208,20 +217,17 @@ function adminCommand(player, command, args) {
 
         case 'announce': case 'ann':
             const announceMsg = args.join(' ');
-            let sentCount = 0;
-            for (let id in allPlayers) {
-                try { /* اینجا توی bot.js پیام فرستاده میشه - فقط message برگردون */ } catch (e) {}
-                sentCount++;
-            }
-            result = { success: true, message: `📢 پیام به ${sentCount} نفر آماده ارسال!\n📝 "${announceMsg}"`, announce: announceMsg };
+            result = { success: true, message: `📢 پیام آماده ارسال!\n📝 "${announceMsg}"`, announce: announceMsg };
             break;
 
         case 'save':
+        case 'ذخیره':
             require('./storage').savePlayers(allPlayers);
             result = { success: true, message: '💾 ذخیره شد!' };
             break;
 
         case 'reset':
+        case 'ریست': case 'ریست کن':
             player.level = 1; player.xp = 0; player.hp = 100; player.maxHp = 100;
             player.attack = 5; player.defense = 2; player.score = 0;
             player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0 };
@@ -233,7 +239,8 @@ function adminCommand(player, command, args) {
             break;
 
         case 'help':
-            result = { success: true, message: `👑 *دستورات ادمین:*\n\n💰 gold/xp/score\n❤️ heal\n🎒 item\n⚔️ attack/defense\n⭐ level\n🔓 unlock\n👑 max\n🔱 god\n🔒 prison\n🎁 gift [id] [item] [amt]\n📊 info [id]\n👥 users\n🏆 top\n🔄 resetuser [id]\n🚫 ban/unban [id]\n📢 announce [text]\n💾 save\n🔄 reset` };
+        case 'کمک':
+            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *انگلیسی:*\n💰 gold/xp/score\n❤️ heal\n🎒 item\n⚔️ attack/defense\n⭐ level\n🔓 unlock\n👑 max\n🔱 god\n🔒 prison\n🎁 gift [id] [item] [amt]\n📊 info [id]\n👥 users\n🏆 top\n🔄 resetuser [id]\n🚫 ban/unban [id]\n💾 save\n🔄 reset\n\n📊 *فارسی:*\n🎁 اهدای [id] [آیتم] [عدد]\n📊 اطلاعات [id]\n👥 کاربران\n🏆 برترین‌ها\n💾 ذخیره\n🔄 ریست کن` };
             break;
     }
 
