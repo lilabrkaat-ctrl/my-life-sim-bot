@@ -80,47 +80,22 @@ const dialogues = {
     ]
 };
 
-// دیالوگ‌های خونه
+// دیالوگ‌های خونه - همه آرایه
 const houseDialogues = {
-    invite: {
-        accept: [
-            "🏠 با خوشحالی اومد خونه‌ات!", "🏠 "بالاخره یه جای امن...", "🏠 "خونه‌ات قشنگه..."
-        ],
-        reject: [
-            "😒 "نه... شاید بعداً...", "😒 "هنوز مطمئن نیستم...", "😒 "نه! نمیام خونه‌ت!"
-        ]
-    },
-    kick: {
-        angry: [
-            "😡 "منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 "پشیمون میشی از این کارت...", "😤 "باشه... ولی برمی‌گردم!"
-        ],
-        sad: [
-            "😢 "چرا منو بیرون می‌کنی؟", "😢 "فکر کردم خونه‌م اینجاست...", "😢 "باشه... می‌رم..."
-        ]
-    },
-    touch: [
-        "🖐️ "دستت گرمه... ادامه بده...", "🖐️ "بیشتر لمس کن...", "🖐️ "خوشم میاد..."
-    ],
-    kiss: [
-        "💋 "ммм... لبات...", "💋 "دوباره ببوس...", "💋 "معتاد بوسه‌ات شدم..."
-    ],
-    orgy: [
-        "🔥 "شب وحشی‌ای بود...", "🔥 "دیگه نمی‌تونم...", "🔥 "فوق‌العاده بود..."
-    ]
+    invite_accept: ["🏠 با خوشحالی اومد خونه‌ات!", "🏠 بالاخره یه جای امن...", "🏠 خونه‌ات قشنگه..."],
+    invite_reject: ["😒 نه... شاید بعداً...", "😒 هنوز مطمئن نیستم...", "😒 نه! نمیام خونه‌ت!"],
+    kick: ["😡 منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 پشیمون میشی از این کارت...", "😤 باشه... ولی برمی‌گردم!"],
+    touch: ["🖐️ دستت گرمه... ادامه بده...", "🖐️ بیشتر لمس کن...", "🖐️ خوشم میاد..."],
+    kiss: ["💋 ммм... لبات...", "💋 دوباره ببوس...", "💋 معتاد بوسه‌ات شدم..."],
+    orgy: ["🔥 شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم...", "🔥 فوق‌العاده بود..."]
 };
 
 // دیالوگ‌های ازدواج
 const marryDialogues = {
-    propose: {
-        accept: "💍 "آره! هزار بار آره! مال تو شدم!",
-        reject: "💍 "نه... هنوز آماده نیستم..."
-    },
-    marry: {
-        text: "👰 "امروز بهترین روز زندگیمه... تا ابد مال تو..."
-    },
-    divorce: {
-        text: "💔 "تموم شد... رفتیم..."
-    }
+    propose_accept: "💍 آره! هزار بار آره! مال تو شدم!",
+    propose_reject: "💍 نه... هنوز آماده نیستم...",
+    marry: "👰 امروز بهترین روز زندگیمه... تا ابد مال تو...",
+    divorce: "💔 تموم شد... رفتیم..."
 };
 
 const prisonDialogues = {
@@ -220,19 +195,17 @@ function getPrisonDialogue(npcId, relationLevel) {
     return { text: text || "🤐 ...", level: level };
 }
 
-function getHouseDialogue(type, subType) {
-    if (!type || !houseDialogues[type]) return "🤐 ...";
-    const dialogues = houseDialogues[type][subType] || houseDialogues[type];
-    if (!dialogues || dialogues.length === 0) return "🤐 ...";
-    if (Array.isArray(dialogues)) {
-        return dialogues[Math.floor(Math.random() * dialogues.length)];
-    }
-    return dialogues;
+function getHouseDialogue(type) {
+    if (!type) return "🤐 ...";
+    const key = type;
+    const dialogues = houseDialogues[key];
+    if (!dialogues || !Array.isArray(dialogues) || dialogues.length === 0) return "🤐 ...";
+    return dialogues[Math.floor(Math.random() * dialogues.length)];
 }
 
 function getMarryDialogue(type) {
-    if (!type || !marryDialogues[type]) return "🤐 ...";
-    return marryDialogues[type].text || marryDialogues[type];
+    if (!type) return "🤐 ...";
+    return marryDialogues[type] || "🤐 ...";
 }
 
 function getNpcConfig(npcId) {
