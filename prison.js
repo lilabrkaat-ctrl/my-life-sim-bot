@@ -80,7 +80,7 @@ function touchPrisoner(player, npcId) {
     if (Math.random() < chance) {
         const bonus = { wild: 3, untrusted: 5, familiar: 7, intimate: 9, tamed: 10 };
         player.prisonRelations[npcId] += bonus[relation.level] || 5;
-        player.hp = Math.min(player.maxHp, player.hp + 5);
+        player.hp = Math.min((player.maxHp || 100), (player.hp || 100) + 5);
         actions.touch++;
         
         const newRelation = getRelationLevel(player.prisonRelations[npcId]);
@@ -93,7 +93,7 @@ function touchPrisoner(player, npcId) {
             animation: gif
         };
     } else {
-        player.hp = Math.max(1, player.hp - 10);
+        player.hp = Math.max(1, (player.hp || 100) - 10);
         return { success: false, message: '❌ عقب کشید! "نزدیک نشو!" -۱۰❤️', relation, animation: null };
     }
 }
@@ -122,7 +122,7 @@ function kissPrisoner(player, npcId) {
     if (Math.random() < chance) {
         const bonus = { untrusted: 8, familiar: 10, intimate: 12, tamed: 15 };
         player.prisonRelations[npcId] += bonus[relation.level] || 10;
-        player.hp = Math.min(player.maxHp, player.hp + 15);
+        player.hp = Math.min((player.maxHp || 100), (player.hp || 100) + 15);
         actions.kiss++;
         
         const newRelation = getRelationLevel(player.prisonRelations[npcId]);
@@ -158,7 +158,7 @@ function orgyPrisoner(player, npcId) {
     
     const bonus = 25;
     player.prisonRelations[npcId] += bonus;
-    player.hp = Math.min(player.maxHp, player.hp + 30);
+    player.hp = Math.min((player.maxHp || 100), (player.hp || 100) + 30);
     actions.orgy++;
     
     const newRelation = getRelationLevel(player.prisonRelations[npcId]);
@@ -183,21 +183,21 @@ function releasePrisoner(player, npcId) {
     
     if (relation.level === 'tamed' || relation.level === 'intimate') {
         player.prison.splice(index, 1);
-        player.inventory.gold += 30;
-        player.xp += 20;
+        player.inventory.gold = (player.inventory.gold || 0) + 30;
+        player.xp = (player.xp || 0) + 20;
         return { success: true, message: `🔓 ${released.emoji} *${released.name}*: "آزادم کردی... ولی پیشت می‌مونم... 💋"\n🎁 +۳۰👑 +۲۰✨`, loyal: true };
     }
     
     const betrayChance = { wild: 0.60, untrusted: 0.40, familiar: 0.25, intimate: 0.10, tamed: 0 };
     if (Math.random() < (betrayChance[relation.level] || 0.3)) {
         player.prison.splice(index, 1);
-        player.hp = Math.max(1, player.hp - 30);
-        player.inventory.gold = Math.max(0, player.inventory.gold - 20);
+        player.hp = Math.max(1, (player.hp || 100) - 30);
+        player.inventory.gold = Math.max(0, (player.inventory.gold || 0) - 20);
         return { success: false, message: `💀 ${released.emoji} *${released.name}*: "احمق! فریب خوردی!"\n⚡ -۳۰❤️ -۲۰👑`, betrayed: true };
     }
     
     player.prison.splice(index, 1);
-    player.inventory.gold += 15;
+    player.inventory.gold = (player.inventory.gold || 0) + 15;
     return { success: true, message: `🔓 ${released.emoji} *${released.name}* آزاد شد.\n🎁 +۱۵👑` };
 }
 
