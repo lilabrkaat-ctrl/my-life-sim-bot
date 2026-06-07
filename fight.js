@@ -20,8 +20,37 @@ const animations = {
         'CgACAgQAAxkBAAEqRWpqJYa2uomoiYOxOviaFlGmOoFa6wACswYAAuRYtVJ0ZNS8EgyklzsE',
         'CgACAgQAAxkBAAEqRWxqJYa2Ej-2qNGT0topYPHCv92E9AACoBkAAkAyMVE2H37n_FRKNjsE',
         'CgACAgQAAxkBAAEqRW5qJYa2yJzekFeRpBCj6Ltik2O72AACoRkAAkAyMVGfRbpmel7AcjsE'
-    ]
+    ],
+    bride: [
+        'CgACAgQAAxkBAAEqOj9qJG3NfiO1gkMUOrvCSNVIr6IEpQAC7x0AAn4RIFHFrkfbT_8nmzsE',
+        'CgACAgQAAxkBAAEqOkBqJG3N0cWnm1jquRG3VL_rXww-5AAC9R0AAn4RIFGZG58QxOaIxzsE',
+        'CgACAgQAAxkBAAEqOkJqJG3N5gz64qgv8PSjzapOl4CK6gAC9x0AAn4RIFHhRbdHVJmS2TsE'
+    ],
+    mermaid: [
+        'CgACAgQAAxkBAAEqOkNqJG3NvRCafTUH3p8CqA--bmCpggAC-R0AAn4RIFGVBmGKu14XzDsE',
+        'CgACAgQAAxkBAAEqOkRqJG3NeW_TbQm3-OM6cmZZrRsgfQAC-x0AAn4RIFHtLk6v0vB9sTsE',
+        'CgACAgQAAxkBAAEqOkZqJG3Nm0O_i1mqV_qHFy4y5gv5hAAC_B0AAn4RIFEJAXO72Rtg3DsE'
+    ],
+    young_witch: [
+        'CgACAgQAAxkBAAEqOkhqJG3NjA04jvxfyUlR414WjSPS6gACCB4AAn4RIFFVG52gsjKE2jsE',
+        'CgACAgQAAxkBAAEqOktqJG3Nzqtkl_I6-d18ab3-kGz9pQACCR4AAn4RIFG4veGbLRgkpjsE'
+    ],
+    singer: [
+        'CgACAgQAAxkBAAEqOkxqJG3NQFsxVEaNhpyaAxi4gevcaAACDx4AAn4RIFGYsb_3L6-ZoTsE',
+        'CgACAgQAAxkBAAEqOk5qJG3NaMmpiI8eIHxti3BHf2pWbgACEB4AAn4RIFEOZrUQKyFrmjsE'
+    ],
+    vampire: ['CgACAgQAAxkBAAEqOlNqJG3aUbWRUezNuDxvuptqxrZkLgAC4h0AAn4RIFHNPi8KsHaoFDsE'],
+    genie: ['CgACAgQAAxkBAAEqOlRqJG3adXKT9fNQR1w6mroEDtH1jQAC5R0AAn4RIFFpF2eGhqofdDsE'],
+    bandit_female: ['CgACAgQAAxkBAAEqOlVqJG3a13IUOAkh16KTgBAiWpDxFwAC5x0AAn4RIFGbxUIKqfWb0zsE']
 };
+
+function getNpcAnimation(npcKey) {
+    if (animations[npcKey]) {
+        const arr = animations[npcKey];
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+    return null;
+}
 
 function startFight(player) {
     const keys = config.locationEnemies[player.location];
@@ -60,6 +89,7 @@ function startFight(player) {
 
     let anim = null;
     if (k === 'dragon') anim = animations.dragon;
+    else anim = getNpcAnimation(k);
 
     return { success: true, enemy, message: formatBattle(player, enemy), animation: anim };
 }
@@ -83,16 +113,14 @@ function playerAttack(player, enemy) {
     else if (r > 0.85) { dmg = Math.floor(player.attack * 0.5); log += '😕 *ضعیف...* '; }
     else { dmg = player.attack; log += '🗡️ '; }
 
-    // برسرکر - وقتی HP زیر ۴۰٪
-    if (player.hp < player.maxHp * 0.40) {
+    if (player.hp < player.maxHp * 0.20) {
         dmg = Math.floor(dmg * 1.5);
         animation = animations.berserker;
         log += '🩸 *برسرکر!* ';
     }
 
-    // فینیشر - وقتی دشمن زیر ۳۰٪ و ضربه انتقادی
     let finisherAnimation = null;
-    if (enemy.hp <= enemy.maxHp * 0.30 && r < 0.15) {
+    if (enemy.hp <= enemy.maxHp * 0.15) {
         finisherAnimation = animations.finishers[Math.floor(Math.random() * animations.finishers.length)];
         log += '💀 *فینیشر!* ';
     }
