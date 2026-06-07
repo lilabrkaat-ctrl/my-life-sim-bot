@@ -21,12 +21,12 @@ autoSave(player.players, 21600000);
 
 const { gather } = require('./gather');
 const { travel } = require('./travel');
-const { showCraftMenu, craftItem } = require('./craft');
+const { showCraftMenu, getCraftKeyboard, getEnergyCraftKeyboard, craftItem } = require('./craft');
 const { activeBattles, startFight, startPvPFight, playerAttack, useSpell, useFinisher, playerEscape, formatBattle, getBattleKeyboard, animations } = require('./fight');
 const { showShopMenu, startBuy, startSell, processAmount, cancelShop, getShopState } = require('./shop');
 const { getDialogue, getPrisonDialogue, getHouseDialogue, getMarryDialogue, getNpcConfig, handleAction } = require('./dialogue');
 const { isAdmin, isBanned, adminCommand } = require('./admin');
-const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, orgyPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard, getPrisonActions } = require('./prison');
+const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, orgyPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
 const { initHouse, inviteToHouse, kickFromHouse, formatHouse, getHouseKeyboard, touchInHouse, kissInHouse, orgyInHouse } = require('./house');
 const { propose, marry, divorce } = require('./marry');
 const config = require('./config');
@@ -148,8 +148,12 @@ bot.on('message', (msg) => {
         return;
     }
     
-    const result = adminCommand(p, cmd, args);
-    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    const adminCommands = ['gold', 'g', 'xp', 'exp', 'score', 'sc', 'heal', 'hp', 'item', 'give', 'attack', 'atk', 'defense', 'def', 'level', 'lvl', 'unlock', 'unlockall', 'max', 'maxall', 'god', 'godmode', 'prison', 'prisonall', 'gift', 'sendgift', 'info', 'whois', 'users', 'count', 'top', 'top10', 'resetuser', 'ru', 'ban', 'unban', 'announce', 'ann', 'save', 'reset', 'help', 'addnpc', 'addprison', 'addhouse', 'addhome', 'removenpc', 'removeprison', 'removehouse', 'removehome', 'setrelation', 'setrel', 'اهدای', 'اهدا', 'اطلاعات', 'کاربران', 'برترین‌ها', 'ذخیره', 'ریست', 'ریست کن', 'کمک'];
+    
+    if (adminCommands.includes(cmd)) {
+        const result = adminCommand(p, cmd, args);
+        bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    }
 });
 
 bot.onText(/^(👑|💍|💎|📜|🎵|🩸|🔮|🗝️|🧿|💀|🪵|🪨|🍖|💧|🦴|⛏️) (.+)$/, (msg, match) => {
@@ -359,17 +363,30 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
 bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    const buttons = Object.keys(config.recipes).map(r => p.unlocked?.recipes?.includes(r) ? [`🔨 ساخت ${r}`] : [`🔒 ??? (قفل)`]);
-    buttons.push(['🔙 برگشت']);
-    await bot.sendMessage(chatId, showCraftMenu(), { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
+    await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
+});
+
+bot.onText(/^⚡ ساخت انرژی‌دار$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
 });
 
 bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p || !p.unlocked?.recipes?.includes(match[1])) return bot.sendMessage(chatId, '🔒 قفله!', mainMenu());
+    if (!p) return;
     const result = craftItem(p, match[1]);
     if (result.success) player.addScore(p, 30);
-    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
+});
+
+bot.onText(/^✅ (.+) \((\d+)⚡\)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const parts = match[1].split(' ');
+    const itemName = parts.slice(1).join(' ');
+    const result = craftItem(p, itemName);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
 });
 
 bot.onText(/^🏪 بازار$/, async (msg) => {
@@ -419,7 +436,7 @@ bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
-    if (!text || text.startsWith('/') || text.startsWith('🪵') || text.startsWith('🪨') || text.startsWith('🍖') || text.startsWith('💧') || text.startsWith('🦴') || text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') || text.startsWith('💎') || text.startsWith('💀') || text.startsWith('🔙') || text.startsWith('👤') || text.startsWith('🌿') || text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') || text.startsWith('📜') || text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('🏠') || text.startsWith('✅') || text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || text.startsWith('🏃') || text.startsWith('💍') || text.startsWith('👰') || text.startsWith('🚪') || text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮')) return;
+    if (!text || text.startsWith('/') || text.startsWith('🪵') || text.startsWith('🪨') || text.startsWith('🍖') || text.startsWith('💧') || text.startsWith('🦴') || text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') || text.startsWith('💎') || text.startsWith('💀') || text.startsWith('🔙') || text.startsWith('👤') || text.startsWith('🌿') || text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') || text.startsWith('📜') || text.startsWith('⚡') || text.startsWith('✅') || text.startsWith('❌') || text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('🏠') || text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || text.startsWith('🏃') || text.startsWith('💍') || text.startsWith('👰') || text.startsWith('🚪') || text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮')) return;
     if (isAdmin(chatId)) return;
     const p = player.getPlayer(chatId);
     if (!p) return;
@@ -440,7 +457,6 @@ bot.onText(/^🔮 آرزو$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     if ((p.inventory?.wish || 0) < 1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu());
-    
     wishState[chatId] = true;
     await bot.sendMessage(chatId, `👼 *فرشته آرزوها:* "۳ آرزو داری..."\n\n🔮 آرزو: ${p.inventory.wish} عدد\n\nیکی رو انتخاب کن:`, {
         parse_mode: 'Markdown',
@@ -448,49 +464,10 @@ bot.onText(/^🔮 آرزو$/, async (msg) => {
     });
 });
 
-bot.onText(/^💰 ثروت/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p || !wishState[chatId]) return;
-    if ((p.inventory?.wish || 0) < 1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu());
-    p.inventory.wish--;
-    p.inventory.gold = (p.inventory.gold || 0) + 200;
-    delete wishState[chatId];
-    bot.sendMessage(chatId, '💰 *آرزوی ثروت!*\n+۲۰۰👑', { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.onText(/^⚔️ قدرت/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p || !wishState[chatId]) return;
-    if ((p.inventory?.wish || 0) < 1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu());
-    p.inventory.wish--;
-    p.attack = (p.attack || 5) + 20;
-    delete wishState[chatId];
-    bot.sendMessage(chatId, '⚔️ *آرزوی قدرت!*\n+۲۰⚔️ دائمی', { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.onText(/^❤️ سلامتی/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p || !wishState[chatId]) return;
-    if ((p.inventory?.wish || 0) < 1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu());
-    p.inventory.wish--;
-    p.maxHp = (p.maxHp || 100) + 100;
-    p.hp = p.maxHp;
-    delete wishState[chatId];
-    bot.sendMessage(chatId, '❤️ *آرزوی سلامتی!*\n+۱۰۰❤️ دائمی', { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.onText(/^✨ تجربه/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p || !wishState[chatId]) return;
-    if ((p.inventory?.wish || 0) < 1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu());
-    p.inventory.wish--;
-    p.xp = (p.xp || 0) + 100;
-    player.checkLevelUp(p);
-    delete wishState[chatId];
-    let extra = p.levelUpMessage ? '\n\n' + p.levelUpMessage : '';
-    if (p.levelUpMessage) p.levelUpMessage = null;
-    bot.sendMessage(chatId, '✨ *آرزوی تجربه!*\n+۱۰۰✨' + extra, { parse_mode: 'Markdown', ...mainMenu() });
-});
+bot.onText(/^💰 ثروت/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.inventory.gold=(p.inventory.gold||0)+200; delete wishState[chatId]; bot.sendMessage(chatId, '💰 *آرزوی ثروت!*\n+۲۰۰👑', {parse_mode:'Markdown',...mainMenu()}); });
+bot.onText(/^⚔️ قدرت/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.attack=(p.attack||5)+20; delete wishState[chatId]; bot.sendMessage(chatId, '⚔️ *آرزوی قدرت!*\n+۲۰⚔️ دائمی', {parse_mode:'Markdown',...mainMenu()}); });
+bot.onText(/^❤️ سلامتی/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.maxHp=(p.maxHp||100)+100; p.hp=p.maxHp; delete wishState[chatId]; bot.sendMessage(chatId, '❤️ *آرزوی سلامتی!*\n+۱۰۰❤️ دائمی', {parse_mode:'Markdown',...mainMenu()}); });
+bot.onText(/^✨ تجربه/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.xp=(p.xp||0)+100; player.checkLevelUp(p); delete wishState[chatId]; let extra=p.levelUpMessage?'\n\n'+p.levelUpMessage:''; if(p.levelUpMessage)p.levelUpMessage=null; bot.sendMessage(chatId, '✨ *آرزوی تجربه!*\n+۱۰۰✨'+extra, {parse_mode:'Markdown',...mainMenu()}); });
 
 bot.onText(/^🏰 زندان$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
@@ -518,85 +495,13 @@ bot.onText(/^🔒 (.+)$/, async (msg, match) => {
     await sendPhoto(chatId, img, `${prisoner.emoji} *${prisoner.name}* | ${relation.name}\n\n${dialogue.text}`, getPrisonerKeyboard(p, prisoner.npcId));
 });
 
-bot.onText(/^🖐️ لمس کن$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    const isHouse = p.house?.find(h => h.npcId === npcId);
-    const result = isHouse ? touchInHouse(p, npcId) : touchPrisoner(p, npcId);
-    const dialogue = isHouse ? getHouseDialogue('touch') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text;
-    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId));
-    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) });
-});
-
-bot.onText(/^💋 ببوس$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    const isHouse = p.house?.find(h => h.npcId === npcId);
-    const result = isHouse ? kissInHouse(p, npcId) : kissPrisoner(p, npcId);
-    const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text;
-    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId));
-    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) });
-});
-
-bot.onText(/^🎵 آواز$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    if ((p.inventory?.song || 0) < 1) return bot.sendMessage(chatId, '❌ آواز نداری!', mainMenu());
-    p.inventory.song--;
-    const isHouse = p.house?.find(h => h.npcId === npcId);
-    if (isHouse) {
-        p.prisonRelations[npcId] = (p.prisonRelations[npcId] || 0) + 15;
-    } else {
-        p.prisonRelations[npcId] = (p.prisonRelations[npcId] || 0) + 15;
-    }
-    const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text;
-    bot.sendMessage(chatId, `🎵 *آواز جادویی!* +۱۵ رابطه\n\n${dialogue}`, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) });
-});
-
-bot.onText(/^🧿 اشک$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    const npcId = activePrisoner[chatId];
-    if (!p || !npcId) return;
-    if ((p.inventory?.tear || 0) < 1) return bot.sendMessage(chatId, '❌ اشک نداری!', mainMenu());
-    p.inventory.tear--;
-    const prisoner = p.prison.find(pr => pr.npcId === npcId);
-    if (prisoner) {
-        prisoner.daysUntilEscape += 5;
-        bot.sendMessage(chatId, `🧿 *اشک استفاده شد!* +۵ روز زندان\n⏰ ${prisoner.daysUntilEscape} روز تا فرار`, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) });
-    }
-});
-
-bot.onText(/^🩸 خون$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    if ((p.inventory?.blood || 0) < 1) return bot.sendMessage(chatId, '❌ خون نداری!', mainMenu());
-    p.inventory.blood--;
-    p.hp = Math.min((p.maxHp || 100), (p.hp || 100) + 50);
-    bot.sendMessage(chatId, `🩸 *خون استفاده شد!* +۵۰❤️\n❤️ ${p.hp}/${p.maxHp}`, { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.onText(/^🔥 عیاشی$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    const isHouse = p.house?.find(h => h.npcId === npcId);
-    const result = isHouse ? orgyInHouse(p, npcId) : orgyPrisoner(p, npcId);
-    const dialogue = isHouse ? getHouseDialogue('orgy') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text;
-    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId));
-    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) });
-});
-
-bot.onText(/^🔓 آزاد کن$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId];
-    if (!p || !npcId) return;
-    const result = releasePrisoner(p, npcId);
-    delete activePrisoner[chatId];
-    if (result.loyal) player.addScore(p, 50);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-});
+bot.onText(/^🖐️ لمس کن$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? touchInHouse(p, npcId) : touchPrisoner(p, npcId); const dialogue = isHouse ? getHouseDialogue('touch') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
+bot.onText(/^💋 ببوس$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? kissInHouse(p, npcId) : kissPrisoner(p, npcId); const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
+bot.onText(/^🎵 آواز$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; if ((p.inventory?.song||0)<1) return bot.sendMessage(chatId, '❌ آواز نداری!', mainMenu()); p.inventory.song--; const isHouse = p.house?.find(h => h.npcId === npcId); if (isHouse) { if(!p.prisonRelations)p.prisonRelations={}; p.prisonRelations[npcId]=(p.prisonRelations[npcId]||0)+15; } else { if(!p.prisonRelations)p.prisonRelations={}; p.prisonRelations[npcId]=(p.prisonRelations[npcId]||0)+15; } const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; bot.sendMessage(chatId, `🎵 *آواز جادویی!* +۱۵ رابطه\n\n${dialogue}`, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
+bot.onText(/^🧿 اشک$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId]; if (!p || !npcId) return; if ((p.inventory?.tear||0)<1) return bot.sendMessage(chatId, '❌ اشک نداری!', mainMenu()); p.inventory.tear--; const prisoner = p.prison.find(pr => pr.npcId === npcId); if (prisoner) { prisoner.daysUntilEscape += 5; bot.sendMessage(chatId, `🧿 *اشک استفاده شد!* +۵ روز زندان\n⏰ ${prisoner.daysUntilEscape} روز تا فرار`, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) }); } });
+bot.onText(/^🩸 خون$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; if ((p.inventory?.blood||0)<1) return bot.sendMessage(chatId, '❌ خون نداری!', mainMenu()); p.inventory.blood--; p.hp = Math.min((p.maxHp||100), (p.hp||100)+50); bot.sendMessage(chatId, `🩸 *خون استفاده شد!* +۵۰❤️\n❤️ ${p.hp}/${p.maxHp}`, { parse_mode: 'Markdown', ...mainMenu() }); });
+bot.onText(/^🔥 عیاشی$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? orgyInHouse(p, npcId) : orgyPrisoner(p, npcId); const dialogue = isHouse ? getHouseDialogue('orgy') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
+bot.onText(/^🔓 آزاد کن$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId]; if (!p || !npcId) return; const result = releasePrisoner(p, npcId); delete activePrisoner[chatId]; if (result.loyal) player.addScore(p, 50); await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); });
 
 bot.onText(/^🏠 خونه$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
@@ -620,27 +525,9 @@ bot.onText(/^🏠 (.+)$/, async (msg, match) => {
     await sendPhoto(chatId, null, `${houseNpc.emoji} *${houseNpc.name}* | ${relation.name}\n\n🏠 توی خونه‌ات`, getHouseKeyboard(p, houseNpc.npcId));
 });
 
-bot.onText(/^🚪 بیرون کن$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    const result = kickFromHouse(p, npcId);
-    delete activeHouseNpc[chatId];
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.onText(/^💍 خواستگاری$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    const result = propose(p, npcId);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getHouseKeyboard(p, npcId) });
-});
-
-bot.onText(/^👰 عروسی$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activeHouseNpc[chatId];
-    if (!p || !npcId) return;
-    const result = marry(p, npcId);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-});
+bot.onText(/^🚪 بیرون کن$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activeHouseNpc[chatId]; if (!p || !npcId) return; const result = kickFromHouse(p, npcId); delete activeHouseNpc[chatId]; await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); });
+bot.onText(/^💍 خواستگاری$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activeHouseNpc[chatId]; if (!p || !npcId) return; const result = propose(p, npcId); await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getHouseKeyboard(p, npcId) }); });
+bot.onText(/^👰 عروسی$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activeHouseNpc[chatId]; if (!p || !npcId) return; const result = marry(p, npcId); await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); });
 
 bot.onText(/^(🗡️|💋|🏃|🤝|🕯️|👂|💰|🕊️|💎|⚔️|❤️|👼|🎁|😘|🧪|😂|😐|🍖|🔮) (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const dialogue = activeDialogues[chatId];
