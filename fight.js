@@ -17,7 +17,7 @@ const animations = {
 
 function startFight(player) {
     const keys = config.locationEnemies[player.location];
-    if (!keys || keys.length === 0) return { success: false, message: '⚠️ اینجا دشمنی نیست!', animation: null };
+    if (!keys || keys.length === 0) return { success: false, message: '⚠️ اینجا دشمنی نیست! برو یه جای دیگه!', animation: null };
 
     let k = keys[Math.floor(Math.random() * keys.length)];
     let d = config.images.enemies[k];
@@ -31,11 +31,37 @@ function startFight(player) {
         d = config.images.enemies[k];
     }
     
+    // چک کن دشمن خشمگین هست یا نه (از خونه بیرون شده)
+    let isEnraged = false;
+    if (player.enraged && player.enraged[k]) {
+        isEnraged = true;
+    }
+    
     const enemy = {
-        key: k, name: d.name || 'دشمن', emoji: d.emoji || '👾', file_id: d.file_id || null,
-        hp: d.hp || 20, maxHp: d.hp || 20, attack: d.attack || 5,
-        reward: JSON.parse(JSON.stringify(d.reward || { xp: 10 })), status: 'fighting',
-        isPlayer: false
+        key: k, 
+        name: isEnraged ? `😡 ${d.name || 'دشمن'}` : (d.name || 'دشمن'), 
+        emoji: d.emoji || '👾', 
+        file_id: d.file_id || null,
+        hp: isEnraged ? Math.floor((d.hp || 20) * 2) : (d.hp || 20), 
+        maxHp: isEnraged ? Math.floor((d.hp || 20) * 2) : (d.hp || 20), 
+        attack: isEnraged ? Math.floor((d.attack || 5) * 2) : (d.attack || 5),
+        reward: isEnraged ? {
+            xp: (d.reward?.xp || 10) * 2,
+            gold: (d.reward?.gold || 0) * 2,
+            skin: (d.reward?.skin || 0) * 2,
+            meat: (d.reward?.meat || 0) * 2,
+            iron: (d.reward?.iron || 0) * 2,
+            ring: (d.reward?.ring || 0) * 2,
+            tear: (d.reward?.tear || 0) * 2,
+            spell: (d.reward?.spell || 0) * 2,
+            song: (d.reward?.song || 0) * 2,
+            blood: (d.reward?.blood || 0) * 2,
+            wish: (d.reward?.wish || 0) * 2,
+            key: (d.reward?.key || 0) * 2
+        } : JSON.parse(JSON.stringify(d.reward || { xp: 10 })),
+        status: 'fighting',
+        isPlayer: false,
+        isEnraged: isEnraged
     };
 
     // انیمیشن اژدها برای اژدها
@@ -101,7 +127,7 @@ function playerAttack(player, enemy) {
         log += `\n💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
         player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
-        player.score = (player.score || 0) + 20;
+        player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
         
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
@@ -117,7 +143,17 @@ function playerAttack(player, enemy) {
         }
         require('./player').checkUnlocks(player);
         
-        const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen'];
+        // اگه دشمن خشمگین بود و شکست خورد، میتونه دوباره زندانیش کنه
+        if (enemy.isEnraged) {
+            const npcKeys = Object.keys(config.images.npcs);
+            if (npcKeys.includes(enemy.key) || Object.keys(config.images.enemies).includes(enemy.key)) {
+                // پاک کردن از لیست خشمگین
+                if (player.enraged) delete player.enraged[enemy.key];
+                return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animation };
+            }
+        }
+        
+        const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
         if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
             return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animation };
         }
