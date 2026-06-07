@@ -1,13 +1,26 @@
 const config = require('./config');
 
-// ذخیره وضعیت خرید کاربر
 const shopState = {};
 
 function showShopMenu() {
-    return `🏪 *بازار باستانی*\n\n📥 *خرید:*\n🪵 چوب: ۲👑 هر عدد\n🪨 سنگ: ۳👑 هر عدد\n🍖 گوشت: ۳👑 هر عدد\n💧 آب: ۱👑 هر عدد\n🦴 پوست: ۵👑 هر عدد\n⛏️ آهن: ۸👑 هر عدد`;
+    return `🏪 *بازار باستانی*\n\n📥 *خرید:*\n🪵 چوب: ۲👑 | 🪨 سنگ: ۳👑\n🍖 گوشت: ۳👑 | 💧 آب: ۱👑\n🦴 پوست: ۵👑 | ⛏️ آهن: ۸👑\n💀 فنیشر: ۵۰👑\n\n📤 *فروش ویژه:*\n💎 الماس: ۱۰۰👑`;
 }
 
 function startBuy(player, item) {
+    if (item === 'finisher') {
+        const price = config.shopPrices.finisher.buy;
+        if ((player.inventory.gold || 0) < price) {
+            return { success: false, message: `❌ طلا کمه! 💀 فنیشر ${price}👑\n👑 داری: ${player.inventory.gold||0}` };
+        }
+        player.inventory.gold -= price;
+        player.inventory.finisher = (player.inventory.finisher || 0) + 1;
+        return { success: true, message: `✅ 💀 فنیشر خریدی! -${price}👑\n💀 موجودی: ${player.inventory.finisher}` };
+    }
+    
+    if (item === 'diamond') {
+        return startSell(player, 'diamond');
+    }
+    
     const p = config.shopPrices[item];
     if (!p) return { success: false, message: '❌ آیتم نامعتبر!' };
     
@@ -15,11 +28,20 @@ function startBuy(player, item) {
     
     return { 
         success: true, 
-        message: `🛒 *خرید ${p.emoji} ${p.name}*\n\n💰 قیمت هر عدد: ${p.buy}👑\n👑 موجودی تو: ${player.inventory.gold}👑\n\n📝 *چند تا می‌خوای؟* (عدد رو تایپ کن)\nیا بزن /cancel لغو کن` 
+        message: `🛒 *خرید ${p.emoji} ${p.name}*\n\n💰 قیمت هر عدد: ${p.buy}👑\n👑 موجودی تو: ${player.inventory.gold||0}👑\n\n📝 *چند تا می‌خوای؟* (عدد رو تایپ کن)\nیا بزن /cancel لغو کن` 
     };
 }
 
 function startSell(player, item) {
+    if (item === 'diamond') {
+        if ((player.inventory.diamond || 0) < 1) {
+            return { success: false, message: '❌ الماس نداری!' };
+        }
+        player.inventory.diamond--;
+        player.inventory.gold = (player.inventory.gold || 0) + 100;
+        return { success: true, message: `💎 الماس فروخته شد! +۱۰۰👑\n👑 موجودی: ${player.inventory.gold}` };
+    }
+    
     const p = config.shopPrices[item];
     if (!p) return { success: false, message: '❌ آیتم نامعتبر!' };
     
@@ -33,7 +55,7 @@ function startSell(player, item) {
 
 function processAmount(player, amount) {
     const state = shopState[player.chatId || 'default'];
-    if (!state) return { success: false, message: null }; // null یعنی continue
+    if (!state) return { success: false, message: null };
     
     const num = parseInt(amount);
     if (isNaN(num) || num <= 0) {
@@ -55,9 +77,9 @@ function buyItem(player, item, amount = 1) {
     
     const totalCost = p.buy * amount;
     
-    if (player.inventory.gold < totalCost) {
+    if ((player.inventory.gold || 0) < totalCost) {
         delete shopState[player.chatId || 'default'];
-        return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${totalCost}👑\n👑 داری: ${player.inventory.gold}👑` };
+        return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${totalCost}👑\n👑 داری: ${player.inventory.gold||0}👑` };
     }
     
     player.inventory.gold -= totalCost;
@@ -81,7 +103,7 @@ function sellItem(player, item, amount = 1) {
     
     const totalEarn = p.sell * amount;
     player.inventory[item] -= amount;
-    player.inventory.gold += totalEarn;
+    player.inventory.gold = (player.inventory.gold || 0) + totalEarn;
     delete shopState[player.chatId || 'default'];
     
     return { 
