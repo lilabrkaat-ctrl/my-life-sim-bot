@@ -46,7 +46,7 @@ const dialogues = {
         { text: "🧙‍♂️ قدرت زیاد می‌خوای؟ باید هزینه‌اش رو بدی!", options: [{ text: "💰 می‌پردازم", action: "wealth" }, { text: "🗡️ نمی‌خوام", action: "fight" }] }
     ],
     sage: [
-        { text: "🧙 حکیم دانا: سلام مسافر... آینده‌ات رو توی چشمات می‌بینم...", options: [{ text: "🔮 فال بگیر", action: "power" }, { text: "💡 راهنمایی", action: "help" }] }
+        { text: "🧙 حکیم دانا: سلام مسافر... آینده‌ات رو توی چشمات می‌بینم...", options: [{ text: "🔮 فال بگیر", action: "fal" }, { text: "💡 راهنمایی", action: "help" }] }
     ],
     farmer: [
         { text: "🧑‍🌾 دهقان: سلام جوون! گرسنه‌ای؟ غذا دارم ارزون!", options: [{ text: "🍖 بخرم", action: "trade" }, { text: "🤝 کمک", action: "help" }] }
@@ -78,6 +78,49 @@ const dialogues = {
     bandit_female: [
         { text: "🦹‍♀️ راهزن زن: پولتو بده... یا شاید یه راه دیگه باشه... 😏", options: [{ text: "💰 بده", action: "trade" }, { text: "💋 عشق", action: "seduce" }, { text: "🗡️ حمله", action: "fight" }] }
     ]
+};
+
+// دیالوگ‌های خونه
+const houseDialogues = {
+    invite: {
+        accept: [
+            "🏠 با خوشحالی اومد خونه‌ات!", "🏠 "بالاخره یه جای امن...", "🏠 "خونه‌ات قشنگه..."
+        ],
+        reject: [
+            "😒 "نه... شاید بعداً...", "😒 "هنوز مطمئن نیستم...", "😒 "نه! نمیام خونه‌ت!"
+        ]
+    },
+    kick: {
+        angry: [
+            "😡 "منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 "پشیمون میشی از این کارت...", "😤 "باشه... ولی برمی‌گردم!"
+        ],
+        sad: [
+            "😢 "چرا منو بیرون می‌کنی؟", "😢 "فکر کردم خونه‌م اینجاست...", "😢 "باشه... می‌رم..."
+        ]
+    },
+    touch: [
+        "🖐️ "دستت گرمه... ادامه بده...", "🖐️ "بیشتر لمس کن...", "🖐️ "خوشم میاد..."
+    ],
+    kiss: [
+        "💋 "ммм... لبات...", "💋 "دوباره ببوس...", "💋 "معتاد بوسه‌ات شدم..."
+    ],
+    orgy: [
+        "🔥 "شب وحشی‌ای بود...", "🔥 "دیگه نمی‌تونم...", "🔥 "فوق‌العاده بود..."
+    ]
+};
+
+// دیالوگ‌های ازدواج
+const marryDialogues = {
+    propose: {
+        accept: "💍 "آره! هزار بار آره! مال تو شدم!",
+        reject: "💍 "نه... هنوز آماده نیستم..."
+    },
+    marry: {
+        text: "👰 "امروز بهترین روز زندگیمه... تا ابد مال تو..."
+    },
+    divorce: {
+        text: "💔 "تموم شد... رفتیم..."
+    }
 };
 
 const prisonDialogues = {
@@ -177,6 +220,21 @@ function getPrisonDialogue(npcId, relationLevel) {
     return { text: text || "🤐 ...", level: level };
 }
 
+function getHouseDialogue(type, subType) {
+    if (!type || !houseDialogues[type]) return "🤐 ...";
+    const dialogues = houseDialogues[type][subType] || houseDialogues[type];
+    if (!dialogues || dialogues.length === 0) return "🤐 ...";
+    if (Array.isArray(dialogues)) {
+        return dialogues[Math.floor(Math.random() * dialogues.length)];
+    }
+    return dialogues;
+}
+
+function getMarryDialogue(type) {
+    if (!type || !marryDialogues[type]) return "🤐 ...";
+    return marryDialogues[type].text || marryDialogues[type];
+}
+
 function getNpcConfig(npcId) {
     if (!npcId) return null;
     return npcConfig[npcId] || null;
@@ -215,10 +273,18 @@ function handleAction(player, npcId, action) {
             player.inventory.ring = (player.inventory.ring || 0) + 1;
             result.message = `💍 ${npc.emoji} حلقه نامزدی رو گرفت!\n🎁 +۱ 💍 حلقه نامزدی`;
             break;
+        case 'fal':
+            player.xp = (player.xp || 0) + 25;
+            player.inventory.gold = (player.inventory.gold || 0) + 15;
+            result.message = `🔮 حکیم دانا فالت رو گرفت!\n✨ +۲۵ تجربه\n💰 +۱۵👑\n🔮 "آینده‌ات روشنه... یه عشق در راهه..."`;
+            break;
         default: result.message = `🤔 ${npc.emoji} منتظر تصمیم توئه...`;
     }
 
     return result;
 }
 
-module.exports = { dialogues, prisonDialogues, npcConfig, getDialogue, getPrisonDialogue, getNpcConfig, handleAction };
+module.exports = { 
+    dialogues, prisonDialogues, houseDialogues, marryDialogues, npcConfig, 
+    getDialogue, getPrisonDialogue, getHouseDialogue, getMarryDialogue, getNpcConfig, handleAction 
+};
