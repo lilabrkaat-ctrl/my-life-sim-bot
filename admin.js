@@ -13,6 +13,7 @@ function adminCommand(player, command, args) {
     const cmd = command.toLowerCase();
     let result = { success: false, message: '❌ دستور نامعتبر!' };
     const allPlayers = require('./player').players;
+    const config = require('./config');
 
     switch (cmd) {
         case 'gold': case 'g':
@@ -43,7 +44,7 @@ function adminCommand(player, command, args) {
         case 'item': case 'give':
             const item = args[0];
             const amt = parseInt(args[1]) || 10;
-            const valid = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key', 'diamond'];
+            const valid = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key', 'diamond', 'finisher'];
             if (valid.includes(item)) {
                 player.inventory[item] = (player.inventory[item] || 0) + amt;
                 result = { success: true, message: `✅ ${amt} ${item} اضافه شد!` };
@@ -88,7 +89,7 @@ function adminCommand(player, command, args) {
             player.maxHp = 9999; player.hp = 9999;
             player.attack = 999; player.defense = 999;
             player.xp = 99999; player.score = 99999;
-            player.inventory = { wood: 999, stone: 999, meat: 999, water: 999, skin: 999, iron: 999, gold: 99999, ring: 50, tear: 50, spell: 50, song: 50, blood: 50, wish: 50, key: 50, diamond: 50 };
+            player.inventory = { wood: 999, stone: 999, meat: 999, water: 999, skin: 999, iron: 999, gold: 99999, ring: 50, tear: 50, spell: 50, song: 50, blood: 50, wish: 50, key: 50, diamond: 50, finisher: 50 };
             player.equipment = { weapon: 'شمشیر افسانه‌ای', armor: 'زره اژدها', house: 'قصر باشکوه' };
             player.unlocked.locations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
             player.unlocked.enemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
@@ -103,7 +104,11 @@ function adminCommand(player, command, args) {
                 { id: 'prince', name: 'پرنسس', emoji: '🤴' }, { id: 'skeleton', name: 'اسکلت', emoji: '💀' },
                 { id: 'werewolf', name: 'گرگینه', emoji: '🐺' }, { id: 'wizard', name: 'جادوگر', emoji: '🧙‍♂️' },
                 { id: 'sage', name: 'حکیم دانا', emoji: '🧙' }, { id: 'farmer', name: 'دهقان', emoji: '🧑‍🌾' },
-                { id: 'blacksmith', name: 'آهنگر', emoji: '⚒️' }, { id: 'merchant', name: 'تاجر', emoji: '🧑‍🌾' }
+                { id: 'blacksmith', name: 'آهنگر', emoji: '⚒️' }, { id: 'merchant', name: 'تاجر', emoji: '🧑‍🌾' },
+                { id: 'bride', name: 'عروس فراری', emoji: '👰' }, { id: 'mermaid', name: 'پری دریایی', emoji: '🧜‍♀️' },
+                { id: 'young_witch', name: 'جادوگر جوان', emoji: '🧙‍♀️' }, { id: 'singer', name: 'خواننده', emoji: '👩‍🎤' },
+                { id: 'vampire', name: 'خون‌آشام', emoji: '🧛‍♀️' }, { id: 'genie', name: 'جن صحرا', emoji: '🧝‍♀️' },
+                { id: 'bandit_female', name: 'راهزن زن', emoji: '🦹‍♀️' }
             ];
             let pc = 0;
             for (let npc of allNpcs) {
@@ -132,7 +137,11 @@ function adminCommand(player, command, args) {
                 { id: 'prince', name: 'پرنسس', emoji: '🤴' }, { id: 'skeleton', name: 'اسکلت', emoji: '💀' },
                 { id: 'werewolf', name: 'گرگینه', emoji: '🐺' }, { id: 'wizard', name: 'جادوگر', emoji: '🧙‍♂️' },
                 { id: 'sage', name: 'حکیم', emoji: '🧙' }, { id: 'farmer', name: 'دهقان', emoji: '🧑‍🌾' },
-                { id: 'blacksmith', name: 'آهنگر', emoji: '⚒️' }, { id: 'merchant', name: 'تاجر', emoji: '🧑‍🌾' }
+                { id: 'blacksmith', name: 'آهنگر', emoji: '⚒️' }, { id: 'merchant', name: 'تاجر', emoji: '🧑‍🌾' },
+                { id: 'bride', name: 'عروس', emoji: '👰' }, { id: 'mermaid', name: 'پری دریایی', emoji: '🧜‍♀️' },
+                { id: 'young_witch', name: 'جادوگر جوان', emoji: '🧙‍♀️' }, { id: 'singer', name: 'خواننده', emoji: '👩‍🎤' },
+                { id: 'vampire', name: 'خون‌آشام', emoji: '🧛‍♀️' }, { id: 'genie', name: 'جن', emoji: '🧝‍♀️' },
+                { id: 'bandit_female', name: 'راهزن', emoji: '🦹‍♀️' }
             ];
             let ct = 0;
             for (let npc of nps) {
@@ -145,16 +154,71 @@ function adminCommand(player, command, args) {
             result = { success: true, message: `🔒 ${ct} NPC زندانی شدن!` };
             break;
 
+        case 'addnpc': case 'addprison':
+            const npcId = args[0];
+            if (!npcId) { result = { success: false, message: '❌ اسم NPC رو بگو!' }; break; }
+            const validNpcs = ['witch', 'ghost_sexy', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'sage', 'farmer', 'blacksmith', 'merchant', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
+            if (!validNpcs.includes(npcId)) { result = { success: false, message: `❌ NPC نامعتبر!\n📋 ${validNpcs.join(', ')}` }; break; }
+            if (!player.prison) player.prison = [];
+            if (!player.prisonRelations) player.prisonRelations = {};
+            if (player.prison.find(p => p.npcId === npcId)) { result = { success: false, message: '⚠️ این NPC قبلاً توی زندانته!' }; break; }
+            const npcData = config.images.npcs?.[npcId] || config.images.enemies?.[npcId];
+            player.prison.push({ npcId, name: npcData?.name || npcId, emoji: npcData?.emoji || '👤', daysUntilEscape: 999, capturedAt: Date.now() });
+            player.prisonRelations[npcId] = 100;
+            result = { success: true, message: `✅ ${npcData?.emoji || ''} *${npcData?.name || npcId}* به زندان اضافه شد!` };
+            break;
+
+        case 'addhouse': case 'addhome':
+            const hNpcId = args[0];
+            if (!hNpcId) { result = { success: false, message: '❌ اسم NPC رو بگو!' }; break; }
+            const validNpcs2 = ['witch', 'ghost_sexy', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'sage', 'farmer', 'blacksmith', 'merchant', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
+            if (!validNpcs2.includes(hNpcId)) { result = { success: false, message: '❌ NPC نامعتبر!' }; break; }
+            if (!player.house) player.house = [];
+            if (player.house.length >= (config.houseSettings?.maxSlots || 3)) { result = { success: false, message: '❌ خونه پرّه!' }; break; }
+            if (player.house.find(h => h.npcId === hNpcId)) { result = { success: false, message: '⚠️ این NPC قبلاً توی خونه‌اته!' }; break; }
+            const hNpcData = config.images.npcs?.[hNpcId] || config.images.enemies?.[hNpcId];
+            player.house.push({ npcId: hNpcId, name: hNpcData?.name || hNpcId, emoji: hNpcData?.emoji || '👤', joinedAt: Date.now() });
+            if (!player.prisonRelations) player.prisonRelations = {};
+            player.prisonRelations[hNpcId] = 100;
+            result = { success: true, message: `✅ ${hNpcData?.emoji || ''} *${hNpcData?.name || hNpcId}* به خونه اضافه شد!` };
+            break;
+
+        case 'removenpc': case 'removeprison':
+            const rNpcId = args[0];
+            if (!player.prison) { result = { success: false, message: '❌ زندان خالیه!' }; break; }
+            const rIndex = player.prison.findIndex(p => p.npcId === rNpcId);
+            if (rIndex === -1) { result = { success: false, message: '❌ توی زندان نیست!' }; break; }
+            player.prison.splice(rIndex, 1);
+            result = { success: true, message: '✅ از زندان حذف شد!' };
+            break;
+
+        case 'removehouse': case 'removehome':
+            const rhNpcId = args[0];
+            if (!player.house) { result = { success: false, message: '❌ خونه خالیه!' }; break; }
+            const rhIndex = player.house.findIndex(h => h.npcId === rhNpcId);
+            if (rhIndex === -1) { result = { success: false, message: '❌ توی خونه نیست!' }; break; }
+            player.house.splice(rhIndex, 1);
+            result = { success: true, message: '✅ از خونه حذف شد!' };
+            break;
+
+        case 'setrelation': case 'setrel':
+            const relNpcId = args[0];
+            const relPoints = parseInt(args[1]) || 100;
+            if (!player.prisonRelations) player.prisonRelations = {};
+            player.prisonRelations[relNpcId] = relPoints;
+            result = { success: true, message: `✅ رابطه با ${relNpcId} شد ${relPoints}!` };
+            break;
+
         case 'gift': case 'sendgift': case 'اهدای': case 'اهدا':
             const targetId = parseInt(args[0]);
             const giftItem = args[1];
             const giftAmt = parseInt(args[2]) || 1;
             const targetPlayer = allPlayers[targetId];
             if (!targetPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
-            const gMap = { 'طلا': 'gold', 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'حلقه': 'ring', 'اشک': 'tear', 'طلسم': 'spell', 'آواز': 'song', 'خون': 'blood', 'آرزو': 'wish', 'کلید': 'key', 'الماس': 'diamond' };
+            const gMap = { 'طلا': 'gold', 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'حلقه': 'ring', 'اشک': 'tear', 'طلسم': 'spell', 'آواز': 'song', 'خون': 'blood', 'آرزو': 'wish', 'کلید': 'key', 'الماس': 'diamond', 'فنیشر': 'finisher' };
             const engItem = gMap[giftItem] || giftItem;
-            const validItems = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key', 'diamond'];
-            if (!validItems.includes(engItem)) { result = { success: false, message: `❌ آیتم نامعتبر!` }; break; }
+            const validItems = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key', 'diamond', 'finisher'];
+            if (!validItems.includes(engItem)) { result = { success: false, message: '❌ آیتم نامعتبر!' }; break; }
             targetPlayer.inventory[engItem] = (targetPlayer.inventory[engItem] || 0) + giftAmt;
             result = { success: true, message: `🎁 هدیه به *${targetPlayer.name}*\n🎒 ${engItem}: +${giftAmt}` };
             break;
@@ -185,7 +249,7 @@ function adminCommand(player, command, args) {
             if (!ruPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
             ruPlayer.level = 1; ruPlayer.xp = 0; ruPlayer.hp = 100; ruPlayer.maxHp = 100;
             ruPlayer.attack = 5; ruPlayer.defense = 2; ruPlayer.score = 0;
-            ruPlayer.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0 };
+            ruPlayer.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 };
             ruPlayer.equipment = { weapon: null, armor: null, house: null };
             ruPlayer.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
             ruPlayer.prison = []; ruPlayer.prisonRelations = {}; ruPlayer.seduced = {};
@@ -218,7 +282,7 @@ function adminCommand(player, command, args) {
         case 'reset': case 'ریست': case 'ریست کن':
             player.level = 1; player.xp = 0; player.hp = 100; player.maxHp = 100;
             player.attack = 5; player.defense = 2; player.score = 0;
-            player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0 };
+            player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 };
             player.equipment = { weapon: null, armor: null, house: null };
             player.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
             player.prison = []; player.prisonRelations = {}; player.seduced = {};
@@ -227,7 +291,7 @@ function adminCommand(player, command, args) {
             break;
 
         case 'help': case 'کمک':
-            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *انگلیسی:*\n💰 gold/xp/score\n❤️ heal\n🎒 item\n⚔️ attack/defense\n⭐ level\n🔓 unlock\n👑 max\n🔱 god\n🔒 prison\n🎁 gift [id] [item] [amt]\n📊 info [id]\n👥 users\n🏆 top\n🔄 resetuser [id]\n🚫 ban/unban [id]\n💾 save\n🔄 reset\n\n📊 *فارسی:*\n🎁 اهدای [id] [آیتم] [عدد]\n📊 اطلاعات [id]\n👥 کاربران\n🏆 برترین‌ها\n💾 ذخیره\n🔄 ریست کن\n\n💡 *بدون / هم می‌تونی:\nکمک به [id] → منوی آیتم‌ها` };
+            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *منابع:* gold, xp, score, heal, item, attack, defense, level\n🔓 *باز کردن:* unlock, max, god\n🔒 *زندان:* prison, addnpc, removenpc\n🏠 *خونه:* addhouse, removehouse\n💋 *رابطه:* setrelation\n🎁 *هدیه:* gift, اهدای\n📊 *اطلاعات:* info, users, top\n🔄 *مدیریت:* resetuser, ban, unban, reset\n💾 *ذخیره:* save\n\n📊 *فارسی:* اهدای, اطلاعات, کاربران, برترین‌ها, ذخیره, ریست کن, کمک\n💡 *بدون / هم:* کمک به [id]` };
             break;
     }
 
