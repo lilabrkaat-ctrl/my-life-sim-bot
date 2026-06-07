@@ -82,11 +82,22 @@ const images = {
 module.exports = {
     defaultPlayer: {
         name: 'بازمانده گمنام', level: 1, xp: 0, hp: 100, maxHp: 100, attack: 5, defense: 2,
-        inventory: { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 0, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0 },
+        inventory: { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 },
         equipment: { weapon: null, armor: null, house: null },
         location: 'village', enemiesDefeated: 0, travels: 0, gathers: 0, score: 0, day: 1,
         unlocked: { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] },
         house: [], marry: null, enraged: {}
+    },
+    levelUpRewards: {
+        3: { key: 1 },
+        5: { finisher: 1 },
+        10: { wish: 1 },
+        15: { spell: 1 },
+        20: { finisher: 2 },
+        25: { song: 1 },
+        30: { tear: 1 },
+        50: { wish: 3 },
+        100: { ring: 5, tear: 5, spell: 5, song: 5, blood: 5, wish: 5, key: 5, diamond: 10, finisher: 5 }
     },
     locationResources: {
         village: [
@@ -144,12 +155,10 @@ module.exports = {
         water: { buy: 1, sell: 1, name: 'آب', emoji: '💧' },
         skin: { buy: 5, sell: 3, name: 'پوست', emoji: '🦴' },
         iron: { buy: 8, sell: 4, name: 'آهن', emoji: '⛏️' },
-        gold: { buy: 1, sell: 1, name: 'طلا', emoji: '👑' }
+        gold: { buy: 1, sell: 1, name: 'طلا', emoji: '👑' },
+        finisher: { buy: 50, sell: 25, name: 'فینیشر', emoji: '💀' },
+        diamond_sell: { price: 100, emoji: '💎', name: 'الماس' }
     },
-    // تنظیمات خونه و ازدواج
-    houseSettings: {
-        maxSlots: 3,
-        maxMarry: 1
-    },
+    houseSettings: { maxSlots: 3, maxMarry: 1 },
     images: images
 };
