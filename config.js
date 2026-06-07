@@ -86,17 +86,13 @@ module.exports = {
         equipment: { weapon: null, armor: null, house: null },
         location: 'village', enemiesDefeated: 0, travels: 0, gathers: 0, score: 0, day: 1,
         unlocked: { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] },
-        house: [], marry: null, enraged: {}
+        house: [], marry: null, enraged: {},
+        energy: 0, maxEnergy: 100, hasGlow: false, hasDayPower: false, hasNightPower: false,
+        houseMaxSlots: 3, tempAttack: 0, tempAttackTurns: 0
     },
     levelUpRewards: {
-        3: { key: 1 },
-        5: { finisher: 1 },
-        10: { wish: 1 },
-        15: { spell: 1 },
-        20: { finisher: 2 },
-        25: { song: 1 },
-        30: { tear: 1 },
-        50: { wish: 3 },
+        3: { key: 1 }, 5: { finisher: 1 }, 10: { wish: 1 }, 15: { spell: 1 },
+        20: { finisher: 2 }, 25: { song: 1 }, 30: { tear: 1 }, 50: { wish: 3 },
         100: { ring: 5, tear: 5, spell: 5, song: 5, blood: 5, wish: 5, key: 5, diamond: 10, finisher: 5 }
     },
     locationResources: {
@@ -146,7 +142,12 @@ module.exports = {
         'شمشیر آهنی': { wood: 2, iron: 5, effect: 'weapon', bonus: 15, emoji: '⚔️' },
         'زره چرمی': { skin: 4, iron: 2, effect: 'armor', bonus: 10, emoji: '🛡️' },
         'کلبه چوبی': { wood: 20, stone: 15, effect: 'house', bonus: 20, emoji: '🏠' },
-        'تیروکمان': { wood: 5, stone: 3, skin: 2, effect: 'weapon', bonus: 8, emoji: '🏹' }
+        'تیروکمان': { wood: 5, stone: 3, skin: 2, effect: 'weapon', bonus: 8, emoji: '🏹' },
+        'شمشیر نورانی': { iron: 5, wood: 2, energy: 50, effect: 'weapon', bonus: 25, emoji: '⚔️', glow: true },
+        'سپر نور': { skin: 4, iron: 2, energy: 30, effect: 'armor', bonus: 20, emoji: '🛡️', glow: true },
+        'خونه نورانی': { wood: 20, stone: 15, energy: 100, effect: 'house', bonus: 50, emoji: '🏠', extraSlots: 2, glow: true },
+        'حلقه خورشید': { ring: 1, energy: 200, effect: 'armor', bonus: 20, emoji: '💍', dayPower: true },
+        'حلقه ماه': { ring: 1, energy: 200, effect: 'armor', bonus: 20, emoji: '💍', nightPower: true }
     },
     shopPrices: {
         wood: { buy: 2, sell: 1, name: 'چوب', emoji: '🪵' },
