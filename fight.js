@@ -1,4 +1,5 @@
 const config = require('./config');
+const { getTimeOfDay } = require('./player');
 const activeBattles = {};
 
 const animations = {
@@ -56,6 +57,8 @@ function startFight(player) {
     let isEnraged = false;
     if (player.enraged && player.enraged[k]) isEnraged = true;
     
+    const time = getTimeOfDay();
+    
     const enemy = {
         key: k, 
         name: isEnraged ? `😡 ${d.name || 'دشمن'}` : (d.name || 'دشمن'), 
@@ -73,6 +76,17 @@ function startFight(player) {
         } : JSON.parse(JSON.stringify(d.reward || { xp: 10 })),
         status: 'fighting', isPlayer: false, isEnraged: isEnraged
     };
+
+    // اثر زمان روی دشمن
+    if (time.enemyMultiplier !== 1) {
+        enemy.hp = Math.floor(enemy.hp * time.enemyMultiplier);
+        enemy.maxHp = enemy.hp;
+        enemy.attack = Math.floor(enemy.attack * time.enemyMultiplier);
+        if (enemy.reward) {
+            enemy.reward.xp = Math.floor((enemy.reward.xp || 10) * time.rewardMultiplier);
+            enemy.reward.gold = Math.floor((enemy.reward.gold || 0) * time.rewardMultiplier);
+        }
+    }
 
     let anim = null;
     if (k === 'dragon') anim = animations.dragon;
@@ -163,77 +177,54 @@ function playerAttack(player, enemy) {
 }
 
 function useSpell(player, enemy) {
-    if ((player.inventory?.spell || 0) < 1) {
-        return { success: false, message: '❌ طلسم نداری!' };
-    }
-    
+    if ((player.inventory?.spell || 0) < 1) return { success: false, message: '❌ طلسم نداری!' };
     player.inventory.spell--;
     const dmg = Math.floor(enemy.maxHp * 0.25);
     enemy.hp -= dmg;
     if (enemy.hp < 0) enemy.hp = 0;
-    
     let log = `📜 *طلسم!* -${dmg} ضربه جادویی!\n${hpBar(enemy.hp, enemy.maxHp)}\n`;
-    
     if (enemy.hp <= 0) {
         log += `💀 ${enemy.name} با طلسم کشته شد! 🎉 +${enemy.reward.xp}✨`;
         player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
         player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
-        
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
                 player.inventory[rw] += enemy.reward[rw] || 1;
                 log += `${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}\n`;
             }
         }
-        
         const leveledUp = require('./player').checkLevelUp(player);
-        if (leveledUp) { log += '⬆️ لول آپ! '; }
+        if (leveledUp) log += '⬆️ لول آپ! ';
         require('./player').checkUnlocks(player);
-        
         const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
-        if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
-            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animations.spell };
-        }
-        
+        if (npcKeys.includes(enemy.key) && Math.random() < 0.4) return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animations.spell };
         return { battleOver: true, playerWon: true, message: log, animation: animations.spell };
     }
-    
     return { battleOver: false, message: log, animation: animations.spell };
 }
 
 function useFinisher(player, enemy) {
-    if ((player.inventory?.finisher || 0) < 1) {
-        return { success: false, message: '❌ فنیشر نداری!' };
-    }
-    
+    if ((player.inventory?.finisher || 0) < 1) return { success: false, message: '❌ فنیشر نداری!' };
     player.inventory.finisher--;
     const dmg = enemy.hp;
     enemy.hp = 0;
-    
     const finisherAnimation = animations.finishers[Math.floor(Math.random() * animations.finishers.length)];
-    
     let log = `💀 *فینیشر!* ${dmg} ضربه مرگبار!\n💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
     player.xp += enemy.reward.xp || 10;
     player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
     player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
-    
     for (let rw in enemy.reward) {
         if (rw !== 'xp' && player.inventory[rw] !== undefined) {
             player.inventory[rw] += enemy.reward[rw] || 1;
             log += `\n${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}`;
         }
     }
-    
     const leveledUp = require('./player').checkLevelUp(player);
-    if (leveledUp) { log += '\n⬆️ لول آپ! '; }
+    if (leveledUp) log += '\n⬆️ لول آپ! ';
     require('./player').checkUnlocks(player);
-    
     const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
-    if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
-        return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation };
-    }
-    
+    if (npcKeys.includes(enemy.key) && Math.random() < 0.4) return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation };
     return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation };
 }
 
@@ -243,7 +234,6 @@ function enemyTurn(player, enemy, log, animation) {
     player.hp -= dmg;
     if (player.hp < 0) player.hp = 0;
     log += `💢 ${enemy.name} ${dmg} زد! | ${hpBar(player.hp, player.maxHp)}\n`;
-
     if (player.hp <= 0) {
         player.hp = Math.floor(player.maxHp / 2);
         player.xp = Math.max(0, player.xp - 5);
