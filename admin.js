@@ -65,6 +65,12 @@ function adminCommand(player, command, args) {
             result = { success: true, message: `✅ ${d}🛡️ دفاع اضافه شد! دفاع: ${player.defense}` };
             break;
 
+        case 'energy': case 'en':
+            const en = parseInt(args[0]) || 50;
+            player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + en);
+            result = { success: true, message: `✅ ${en}⚡ انرژی اضافه شد! انرژی: ${player.energy}/${player.maxEnergy}` };
+            break;
+
         case 'level': case 'lvl':
             const l = parseInt(args[0]) || 1;
             player.level = (player.level || 1) + l;
@@ -89,12 +95,40 @@ function adminCommand(player, command, args) {
             player.maxHp = 9999; player.hp = 9999;
             player.attack = 999; player.defense = 999;
             player.xp = 99999; player.score = 99999;
+            player.energy = 999; player.maxEnergy = 999;
             player.inventory = { wood: 999, stone: 999, meat: 999, water: 999, skin: 999, iron: 999, gold: 99999, ring: 50, tear: 50, spell: 50, song: 50, blood: 50, wish: 50, key: 50, diamond: 50, finisher: 50 };
             player.equipment = { weapon: 'شمشیر افسانه‌ای', armor: 'زره اژدها', house: 'قصر باشکوه' };
             player.unlocked.locations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
             player.unlocked.enemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
             player.unlocked.npcs = ['witch', 'ghost_sexy', 'fairy', 'knight', 'angel', 'wizard', 'werewolf', 'prince', 'jester', 'skeleton', 'sage', 'farmer', 'blacksmith', 'merchant', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
             player.unlocked.recipes = ['تبر سنگی', 'شمشیر آهنی', 'زره چرمی', 'کلبه چوبی', 'تیروکمان'];
+            
+            // اضافه کردن حیوون‌ها
+            if (!player.pets) player.pets = [];
+            const { petTypes } = require('./pet');
+            player.pets = [
+                {
+                    id: 'admin_wolf_1', type: 'wolf_spirit', name: petTypes.wolf_spirit.name, 
+                    emoji: petTypes.wolf_spirit.emoji, image: petTypes.wolf_spirit.image,
+                    level: 50, xp: 0, xpNeeded: 999, attackBonus: petTypes.wolf_spirit.attackBonus,
+                    defenseBonus: petTypes.wolf_spirit.defenseBonus, hpBonus: petTypes.wolf_spirit.hpBonus,
+                    rarity: 'legendary', evolveLevel: null, evolveTo: null, foodCost: 1
+                },
+                {
+                    id: 'admin_dragon_1', type: 'dragon_ancient', name: petTypes.dragon_ancient.name,
+                    emoji: petTypes.dragon_ancient.emoji, image: petTypes.dragon_ancient.image,
+                    level: 50, xp: 0, xpNeeded: 999, attackBonus: petTypes.dragon_ancient.attackBonus,
+                    defenseBonus: petTypes.dragon_ancient.defenseBonus, hpBonus: petTypes.dragon_ancient.hpBonus,
+                    rarity: 'legendary', evolveLevel: null, evolveTo: null, foodCost: 1
+                }
+            ];
+            player.maxHp += 160;
+            player.attack += 80;
+            player.defense += 40;
+            
+            // اضافه کردن صندوقچه‌ها
+            player.lootBoxes = { wooden: 10, silver: 10, golden: 10, legendary: 10 };
+            
             if (!player.prison) player.prison = [];
             if (!player.prisonRelations) player.prisonRelations = {};
             const allNpcs = [
@@ -118,13 +152,102 @@ function adminCommand(player, command, args) {
                     pc++;
                 }
             }
-            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐۱۰۰\n❤️۹۹۹۹\n⚔️۹۹۹\n🛡️۹۹۹\n👑۹۹۹۹۹\n🔒${pc} NPC زندانی` };
+            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐۱۰۰\n❤️۹۹۹۹\n⚔️۹۹۹\n🛡️۹۹۹\n👑۹۹۹۹۹\n⚡۹۹۹\n🐾۲ حیوون افسانه‌ای\n📦۴۰ صندوقچه\n🔒${pc} NPC زندانی` };
             break;
 
         case 'god': case 'godmode':
             player.hp = 99999; player.maxHp = 99999;
             player.attack = 9999; player.defense = 9999;
-            result = { success: true, message: '🔱 *گاد مود!* ❤️۹۹۹۹۹ ⚔️۹۹۹۹ 🛡️۹۹۹۹' };
+            player.energy = 9999; player.maxEnergy = 9999;
+            result = { success: true, message: '🔱 *گاد مود!* ❤️۹۹۹۹۹ ⚔️۹۹۹۹ 🛡️۹۹۹۹ ⚡۹۹۹۹' };
+            break;
+
+        // دستورات جدید برای حیوون
+        case 'pet': case 'addpet':
+            const petType = args[0];
+            if (!petType) { result = { success: false, message: '❌ نوع حیوون رو بگو!\n🐺 wolf_cub, wolf_alpha, wolf_spirit\n🐉 dragon_egg, dragon_fire, dragon_ancient' }; break; }
+            const { petTypes: allPetTypes, addPet } = require('./pet');
+            const petData = allPetTypes[petType];
+            if (!petData) { result = { success: false, message: '❌ نوع حیوون نامعتبر!' }; break; }
+            const newPet = {
+                id: 'admin_' + Date.now(),
+                type: petType,
+                name: petData.name,
+                emoji: petData.emoji,
+                image: petData.image,
+                level: 1,
+                xp: 0,
+                xpNeeded: 20,
+                attackBonus: petData.attackBonus,
+                defenseBonus: petData.defenseBonus,
+                hpBonus: petData.hpBonus,
+                rarity: petData.rarity,
+                evolveLevel: petData.evolveLevel,
+                evolveTo: petData.evolveTo,
+                foodCost: petData.foodCost,
+                evolveMessage: petData.evolveMessage,
+                foundAt: Date.now()
+            };
+            const addResult = addPet(player, newPet);
+            result = addResult;
+            break;
+
+        case 'removepet': case 'delpet':
+            const petId = args[0];
+            if (!petId) { result = { success: false, message: '❌ آیدی حیوون رو بگو!' }; break; }
+            const { releasePet } = require('./pet');
+            result = releasePet(player, petId);
+            break;
+
+        case 'petfood': case 'feedpet':
+            const { feedAllPets } = require('./pet');
+            result = feedAllPets(player);
+            break;
+
+        // دستورات جدید برای صندوقچه
+        case 'box': case 'addbox':
+            const boxType = args[0] || 'wooden';
+            if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+            const validBoxes = ['wooden', 'silver', 'golden', 'legendary'];
+            if (!validBoxes.includes(boxType)) { result = { success: false, message: `❌ نوع صندوق نامعتبر!\n📋 ${validBoxes.join(', ')}` }; break; }
+            const boxAmt = parseInt(args[1]) || 1;
+            player.lootBoxes[boxType] += boxAmt;
+            result = { success: true, message: `✅ ${boxAmt} صندوق ${boxType} اضافه شد!` };
+            break;
+
+        case 'openbox': case 'unbox':
+            const obType = args[0] || 'wooden';
+            if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+            const { openLootBox } = require('./lootbox');
+            const openResult = openLootBox(player, obType);
+            if (openResult.success && openResult.pet) {
+                const { addPet: ap } = require('./pet');
+                ap(player, openResult.pet);
+            }
+            result = openResult;
+            break;
+
+        case 'boxes': case 'myboxes':
+            if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+            result = { success: true, message: `📦 *صندوقچه‌های تو:*\n\n📦 چوبی: ${player.lootBoxes.wooden||0}\n📦⚪ نقره‌ای: ${player.lootBoxes.silver||0}\n📦🟡 طلایی: ${player.lootBoxes.golden||0}\n📦🟣 افسانه‌ای: ${player.lootBoxes.legendary||0}` };
+            break;
+
+        // دستورات جدید برای ماموریت
+        case 'quest': case 'newquest':
+            const { generateDailyQuests } = require('./dailyQuest');
+            generateDailyQuests(player);
+            result = { success: true, message: '📋 ماموریت‌های جدید تولید شد!' };
+            break;
+
+        case 'completequest': case 'finishquest':
+            if (!player.dailyQuests || !player.dailyQuests.quests) { result = { success: false, message: '❌ ماموریتی نداری! اول /quest بزن.' }; break; }
+            for (let quest of player.dailyQuests.quests) {
+                if (!quest.completed) {
+                    quest.progress = 999;
+                    quest.completed = true;
+                }
+            }
+            result = { success: true, message: '✅ همه ماموریت‌ها کامل شدن!' };
             break;
 
         case 'prison': case 'prisonall':
@@ -157,11 +280,10 @@ function adminCommand(player, command, args) {
         case 'addnpc': case 'addprison':
             const npcId = args[0];
             if (!npcId) { result = { success: false, message: '❌ اسم NPC رو بگو!' }; break; }
-            // اصلاح: ترکیب npcs و enemies برای validNpcs
             const allNpcKeys = [...Object.keys(config.images.npcs || {}), ...Object.keys(config.images.enemies || {}).filter(k => 
                 ['bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'].includes(k)
             )];
-            const validNpcs = [...new Set(allNpcKeys)]; // حذف تکراری‌ها
+            const validNpcs = [...new Set(allNpcKeys)];
             if (!validNpcs.includes(npcId)) { result = { success: false, message: `❌ NPC نامعتبر!\n📋 ${validNpcs.join(', ')}` }; break; }
             if (!player.prison) player.prison = [];
             if (!player.prisonRelations) player.prisonRelations = {};
@@ -233,19 +355,33 @@ function adminCommand(player, command, args) {
             const infoId = parseInt(args[0]) || player.chatId;
             const infoPlayer = allPlayers[infoId];
             if (!infoPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
-            result = { success: true, message: `👤 *${infoPlayer.name}*\n⭐ Lv.${infoPlayer.level}\n🏆 ${infoPlayer.score} امتیاز\n❤️ ${infoPlayer.hp}/${infoPlayer.maxHp}\n⚔️ ${infoPlayer.attack} 🛡️ ${infoPlayer.defense}\n👑 ${infoPlayer.inventory?.gold||0} طلا\n🏠 خونه: ${infoPlayer.house?.length||0} نفر\n💍 همسر: ${infoPlayer.marry||'نداره'}\n🔒 زندان: ${infoPlayer.prison?.length||0} نفر` };
+            let petsInfo = '';
+            if (infoPlayer.pets && infoPlayer.pets.length > 0) {
+                petsInfo = '\n🐾 حیوون‌ها: ' + infoPlayer.pets.map(p => p.emoji).join(' ');
+            }
+            let boxInfo = '';
+            if (infoPlayer.lootBoxes) {
+                const tb = (infoPlayer.lootBoxes.wooden||0)+(infoPlayer.lootBoxes.silver||0)+(infoPlayer.lootBoxes.golden||0)+(infoPlayer.lootBoxes.legendary||0);
+                if (tb > 0) boxInfo = `\n📦 صندوقچه: ${tb} عدد`;
+            }
+            result = { success: true, message: `👤 *${infoPlayer.name}*\n⭐ Lv.${infoPlayer.level}\n🏆 ${infoPlayer.score} امتیاز\n❤️ ${infoPlayer.hp}/${infoPlayer.maxHp}\n⚔️ ${infoPlayer.attack} 🛡️ ${infoPlayer.defense}\n⚡ ${infoPlayer.energy||0}/${infoPlayer.maxEnergy||100}\n👑 ${infoPlayer.inventory?.gold||0} طلا\n🏠 خونه: ${infoPlayer.house?.length||0} نفر\n💍 همسر: ${infoPlayer.marry||'نداره'}\n🔒 زندان: ${infoPlayer.prison?.length||0} نفر${petsInfo}${boxInfo}` };
             break;
 
         case 'users': case 'count': case 'کاربران':
             const count = Object.keys(allPlayers).length;
             const active = Object.values(allPlayers).filter(p => p.score > 0).length;
-            result = { success: true, message: `👥 *آمار کاربران*\n\n📊 کل: ${count}\n🎮 فعال: ${active}` };
+            const withPets = Object.values(allPlayers).filter(p => p.pets && p.pets.length > 0).length;
+            result = { success: true, message: `👥 *آمار کاربران*\n\n📊 کل: ${count}\n🎮 فعال: ${active}\n🐾 حیوون‌دار: ${withPets}` };
             break;
 
         case 'top': case 'top10': case 'برترین‌ها':
             const sorted = Object.entries(allPlayers).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)).slice(0, 10);
             let msg = '🏆 *۱۰ کاربر برتر:*\n\n';
-            sorted.forEach((p, i) => { msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز\n`; });
+            sorted.forEach((p, i) => { 
+                let extra = '';
+                if (p[1].pets && p[1].pets.length > 0) extra += ' 🐾';
+                msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز${extra}\n`; 
+            });
             result = { success: true, message: msg };
             break;
 
@@ -255,11 +391,15 @@ function adminCommand(player, command, args) {
             if (!ruPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
             ruPlayer.level = 1; ruPlayer.xp = 0; ruPlayer.hp = 100; ruPlayer.maxHp = 100;
             ruPlayer.attack = 5; ruPlayer.defense = 2; ruPlayer.score = 0;
+            ruPlayer.energy = 0; ruPlayer.maxEnergy = 100;
             ruPlayer.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 };
             ruPlayer.equipment = { weapon: null, armor: null, house: null };
             ruPlayer.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
             ruPlayer.prison = []; ruPlayer.prisonRelations = {}; ruPlayer.seduced = {};
             ruPlayer.house = []; ruPlayer.marry = null; ruPlayer.enraged = {};
+            ruPlayer.pets = []; ruPlayer.petFood = 0;
+            ruPlayer.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+            ruPlayer.dailyQuests = { quests: [], completed: [], lastReset: Date.now(), progress: {} };
             result = { success: true, message: `🔄 *${ruPlayer.name}* ریست شد!` };
             break;
 
@@ -277,7 +417,6 @@ function adminCommand(player, command, args) {
 
         case 'announce': case 'ann':
             const announceMsg = args.join(' ');
-            // اصلاح: الان announce برگشت داده میشه و توی bot.js باید ارسال بشه
             result = { success: true, message: `📢 پیام آماده ارسال!\n📝 "${announceMsg}"`, announce: announceMsg, announceAll: true };
             break;
 
@@ -289,16 +428,20 @@ function adminCommand(player, command, args) {
         case 'reset': case 'ریست': case 'ریست کن':
             player.level = 1; player.xp = 0; player.hp = 100; player.maxHp = 100;
             player.attack = 5; player.defense = 2; player.score = 0;
+            player.energy = 0; player.maxEnergy = 100;
             player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 };
             player.equipment = { weapon: null, armor: null, house: null };
             player.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
             player.prison = []; player.prisonRelations = {}; player.seduced = {};
             player.house = []; player.marry = null; player.enraged = {};
+            player.pets = []; player.petFood = 0;
+            player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+            player.dailyQuests = { quests: [], completed: [], lastReset: Date.now(), progress: {} };
             result = { success: true, message: '🔄 *همه چیز ریست شد!*' };
             break;
 
         case 'help': case 'کمک':
-            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *منابع:* gold, xp, score, heal, item, attack, defense, level\n🔓 *باز کردن:* unlock, max, god\n🔒 *زندان:* prison, addnpc, removenpc\n🏠 *خونه:* addhouse, removehouse\n💋 *رابطه:* setrelation\n🎁 *هدیه:* gift, اهدای\n📊 *اطلاعات:* info, users, top\n🔄 *مدیریت:* resetuser, ban, unban, reset\n📢 *اعلان:* announce\n💾 *ذخیره:* save\n\n📊 *فارسی:* اهدای, اطلاعات, کاربران, برترین‌ها, ذخیره, ریست کن, کمک\n💡 *بدون / هم:* کمک به [id]` };
+            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *منابع:* gold, xp, score, heal, item, attack, defense, level, energy\n🔓 *باز کردن:* unlock, max, god\n🐾 *حیوون:* pet, removepet, petfood\n📦 *صندوقچه:* box, openbox, boxes\n📋 *ماموریت:* quest, completequest\n🔒 *زندان:* prison, addnpc, removenpc\n🏠 *خونه:* addhouse, removehouse\n💋 *رابطه:* setrelation\n🎁 *هدیه:* gift, اهدای\n📊 *اطلاعات:* info, users, top\n🔄 *مدیریت:* resetuser, ban, unban, reset\n📢 *اعلان:* announce\n💾 *ذخیره:* save\n\n📊 *فارسی:* اهدای, اطلاعات, کاربران, برترین‌ها, ذخیره, ریست کن, کمک\n💡 *بدون / هم:* کمک به [id]` };
             break;
     }
 
