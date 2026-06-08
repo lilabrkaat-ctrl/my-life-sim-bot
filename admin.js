@@ -157,7 +157,11 @@ function adminCommand(player, command, args) {
         case 'addnpc': case 'addprison':
             const npcId = args[0];
             if (!npcId) { result = { success: false, message: '❌ اسم NPC رو بگو!' }; break; }
-            const validNpcs = ['witch', 'ghost_sexy', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'sage', 'farmer', 'blacksmith', 'merchant', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
+            // اصلاح: ترکیب npcs و enemies برای validNpcs
+            const allNpcKeys = [...Object.keys(config.images.npcs || {}), ...Object.keys(config.images.enemies || {}).filter(k => 
+                ['bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'].includes(k)
+            )];
+            const validNpcs = [...new Set(allNpcKeys)]; // حذف تکراری‌ها
             if (!validNpcs.includes(npcId)) { result = { success: false, message: `❌ NPC نامعتبر!\n📋 ${validNpcs.join(', ')}` }; break; }
             if (!player.prison) player.prison = [];
             if (!player.prisonRelations) player.prisonRelations = {};
@@ -171,7 +175,9 @@ function adminCommand(player, command, args) {
         case 'addhouse': case 'addhome':
             const hNpcId = args[0];
             if (!hNpcId) { result = { success: false, message: '❌ اسم NPC رو بگو!' }; break; }
-            const validNpcs2 = ['witch', 'ghost_sexy', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'sage', 'farmer', 'blacksmith', 'merchant', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
+            const validNpcs2 = [...new Set([...Object.keys(config.images.npcs || {}), ...Object.keys(config.images.enemies || {}).filter(k => 
+                ['bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'].includes(k)
+            )])];
             if (!validNpcs2.includes(hNpcId)) { result = { success: false, message: '❌ NPC نامعتبر!' }; break; }
             if (!player.house) player.house = [];
             if (player.house.length >= (config.houseSettings?.maxSlots || 3)) { result = { success: false, message: '❌ خونه پرّه!' }; break; }
@@ -271,7 +277,8 @@ function adminCommand(player, command, args) {
 
         case 'announce': case 'ann':
             const announceMsg = args.join(' ');
-            result = { success: true, message: `📢 پیام آماده ارسال!\n📝 "${announceMsg}"`, announce: announceMsg };
+            // اصلاح: الان announce برگشت داده میشه و توی bot.js باید ارسال بشه
+            result = { success: true, message: `📢 پیام آماده ارسال!\n📝 "${announceMsg}"`, announce: announceMsg, announceAll: true };
             break;
 
         case 'save': case 'ذخیره':
@@ -291,7 +298,7 @@ function adminCommand(player, command, args) {
             break;
 
         case 'help': case 'کمک':
-            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *منابع:* gold, xp, score, heal, item, attack, defense, level\n🔓 *باز کردن:* unlock, max, god\n🔒 *زندان:* prison, addnpc, removenpc\n🏠 *خونه:* addhouse, removehouse\n💋 *رابطه:* setrelation\n🎁 *هدیه:* gift, اهدای\n📊 *اطلاعات:* info, users, top\n🔄 *مدیریت:* resetuser, ban, unban, reset\n💾 *ذخیره:* save\n\n📊 *فارسی:* اهدای, اطلاعات, کاربران, برترین‌ها, ذخیره, ریست کن, کمک\n💡 *بدون / هم:* کمک به [id]` };
+            result = { success: true, message: `👑 *دستورات ادمین:*\n\n📊 *منابع:* gold, xp, score, heal, item, attack, defense, level\n🔓 *باز کردن:* unlock, max, god\n🔒 *زندان:* prison, addnpc, removenpc\n🏠 *خونه:* addhouse, removehouse\n💋 *رابطه:* setrelation\n🎁 *هدیه:* gift, اهدای\n📊 *اطلاعات:* info, users, top\n🔄 *مدیریت:* resetuser, ban, unban, reset\n📢 *اعلان:* announce\n💾 *ذخیره:* save\n\n📊 *فارسی:* اهدای, اطلاعات, کاربران, برترین‌ها, ذخیره, ریست کن, کمک\n💡 *بدون / هم:* کمک به [id]` };
             break;
     }
 
