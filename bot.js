@@ -4,6 +4,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const player = require('./player');
 const { savePlayers, autoSave, setBot, loadFromChannel } = require('./storage');
+const { getTimeOfDay } = require('./player');
 
 setBot(bot);
 autoSave(player.players, 21600000);
@@ -94,10 +95,12 @@ bot.onText(/\/start/, async (msg) => {
     const firstName = msg.chat.first_name || 'گمنام';
     if (!player.getPlayer(chatId)) player.createPlayer(chatId, firstName);
     const p = player.getPlayer(chatId);
+    const time = getTimeOfDay();
+    p.timeOfDay = time;
     player.checkUnlocks(p);
     p.chatId = chatId;
     const loc = config.images.locations[p.location] || config.images.locations.village;
-    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n🏆 امتیاز: ${p.score||0}\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
+    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 🏆 ${p.score||0} امتیاز\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
     if (p.unlockedMessage) { welcome += `\n\n${p.unlockedMessage}`; p.unlockedMessage = null; }
     if (p.levelUpMessage) { welcome += `\n\n${p.levelUpMessage}`; p.levelUpMessage = null; }
     await sendPhoto(chatId, loc.file_id, welcome, mainMenu());
@@ -180,6 +183,8 @@ bot.onText(/^🔙 لغو$/, (msg) => { const chatId = msg.chat.id; delete adminS
 bot.onText(/^👤 وضعیت$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    const time = getTimeOfDay();
+    p.timeOfDay = time;
     await bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown', ...mainMenu() });
 });
 
@@ -380,10 +385,11 @@ bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
 });
 
-bot.onText(/^✅ (.+) \((\d+)⚡\)$/, async (msg, match) => {
+bot.onText(/^(.+) ⚡(\d+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return;
-    const parts = match[1].split(' ');
+    const fullText = match[1];
+    const parts = fullText.split(' ');
     const itemName = parts.slice(1).join(' ');
     const result = craftItem(p, itemName);
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
