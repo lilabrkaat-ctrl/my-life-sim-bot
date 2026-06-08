@@ -41,7 +41,8 @@ function gather(player) {
 
     if (!found) {
         const eventResult = triggerRandomEvent(player, 'gather');
-        if (eventResult && eventResult.eventTriggered) {
+        // اصلاح: چک می‌کنیم eventResult وجود داره یا نه (به جای eventTriggered)
+        if (eventResult) {
             return { success: true, message: `😞 چیزی پیدا نکردی...\n${eventResult.msg}`, eventImage: eventResult.img };
         }
         return { success: false, message: '😞 چیزی پیدا نکردی...' };
@@ -49,7 +50,8 @@ function gather(player) {
 
     const event = Math.random() < 0.20 ? triggerRandomEvent(player, 'gather') : null;
     const msg = `🎒 ${results.join(' | ')}`;
-    
+
+    // اصلاح: چک می‌کنیم event وجود داره (به جای event.eventTriggered)
     if (event) return { success: true, message: `${msg}\n\n${event.msg}`, eventImage: event.img };
     return { success: true, message: msg };
 }
