@@ -1,43 +1,63 @@
 const config = require('./config');
 
+// عکس‌های حیوانات
+const petImages = {
+    wolf_cub: 'AgACAgQAAxkBAAEqVHRqJuzAGFCIY8ekPgMZOEYb2Oq0zQACbg9rG0FkMFGgWfb2kXhRzgEAAwIAA3gAAzsE',
+    wolf_alpha: 'AgACAgQAAxkBAAEqVHRqJuzAGFCIY8ekPgMZOEYb2Oq0zQACbg9rG0FkMFGgWfb2kXhRzgEAAwIAA3gAAzsE',
+    wolf_spirit: 'AgACAgQAAxkBAAEqVHZqJuzAow0s4ObDTv73L1w4gKxHdwACbw9rG0FkMFGJwCrJON9JaAEAAwIAA3gAAzsE',
+    dragon_egg: 'AgACAgQAAxkBAAEqVHhqJuzAJ6J3W1TIWXdDHh48dW7f2QACcA9rG0FkMFGy1USWkRYRfwEAAwIAA3gAAzsE',
+    dragon_fire: 'AgACAgQAAxkBAAEqVHhqJuzAJ6J3W1TIWXdDHh48dW7f2QACcA9rG0FkMFGy1USWkRYRfwEAAwIAA3gAAzsE',
+    dragon_ancient: 'AgACAgQAAxkBAAEqVHhqJuzAJ6J3W1TIWXdDHh48dW7f2QACcA9rG0FkMFGy1USWkRYRfwEAAwIAA3gAAzsE',
+    wolf_egg: 'AgACAgQAAxkBAAEqVHlqJuzAej3kgmC_jzrcc-PpcQ7EwgACcQ9rG0FkMFHCYpAH-HLsxgEAAwIAA3gAAzsE',
+    dragon_egg_img: 'AgACAgQAAxkBAAEqVHlqJuzAej3kgmC_jzrcc-PpcQ7EwgACcQ9rG0FkMFHCYpAH-HLsxgEAAwIAA3gAAzsE'
+};
+
 // انواع حیوانات خانگی
 const petTypes = {
     wolf_cub: { 
         name: 'توله گرگ', emoji: '🐺', eggEmoji: '🥚', 
         attackBonus: 5, defenseBonus: 0, hpBonus: 10, 
         rarity: 'common', evolveLevel: 10, evolveTo: 'wolf_alpha', 
-        foodCost: 3, evolveMessage: '🐺 توله گرگت تبدیل به گرگ آلفا شد! 🎉' 
+        foodCost: 3, evolveMessage: '🐺 توله گرگت تبدیل به گرگ آلفا شد! 🎉',
+        image: petImages.wolf_cub,
+        eggImage: petImages.wolf_egg
     },
     wolf_alpha: { 
         name: 'گرگ آلفا', emoji: '🐺', eggEmoji: null, 
         attackBonus: 15, defenseBonus: 5, hpBonus: 30, 
         rarity: 'rare', evolveLevel: 25, evolveTo: 'wolf_spirit', 
-        foodCost: 5, evolveMessage: '👻🐺 گرگ آلفات تبدیل به روح گرگ شد! 🌙' 
+        foodCost: 5, evolveMessage: '👻🐺 گرگ آلفات تبدیل به روح گرگ شد! 🌙',
+        image: petImages.wolf_alpha
     },
     wolf_spirit: { 
         name: 'روح گرگ', emoji: '👻🐺', eggEmoji: null, 
         attackBonus: 30, defenseBonus: 15, hpBonus: 60, 
         rarity: 'legendary', evolveLevel: null, evolveTo: null, 
-        foodCost: 8, evolveMessage: null 
+        foodCost: 8, evolveMessage: null,
+        image: petImages.wolf_spirit
     },
     
     dragon_egg: { 
         name: 'بچه اژدها', emoji: '🐉', eggEmoji: '🥚🔥', 
         attackBonus: 8, defenseBonus: 3, hpBonus: 20, 
         rarity: 'rare', evolveLevel: 15, evolveTo: 'dragon_fire', 
-        foodCost: 5, evolveMessage: '🐉🔥 بچه اژدهایت تبدیل به اژدهای آتشین شد! 🔥' 
+        foodCost: 5, evolveMessage: '🐉🔥 بچه اژدهایت تبدیل به اژدهای آتشین شد! 🔥',
+        image: petImages.dragon_egg,
+        eggImage: petImages.dragon_egg_img
     },
     dragon_fire: { 
         name: 'اژدهای آتشین', emoji: '🐉🔥', eggEmoji: null, 
         attackBonus: 25, defenseBonus: 10, hpBonus: 50, 
         rarity: 'epic', evolveLevel: 30, evolveTo: 'dragon_ancient', 
-        foodCost: 8, evolveMessage: '🐉💀 اژدهای آتشینت تبدیل به اژدهای باستانی شد! 👑' 
+        foodCost: 8, evolveMessage: '🐉💀 اژدهای آتشینت تبدیل به اژدهای باستانی شد! 👑',
+        image: petImages.dragon_fire
     },
     dragon_ancient: { 
         name: 'اژدهای باستانی', emoji: '🐉💀', eggEmoji: null, 
         attackBonus: 50, defenseBonus: 25, hpBonus: 100, 
         rarity: 'legendary', evolveLevel: null, evolveTo: null, 
-        foodCost: 12, evolveMessage: null 
+        foodCost: 12, evolveMessage: null,
+        image: petImages.dragon_ancient
     }
 };
 
@@ -64,6 +84,8 @@ function findEgg(player) {
             type: eggType,
             name: pet.name,
             emoji: pet.emoji,
+            image: pet.image,
+            eggImage: pet.eggImage,
             level: 1,
             xp: 0,
             xpNeeded: 20,
@@ -83,6 +105,7 @@ function findEgg(player) {
     
     return null;
 }
+
 function addPet(player, petData) {
     initPets(player);
     if (player.pets.length >= 3) return { success: false, message: '🐾 ظرفیت حیوون‌ها پره! (حداکثر ۳)' };
@@ -92,7 +115,11 @@ function addPet(player, petData) {
     player.attack = (player.attack || 5) + petData.attackBonus;
     player.defense = (player.defense || 2) + petData.defenseBonus;
     
-    return { success: true, message: `🎉 ${petData.emoji} *${petData.name}* به جمعت پیوست!\n❤️ +${petData.hpBonus} | ⚔️ +${petData.attackBonus} | 🛡️ +${petData.defenseBonus}` };
+    return { 
+        success: true, 
+        message: `🎉 ${petData.emoji} *${petData.name}* به جمعت پیوست!\n❤️ +${petData.hpBonus} | ⚔️ +${petData.attackBonus} | 🛡️ +${petData.defenseBonus}`,
+        image: petData.eggImage || petData.image
+    };
 }
 
 function feedPet(player, petId) {
@@ -108,8 +135,8 @@ function feedPet(player, petId) {
     player.petFood = (player.petFood || 0) + 1;
     
     let message = `${pet.emoji} *${pet.name}* غذا خورد!\n⚡ -${pet.foodCost} انرژی\n✨ +${xpGain} تجربه\n📊 ${pet.xp}/${pet.xpNeeded} XP`;
+    let image = pet.image;
     
-    // چک کردن لول آپ
     if (pet.xp >= pet.xpNeeded) {
         pet.level++;
         pet.xp -= pet.xpNeeded;
@@ -125,14 +152,13 @@ function feedPet(player, petId) {
         
         message += `\n⬆️ *${pet.name}* لول آپ! سطح ${pet.level}\n⚔️ +${Math.floor(pet.attackBonus * 0.2)} | 🛡️ +${Math.floor(pet.defenseBonus * 0.2)} | ❤️ +${Math.floor(pet.hpBonus * 0.2)}`;
         
-        // چک کردن تکامل
         if (pet.evolveTo && pet.level >= pet.evolveLevel) {
             const evolvedPet = petTypes[pet.evolveTo];
             if (evolvedPet) {
-                const oldEmoji = pet.emoji;
                 pet.type = pet.evolveTo;
                 pet.name = evolvedPet.name;
                 pet.emoji = evolvedPet.emoji;
+                pet.image = evolvedPet.image;
                 pet.attackBonus = evolvedPet.attackBonus;
                 pet.defenseBonus = evolvedPet.defenseBonus;
                 pet.hpBonus = evolvedPet.hpBonus;
@@ -142,16 +168,14 @@ function feedPet(player, petId) {
                 pet.foodCost = evolvedPet.foodCost;
                 pet.evolveMessage = evolvedPet.evolveMessage;
                 
-                player.attack = (player.attack || 5) + pet.attackBonus;
-                player.defense = (player.defense || 2) + pet.defenseBonus;
-                player.maxHp = (player.maxHp || 100) + pet.hpBonus;
+                image = evolvedPet.image;
                 
-                message += `\n\n${pet.evolveMessage || `${oldEmoji} تکامل یافت!`}`;
+                message += `\n\n${pet.evolveMessage || 'تکامل یافت!'}`;
             }
         }
     }
     
-    return { success: true, message };
+    return { success: true, message, image };
 }
 
 function feedAllPets(player) {
@@ -164,13 +188,16 @@ function feedAllPets(player) {
     if ((player.energy || 0) < totalCost) return { success: false, message: `❌ انرژی کافی نداری!\n⚡ نیاز: ${totalCost} | ⚡ داری: ${player.energy || 0}` };
     
     let message = '';
+    let lastImage = null;
     for (let pet of player.pets) {
         const result = feedPet(player, pet.id);
         message += result.message + '\n\n';
+        if (result.image) lastImage = result.image;
     }
     
-    return { success: true, message: message.trim() };
+    return { success: true, message: message.trim(), image: lastImage };
 }
+
 function petBattleHelp(player) {
     initPets(player);
     if (!player.pets || player.pets.length === 0) return null;
@@ -183,7 +210,8 @@ function petBattleHelp(player) {
             helped: true, 
             pet: pet, 
             damage: extraDamage, 
-            message: `🐾 ${pet.emoji} *${pet.name}* به کمکت اومد! +${extraDamage} ⚔️` 
+            message: `🐾 ${pet.emoji} *${pet.name}* به کمکت اومد! +${extraDamage} ⚔️`,
+            image: pet.image
         };
     }
     
@@ -238,7 +266,6 @@ function getPetKeyboard(player) {
         }
         buttons.push(['🍖 غذا بده به همه']);
         
-        // دکمه آزاد کردن فقط برای حیوون دوم به بعد
         if (player.pets.length > 1) {
             for (let pet of player.pets) {
                 buttons.push([`💔 آزاد کن ${pet.emoji} ${pet.name}`]);
@@ -255,7 +282,6 @@ function autoFeedCheck(player) {
     initPets(player);
     if (!player.pets || player.pets.length === 0) return null;
     
-    // ۲۰٪ شانس این که حیوون خودش غذا بخواد
     if (Math.random() < 0.20) {
         const pet = player.pets[Math.floor(Math.random() * player.pets.length)];
         return `${pet.emoji} *${pet.name}* گرسنه‌ست! 🍖\nبرو توی خونه غذا بده (${pet.foodCost}⚡)`;
@@ -267,6 +293,7 @@ function autoFeedCheck(player) {
 module.exports = {
     petTypes,
     eggTypes,
+    petImages,
     initPets,
     findEgg,
     addPet,
