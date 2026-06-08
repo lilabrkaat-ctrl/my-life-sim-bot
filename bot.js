@@ -354,6 +354,18 @@ bot.onText(/^⚡ ساخت انرژی‌دار$/, async (msg) => {
     await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
 });
 
+bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
+});
+
+bot.onText(/^⚡ ساخت انرژی‌دار$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
+});
+
 bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return;
@@ -362,13 +374,13 @@ bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
 });
 
-bot.onText(/^(.+) ⚡(\d+)$/, async (msg, match) => {
+// ⚡ اصلاح: هندلر برای آیتم‌های انرژی‌دار
+bot.onText(/^[✅❌] (.+) \((\d+)⚡\)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return;
-    const fullText = match[1];
-    const parts = fullText.split(' ');
-    const itemName = parts.slice(1).join(' ');
+    const itemName = match[1].trim();
     const result = craftItem(p, itemName);
+    if (result.success) player.addScore(p, 50);
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
 });
 
