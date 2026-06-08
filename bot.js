@@ -74,6 +74,7 @@ async function sendPhoto(chatId, fileId, caption, keyboard) {
     }
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
+
 bot.on('channel_post', async (msg) => {
     if (msg.chat.id === -1003035245907) {
         const text = msg.text || msg.caption || '';
@@ -291,7 +292,6 @@ bot.onText(/💀 فنیشر/, async (msg) => {
 
 async function handleBattleResult(chatId, p, enemy, result) {
     if (result.battleOver) {
-        // اصلاح: چک می‌کنیم activeBattles برای حریف PvP وجود داره
         if (enemy.isPlayer && enemy.opponentId) {
             if (activeBattles[enemy.opponentId]) {
                 delete activeBattles[enemy.opponentId];
@@ -379,7 +379,14 @@ bot.onText(/^🏪 بازار$/, async (msg) => {
     p.chatId = chatId;
     await bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory?.gold||0}`, {
         parse_mode: 'Markdown',
-        reply_markup: { keyboard: [['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], ['🦴 خرید پوست', '⛏️ خرید آهن'], ['💀 خرید فنیشر', '💎 فروش الماس'], ['📤 فروش', '🔙 برگشت']], resize_keyboard: true }
+        reply_markup: { keyboard: [
+            ['🪵 خرید چوب', '🪨 خرید سنگ'], 
+            ['🍖 خرید گوشت', '💧 خرید آب'], 
+            ['🦴 خرید پوست', '⛏️ خرید آهن'], 
+            ['💀 خرید فنیشر', '⚡ خرید انرژی'], 
+            ['💎 فروش الماس', '📤 فروش'], 
+            ['🔙 برگشت']
+        ], resize_keyboard: true }
     });
 });
 
@@ -391,6 +398,14 @@ bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
     const itemName = match[2].trim();
     if (!m[itemName]) return;
     const result = startBuy(p, m[itemName]);
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+bot.onText(/^⚡ خرید انرژی$/, (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p || p.location !== 'village') return;
+    p.chatId = chatId;
+    const result = startBuy(p, 'energy');
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
@@ -524,10 +539,20 @@ bot.onText(/^🔙 بازار$/, (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p || p.location !== 'village') return bot.sendMessage(chatId, '🏪 فقط تو روستا!', mainMenu());
     p.chatId = chatId; cancelShop(p);
-    bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory?.gold||0}`, { parse_mode: 'Markdown', reply_markup: { keyboard: [['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], ['🦴 خرید پوست', '⛏️ خرید آهن'], ['💀 خرید فنیشر', '💎 فروش الماس'], ['📤 فروش', '🔙 برگشت']], resize_keyboard: true } });
+    bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory?.gold||0}`, { 
+        parse_mode: 'Markdown', 
+        reply_markup: { keyboard: [
+            ['🪵 خرید چوب', '🪨 خرید سنگ'], 
+            ['🍖 خرید گوشت', '💧 خرید آب'], 
+            ['🦴 خرید پوست', '⛏️ خرید آهن'], 
+            ['💀 خرید فنیشر', '⚡ خرید انرژی'], 
+            ['💎 فروش الماس', '📤 فروش'], 
+            ['🔙 برگشت']
+        ], resize_keyboard: true } 
+    });
 });
 
-// ⚡ اصلاح: فقط یک handler برای message (مدیریت shop و admin با هم)
+// فقط یک handler برای message (مدیریت shop و admin با هم)
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
