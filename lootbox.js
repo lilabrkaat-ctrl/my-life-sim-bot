@@ -1,9 +1,19 @@
 const config = require('./config');
 
+// عکس‌های صندوق‌ها
+const boxImages = {
+    wooden: 'AgACAgQAAxkBAAEqVG5qJuy_epp3SVJMKD-TozA2eAz44AACaA9rG0FkMFGDwi157hQHjgEAAwIAA3gAAzsE',
+    silver: 'AgACAgQAAxkBAAEqVHJqJuy_oeQ9lYPrrlZ39CbPy_cocQACbQ9rG0FkMFGv7Rir7AKwWAEAAwIAA3gAAzsE',
+    golden: 'AgACAgQAAxkBAAEqVHFqJuy_d89avX1j10qPAAECRrmuZpUAAmwPaxtBZDBR52ksumeqohQBAAMCAAN4AAM7BA',
+    legendary: 'AgACAgQAAxkBAAEqVG9qJuy_SRUG1vaM8qW7icma4jZ-mwACaQ9rG0FkMFFjQWoAAcECix4BAAMCAAN4AAM7BA',
+    reward: 'AgACAgQAAxkBAAEqVGxqJuy_9582RPbpB65-Ik1bKzhbywACZg9rG0FkMFHcgjPbJHM74AEAAwIAA3gAAzsE'
+};
+
 const lootBoxes = {
     wooden: {
         name: 'صندوق چوبی',
         emoji: '📦',
+        image: boxImages.wooden,
         openCost: 0,
         keyCost: 1,
         rewards: [
@@ -22,6 +32,7 @@ const lootBoxes = {
     silver: {
         name: 'صندوق نقره‌ای',
         emoji: '📦⚪',
+        image: boxImages.silver,
         openCost: 10,
         keyCost: 2,
         rewards: [
@@ -44,6 +55,7 @@ const lootBoxes = {
     golden: {
         name: 'صندوق طلایی',
         emoji: '📦🟡',
+        image: boxImages.golden,
         openCost: 50,
         keyCost: 3,
         rewards: [
@@ -66,6 +78,7 @@ const lootBoxes = {
     legendary: {
         name: 'صندوق افسانه‌ای',
         emoji: '📦🟣',
+        image: boxImages.legendary,
         openCost: 100,
         keyCost: 5,
         rewards: [
@@ -97,7 +110,6 @@ function findLootBox(player) {
     
     const r = Math.random();
     
-    // ۵٪ شانس پیدا کردن صندوقچه
     if (r < 0.05) {
         const r2 = Math.random();
         if (r2 < 0.60) {
@@ -117,6 +129,7 @@ function findLootBox(player) {
     
     return { found: false };
 }
+
 function openLootBox(player, boxType) {
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
     
@@ -127,40 +140,33 @@ function openLootBox(player, boxType) {
         return { success: false, message: `❌ ${box.emoji} *${box.name}* نداری!` };
     }
     
-    // چک کردن کلید
     if ((player.inventory?.key || 0) < box.keyCost) {
         return { success: false, message: `❌ کلید کافی نداری!\n🗝️ نیاز: ${box.keyCost} | 🗝️ داری: ${player.inventory?.key || 0}` };
     }
     
-    // چک کردن طلا (برای صندوق‌های غیر چوبی)
     if (boxType !== 'wooden' && (player.inventory?.gold || 0) < box.openCost) {
         return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${box.openCost} | 👑 داری: ${player.inventory?.gold || 0}` };
     }
     
-    // کم کردن هزینه
     player.lootBoxes[boxType]--;
     player.inventory.key -= box.keyCost;
     if (boxType !== 'wooden') player.inventory.gold -= box.openCost;
     
-    // انتخاب جایزه‌ها
     const rewards = [];
     let petFound = null;
     
-    // تعداد جایزه‌های تصادفی (۳ تا ۶ تا)
     const rewardCount = Math.floor(Math.random() * 4) + 3;
     
     for (let i = 0; i < rewardCount; i++) {
         for (let reward of box.rewards) {
             if (Math.random() < reward.chance) {
                 if (reward.pet) {
-                    // چک کردن شانس حیوون (با توجه به rarity)
                     const petRarity = reward.rarity;
                     const petChance = reward.chance;
                     
                     if (Math.random() < petChance) {
-                        const { petTypes, eggTypes } = require('./pet');
+                        const { petTypes } = require('./pet');
                         
-                        // انتخاب حیوون بر اساس rarity
                         let availablePets;
                         if (petRarity === 'common') {
                             availablePets = ['wolf_cub'];
@@ -182,6 +188,8 @@ function openLootBox(player, boxType) {
                             type: petType,
                             name: pet.name,
                             emoji: pet.emoji,
+                            image: pet.image,
+                            eggImage: pet.eggImage,
                             level: 1,
                             xp: 0,
                             xpNeeded: 20,
@@ -207,12 +215,11 @@ function openLootBox(player, boxType) {
                     player.inventory[reward.item] = (player.inventory[reward.item] || 0) + amount;
                     rewards.push({ type: 'item', item: reward.item, amount, emoji, name });
                 }
-                break; // فقط یه جایزه از هر نوع
+                break;
             }
         }
     }
     
-    // ساخت پیام
     let message = `${box.emoji} *${box.name}* باز شد!\n\n🎁 *جایزه‌ها:*\n`;
     
     for (let reward of rewards) {
@@ -237,7 +244,8 @@ function openLootBox(player, boxType) {
     
     return { 
         success: true, 
-        message, 
+        message,
+        image: box.image,
         pet: petFound,
         rewards: rewards.filter(r => r.type === 'item')
     };
@@ -282,6 +290,7 @@ function getLootBoxKeyboard(player) {
 
 module.exports = {
     lootBoxes,
+    boxImages,
     findLootBox,
     openLootBox,
     formatLootBoxes,
