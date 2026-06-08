@@ -22,6 +22,18 @@ function createPlayer(chatId, firstName) {
     players[chatId].score = 0;
     players[chatId].chatId = chatId;
     players[chatId].timeOfDay = getTimeOfDay();
+    
+    // سیستم‌های جدید
+    players[chatId].pets = [];
+    players[chatId].petFood = 0;
+    players[chatId].lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+    players[chatId].dailyQuests = {
+        quests: [],
+        completed: [],
+        lastReset: Date.now(),
+        progress: {}
+    };
+    
     return players[chatId];
 }
 
@@ -83,7 +95,35 @@ function formatStatus(p) {
         }
     }
 
-    return `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n${time.name} | ⚡ ${p.energy||0}/${p.maxEnergy||100}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n${bar} ${hpPercent}٪\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندان: ${p.prison?.length||0}\n🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}\n🏆 امتیاز: ${p.score||0}`;
+    let status = `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n${time.name} | ⚡ ${p.energy||0}/${p.maxEnergy||100}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n${bar} ${hpPercent}٪\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندان: ${p.prison?.length||0}\n🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}`;
+    
+    // نمایش حیوون‌ها
+    if (p.pets && p.pets.length > 0) {
+        status += '\n\n🐾 *حیوون‌ها:* ';
+        for (let pet of p.pets) {
+            status += `${pet.emoji} `;
+        }
+        status += `(${p.pets.length}/۳)`;
+    }
+    
+    // نمایش صندوق‌ها
+    if (p.lootBoxes) {
+        const totalBoxes = (p.lootBoxes.wooden || 0) + (p.lootBoxes.silver || 0) + (p.lootBoxes.golden || 0) + (p.lootBoxes.legendary || 0);
+        if (totalBoxes > 0) {
+            status += `\n📦 صندوقچه: ${totalBoxes} عدد`;
+        }
+    }
+    
+    // نمایش ماموریت‌ها
+    if (p.dailyQuests && p.dailyQuests.quests && p.dailyQuests.quests.length > 0) {
+        const completed = p.dailyQuests.quests.filter(q => q.completed && !q.claimed).length;
+        const total = p.dailyQuests.quests.length;
+        status += `\n📋 ماموریت: ${completed}/${total} تکمیل شده`;
+    }
+    
+    status += `\n🏆 امتیاز: ${p.score||0}`;
+    
+    return status;
 }
 
 function formatLeaderboard() {
@@ -93,7 +133,10 @@ function formatLeaderboard() {
     let msg = '🏆 *برترین بازماندگان:*\n\n';
     const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
     for (let i = 0; i < sorted.length; i++) {
-        msg += `${medals[i]} ${sorted[i][1].name}: ${sorted[i][1].score} امتیاز | ⭐Lv.${sorted[i][1].level}\n`;
+        const p = sorted[i][1];
+        let extra = '';
+        if (p.pets && p.pets.length > 0) extra += ' 🐾';
+        msg += `${medals[i]} ${p.name}: ${p.score} امتیاز | ⭐Lv.${p.level}${extra}\n`;
     }
     return msg;
 }
