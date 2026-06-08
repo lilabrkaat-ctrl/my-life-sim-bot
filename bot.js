@@ -15,6 +15,18 @@ autoSave(player.players, 21600000);
         for (let id in channelData) {
             if (!player.players[id] || channelData[id].score > (player.players[id]?.score || 0)) {
                 player.players[id] = channelData[id];
+                // مقداردهی اولیه سیستم‌های جدید برای کاربرای قدیمی
+                if (!player.players[id].pets) player.players[id].pets = [];
+                if (!player.players[id].petFood) player.players[id].petFood = 0;
+                if (!player.players[id].lootBoxes) player.players[id].lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+                if (!player.players[id].dailyQuests) {
+                    player.players[id].dailyQuests = {
+                        quests: [],
+                        completed: [],
+                        lastReset: Date.now(),
+                        progress: {}
+                    };
+                }
             }
         }
     }
@@ -30,6 +42,9 @@ const { isAdmin, isBanned, adminCommand } = require('./admin');
 const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, orgyPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
 const { initHouse, inviteToHouse, kickFromHouse, formatHouse, getHouseKeyboard, touchInHouse, kissInHouse, orgyInHouse } = require('./house');
 const { propose, marry, divorce } = require('./marry');
+const { formatPets, getPetKeyboard, feedPet, feedAllPets, releasePet, initPets, addPet } = require('./pet');
+const { formatLootBoxes, getLootBoxKeyboard, openLootBox, initLootBoxes } = require('./lootbox');
+const { formatDailyQuests, getDailyQuestKeyboard, claimQuestReward, initDailyQuests } = require('./dailyQuest');
 const config = require('./config');
 
 const activeDialogues = {};
@@ -74,7 +89,6 @@ async function sendPhoto(chatId, fileId, caption, keyboard) {
     }
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
-
 bot.on('channel_post', async (msg) => {
     if (msg.chat.id === -1003035245907) {
         const text = msg.text || msg.caption || '';
@@ -99,6 +113,12 @@ bot.onText(/\/start/, async (msg) => {
     p.timeOfDay = time;
     player.checkUnlocks(p);
     p.chatId = chatId;
+    
+    // مقداردهی اولیه سیستم‌های جدید
+    initPets(p);
+    if (!p.lootBoxes) p.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+    initDailyQuests(p);
+    
     const loc = config.images.locations[p.location] || config.images.locations.village;
     let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 🏆 ${p.score||0} امتیاز\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
     if (p.unlockedMessage) { welcome += `\n\n${p.unlockedMessage}`; p.unlockedMessage = null; }
@@ -152,7 +172,11 @@ bot.onText(/^👤 وضعیت$/, async (msg) => {
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     const time = getTimeOfDay();
     p.timeOfDay = time;
+    
+    // نمایش ماموریت‌های روزانه
+    const questMsg = formatDailyQuests(p);
     await bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown', ...mainMenu() });
+    await bot.sendMessage(chatId, questMsg, { parse_mode: 'Markdown', ...getDailyQuestKeyboard(p) });
 });
 
 bot.onText(/^📊 رتبه‌بندی$/, async (msg) => {
@@ -167,22 +191,28 @@ bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
     player.addScore(p, 5); player.checkUnlocks(p);
     let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
     if (p.unlockedMessage) p.unlockedMessage = null;
+    
+    // نمایش پیام با عکس حیوون یا صندوقچه
+    if (result.petImage) {
+        await sendPhoto(chatId, result.petImage, result.message + extra, mainMenu());
+    } else if (result.boxImage) {
+        await sendPhoto(chatId, result.boxImage, result.message + extra, mainMenu());
+    } else {
+        await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
+    }
+    
     if (result.npcEncounter) {
         const npcId = result.npcEncounter;
         if (!p.npcEncounters) p.npcEncounters = {};
         p.npcEncounters[npcId] = (p.npcEncounters[npcId] || 0) + 1;
         const dialogue = getDialogue(npcId, p.npcEncounters[npcId] - 1);
-        await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown' });
         if (dialogue) {
             activeDialogues[chatId] = { npcId, encounter: p.npcEncounters[npcId] - 1 };
             const npc = getNpcConfig(npcId);
             let img = npc?.image ? (config.images.npcs?.[npc.image]?.file_id || config.images.enemies?.[npc.image]?.file_id) : null;
             await sendPhoto(chatId, img, dialogue.text, { reply_markup: { keyboard: dialogue.options.map(o => [o.text]), resize_keyboard: true } });
-            return;
         }
-        return bot.sendMessage(chatId, '🤐 حرفی نداره...', mainMenu());
     }
-    await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/^🗺️ سفر$/, async (msg) => {
@@ -354,24 +384,18 @@ bot.onText(/^⚡ ساخت انرژی‌دار$/, async (msg) => {
     await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
 });
 
-bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
-});
-
-bot.onText(/^⚡ ساخت انرژی‌دار$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
-});
-
 bot.onText(/🔨 ساخت (.+)/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return;
     const result = craftItem(p, match[1]);
     if (result.success) player.addScore(p, 30);
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
+    
+    // آپدیت ماموریت ساخت‌وساز
+    const { updateQuestProgress, getQuestCompletionMessage } = require('./dailyQuest');
+    updateQuestProgress(p, 'craft', 'any_craft');
+    const questMsg = getQuestCompletionMessage(p);
+    if (questMsg) bot.sendMessage(chatId, questMsg, { parse_mode: 'Markdown' });
 });
 
 // ⚡ اصلاح: هندلر برای آیتم‌های انرژی‌دار
@@ -382,6 +406,12 @@ bot.onText(/^[✅❌] (.+) \((\d+)⚡\)$/, async (msg, match) => {
     const result = craftItem(p, itemName);
     if (result.success) player.addScore(p, 50);
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
+    
+    // آپدیت ماموریت ساخت‌وساز
+    const { updateQuestProgress, getQuestCompletionMessage } = require('./dailyQuest');
+    updateQuestProgress(p, 'craft', 'any_craft');
+    const questMsg = getQuestCompletionMessage(p);
+    if (questMsg) bot.sendMessage(chatId, questMsg, { parse_mode: 'Markdown' });
 });
 
 bot.onText(/^🏪 بازار$/, async (msg) => {
@@ -396,10 +426,77 @@ bot.onText(/^🏪 بازار$/, async (msg) => {
             ['🍖 خرید گوشت', '💧 خرید آب'], 
             ['🦴 خرید پوست', '⛏️ خرید آهن'], 
             ['💀 خرید فنیشر', '⚡ خرید انرژی'], 
-            ['💎 فروش الماس', '📤 فروش'], 
-            ['🔙 برگشت']
+            ['💎 فروش الماس', '📤 فروش'],
+            ['📦 صندوقچه گنج', '🔙 برگشت']
         ], resize_keyboard: true }
     });
+});
+
+bot.onText(/^📦 صندوقچه گنج$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    if (!p.lootBoxes) p.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+    await bot.sendMessage(chatId, formatLootBoxes(p), { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
+});
+
+bot.onText(/^📦 باز کردن صندوق چوبی$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = openLootBox(p, 'wooden');
+    if (result.success && result.pet) {
+        const addResult = addPet(p, result.pet);
+        if (addResult.success && addResult.image) {
+            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
+            return;
+        }
+    }
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
+});
+
+bot.onText(/^📦⚪ باز کردن صندوق نقره‌ای$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = openLootBox(p, 'silver');
+    if (result.success && result.pet) {
+        const addResult = addPet(p, result.pet);
+        if (addResult.success && addResult.image) {
+            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
+            return;
+        }
+    }
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
+});
+
+bot.onText(/^📦🟡 باز کردن صندوق طلایی$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = openLootBox(p, 'golden');
+    if (result.success && result.pet) {
+        const addResult = addPet(p, result.pet);
+        if (addResult.success && addResult.image) {
+            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
+            return;
+        }
+    }
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
+});
+
+bot.onText(/^📦🟣 باز کردن صندوق افسانه‌ای$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = openLootBox(p, 'legendary');
+    if (result.success && result.pet) {
+        const addResult = addPet(p, result.pet);
+        if (addResult.success && addResult.image) {
+            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
+            return;
+        }
+    }
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
 });
 
 bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
@@ -503,11 +600,83 @@ bot.onText(/^🏠 خونه$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     initHouse(p);
+    initPets(p);
+    
+    let houseMsg = formatHouse(p);
+    
+    // اضافه کردن بخش حیوون‌ها به منوی خونه
+    if (p.pets && p.pets.length > 0) {
+        houseMsg += '\n\n' + formatPets(p);
+    }
+    
+    const buttons = [];
     if (p.house?.length > 0) {
-        const buttons = p.house.map(h => [`🏠 ${h.emoji} ${h.name}`]);
-        buttons.push(['🔙 برگشت']);
-        await bot.sendMessage(chatId, formatHouse(p) + '\n\n👆 انتخاب کن:', { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
-    } else await bot.sendMessage(chatId, formatHouse(p), { parse_mode: 'Markdown', ...mainMenu() });
+        for (let h of p.house) {
+            buttons.push([`🏠 ${h.emoji} ${h.name}`]);
+        }
+    }
+    buttons.push(['🐾 حیوون‌ها']);
+    buttons.push(['🔙 برگشت']);
+    
+    await bot.sendMessage(chatId, houseMsg, { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
+});
+
+bot.onText(/^🐾 حیوون‌ها$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    initPets(p);
+    await bot.sendMessage(chatId, formatPets(p), { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^🍖 غذا بده به (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const petInfo = match[1].trim();
+    const pet = p.pets?.find(pt => `${pt.emoji} ${pt.name}` === petInfo);
+    if (!pet) return bot.sendMessage(chatId, '❌ حیوون پیدا نشد!', getPetKeyboard(p));
+    const result = feedPet(p, pet.id);
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getPetKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^🍖 غذا بده به همه$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = feedAllPets(p);
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getPetKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^💔 آزاد کن (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const petInfo = match[1].trim();
+    const pet = p.pets?.find(pt => `${pt.emoji} ${pt.name}` === petInfo);
+    if (!pet) return bot.sendMessage(chatId, '❌ حیوون پیدا نشد!', getPetKeyboard(p));
+    const result = releasePet(p, pet.id);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^🎁 دریافت جایزه (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const questInfo = match[1].trim();
+    
+    // پیدا کردن ماموریت
+    const { questTypes } = require('./dailyQuest');
+    let questKey = null;
+    for (let key in questTypes) {
+        if (`${questTypes[key].emoji} ${questTypes[key].name}` === questInfo) {
+            questKey = key;
+            break;
+        }
+    }
+    
+    if (!questKey) return bot.sendMessage(chatId, '❌ ماموریت پیدا نشد!', mainMenu());
+    
+    const result = claimQuestReward(p, questKey);
+    if (result.image) await sendPhoto(chatId, result.image, result.message, mainMenu());
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/^🏠 (.+)$/, async (msg, match) => {
@@ -558,8 +727,8 @@ bot.onText(/^🔙 بازار$/, (msg) => {
             ['🍖 خرید گوشت', '💧 خرید آب'], 
             ['🦴 خرید پوست', '⛏️ خرید آهن'], 
             ['💀 خرید فنیشر', '⚡ خرید انرژی'], 
-            ['💎 فروش الماس', '📤 فروش'], 
-            ['🔙 برگشت']
+            ['💎 فروش الماس', '📤 فروش'],
+            ['📦 صندوقچه گنج', '🔙 برگشت']
         ], resize_keyboard: true } 
     });
 });
@@ -629,7 +798,9 @@ bot.on('message', (msg) => {
         text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('🏠') || text.startsWith('🔒') || 
         text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || 
         text.startsWith('🏃') || text.startsWith('💍') || text.startsWith('👰') || text.startsWith('🚪') || 
-        text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮')) return;
+        text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮') ||
+        text.startsWith('🐾') || text.startsWith('🍖') || text.startsWith('💔') || text.startsWith('📦') ||
+        text.startsWith('🎁')) return;
 
     const p = player.getPlayer(chatId);
     if (!p) return;
