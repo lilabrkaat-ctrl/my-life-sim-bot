@@ -1,6 +1,9 @@
 const config = require('./config');
 const { triggerRandomEvent, checkNpcEncounter } = require('./events');
 const { getTimeOfDay } = require('./player');
+const { findEgg, addPet, autoFeedCheck } = require('./pet');
+const { findLootBox } = require('./lootbox');
+const { updateQuestProgress, getQuestCompletionMessage } = require('./dailyQuest');
 
 function gather(player) {
     const resources = config.locationResources[player.location];
@@ -25,37 +28,84 @@ function gather(player) {
                 const itemData = config.images.resources[res.item];
                 if (itemData) results.push(`${itemData.emoji} +${amount}`);
                 found = true;
+                
+                // آپدیت ماموریت روزانه
+                updateQuestProgress(player, 'gather', res.item);
             }
         }
     }
 
-    // انرژی زمان - اصلاح: مقادیر بیشتر
+    // انرژی زمان
     if (time.energy > 0) {
         player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + time.energy + 5);
         results.push(`⚡ +${time.energy + 5} انرژی`);
     } else if (time.energy < 0) {
         player.energy = Math.max(0, (player.energy || 0) + time.energy);
     } else {
-        // انرژی پایه حتی اگه زمان خنثی باشه
         player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 3);
         results.push(`⚡ +۳ انرژی`);
     }
 
     player.gathers = (player.gathers || 0) + 1;
 
+    // شانس پیدا کردن تخم حیوون (۱۰٪)
+    let petMessage = null;
+    let petImage = null;
+    const egg = findEgg(player);
+    if (egg) {
+        const addResult = addPet(player, egg);
+        if (addResult.success) {
+            petMessage = `\n\n🐾 ${addResult.message}`;
+            petImage = addResult.image;
+        }
+    }
+
+    // شانس پیدا کردن صندوقچه (۵٪)
+    let boxMessage = null;
+    let boxImage = null;
+    const box = findLootBox(player);
+    if (box.found) {
+        boxMessage = `\n\n${box.box.emoji} *${box.box.name}* پیدا کردی! 📦\nبرو توی بازار بازش کن (🗝️ نیاز: ${box.box.keyCost})`;
+        boxImage = box.box.image;
+    }
+
+    // چک کردن گرسنگی حیوون
+    const hungryMessage = autoFeedCheck(player);
+
     if (!found) {
         const eventResult = triggerRandomEvent(player, 'gather');
-        if (eventResult) {
-            return { success: true, message: `😞 چیزی پیدا نکردی...\n${eventResult.msg}`, eventImage: eventResult.img };
-        }
-        return { success: false, message: '😞 چیزی پیدا نکردی...' };
+        let msg = '😞 چیزی پیدا نکردی...';
+        if (eventResult) msg += `\n${eventResult.msg}`;
+        if (petMessage) msg += petMessage;
+        if (boxMessage) msg += boxMessage;
+        if (hungryMessage) msg += `\n\n🍖 ${hungryMessage}`;
+        
+        // چک کردن تکمیل ماموریت
+        const questComplete = getQuestCompletionMessage(player);
+        if (questComplete) msg += `\n\n${questComplete}`;
+        
+        return { success: true, message: msg, eventImage: eventResult?.img, petImage, boxImage };
     }
 
     const event = Math.random() < 0.20 ? triggerRandomEvent(player, 'gather') : null;
-    const msg = `🎒 ${results.join(' | ')}`;
+    let msg = `🎒 ${results.join(' | ')}`;
 
-    if (event) return { success: true, message: `${msg}\n\n${event.msg}`, eventImage: event.img };
-    return { success: true, message: msg };
+    if (event) msg += `\n\n${event.msg}`;
+    if (petMessage) msg += petMessage;
+    if (boxMessage) msg += boxMessage;
+    if (hungryMessage) msg += `\n\n🍖 ${hungryMessage}`;
+    
+    // چک کردن تکمیل ماموریت
+    const questComplete2 = getQuestCompletionMessage(player);
+    if (questComplete2) msg += `\n\n${questComplete2}`;
+
+    return { 
+        success: true, 
+        message: msg, 
+        eventImage: event?.img, 
+        petImage, 
+        boxImage 
+    };
 }
 
 module.exports = { gather };
