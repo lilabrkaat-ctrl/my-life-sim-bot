@@ -12,10 +12,10 @@ function travel(player, destination) {
     player.travels = (player.travels || 0) + 1;
 
     let msg = `🚶 ${oldLoc.emoji} → ${newLoc.emoji} *${newLoc.name}*\n`;
-    
+
     // ۴۰٪ شانس یه اتفاق تو راه
     const eventRoll = Math.random();
-    
+
     if (eventRoll < 0.15) {
         // برخورد با دشمن تو راه
         const enemyKeys = config.locationEnemies[destination] || ['wolf'];
@@ -59,6 +59,11 @@ function travel(player, destination) {
         player.hp = Math.min(player.maxHp, player.hp + heal);
         msg += `\n💚 تو راه استراحت کردی! +${heal}❤️`;
     }
+
+    // انرژی سفر - جدید
+    const travelEnergy = Math.floor(Math.random() * 10) + 5;
+    player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + travelEnergy);
+    msg += `\n⚡ +${travelEnergy} انرژی سفر`;
 
     msg += `\n📝 ${newLoc.description}`;
     return { success: true, message: msg, travelImage: newLoc.file_id };
