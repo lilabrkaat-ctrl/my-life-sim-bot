@@ -3,6 +3,14 @@ const { loadPlayers } = require('./storage');
 
 const players = loadPlayers();
 
+function getTimeOfDay() {
+    const hour = new Date().getHours();
+    if (hour >= 0 && hour < 6) return { name: '🌑 نیمه‌شب', key: 'midnight', energy: -10, resourceBonus: -0.5, enemyMultiplier: 3, npcChance: 0.5, rewardMultiplier: 3 };
+    if (hour >= 6 && hour < 12) return { name: '🌅 صبح', key: 'morning', energy: 15, resourceBonus: 0.3, enemyMultiplier: 1, npcChance: 1, rewardMultiplier: 1 };
+    if (hour >= 12 && hour < 18) return { name: '☀️ ظهر', key: 'noon', energy: 5, resourceBonus: 0.2, enemyMultiplier: 0.8, npcChance: 1, rewardMultiplier: 1 };
+    return { name: '🌆 غروب', key: 'evening', energy: -5, resourceBonus: 0, enemyMultiplier: 1, npcChance: 2, rewardMultiplier: 1.5 };
+}
+
 function createPlayer(chatId, firstName) {
     players[chatId] = JSON.parse(JSON.stringify(config.defaultPlayer));
     players[chatId].name = 'بازمانده ' + (firstName || 'گمنام');
@@ -13,6 +21,7 @@ function createPlayer(chatId, firstName) {
     players[chatId].prisonActions = {};
     players[chatId].score = 0;
     players[chatId].chatId = chatId;
+    players[chatId].timeOfDay = getTimeOfDay();
     return players[chatId];
 }
 
@@ -57,14 +66,24 @@ function checkUnlocks(player) {
 }
 
 function formatStatus(p) {
+    const time = p.timeOfDay || getTimeOfDay();
+    p.timeOfDay = time;
+    
     const loc = config.images.locations[p.location] || config.images.locations.village;
-    const pHpBar = '🟩'.repeat(Math.min(6, Math.max(0, Math.floor((p.hp||100) / (p.maxHp||100) * 6)))) + 
-                    '🟨'.repeat(Math.min(2, Math.max(0, Math.floor((p.hp||100) / (p.maxHp||100) * 8) - 6))) + 
-                    '🟥'.repeat(Math.min(2, Math.max(0, Math.floor((p.hp||100) / (p.maxHp||100) * 10) - 8))) + 
-                    '⬛'.repeat(Math.max(0, 10 - Math.floor((p.hp||100) / (p.maxHp||100) * 10)));
     const hpPercent = Math.floor((p.hp||100) / (p.maxHp||100) * 100);
     
-    return `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n${pHpBar} ${hpPercent}٪\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندان: ${p.prison?.length||0}\n🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}\n🏆 امتیاز: ${p.score||0}`;
+    let bar = '';
+    for (let i = 0; i < 10; i++) {
+        if (i < Math.floor(hpPercent / 10)) {
+            if (i < 6) bar += '🟩';
+            else if (i < 8) bar += '🟨';
+            else bar += '🟥';
+        } else {
+            bar += '⬛';
+        }
+    }
+    
+    return `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n${time.name} | ⚡ ${p.energy||0}/${p.maxEnergy||100}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n${bar} ${hpPercent}٪\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندان: ${p.prison?.length||0}\n🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}\n🏆 امتیاز: ${p.score||0}`;
 }
 
 function formatLeaderboard() {
@@ -101,7 +120,6 @@ function checkLevelUp(p) {
         }
         
         p.levelUpMessage = `⬆️ *لول آپ!* سطح ${p.level}!\n❤️ +۱۰ جان\n⚔️ +۲ حمله\n🛡️ +۱ دفاع${rewardMsg}`;
-        
         return true;
     }
     return false;
@@ -125,6 +143,6 @@ function leavePvP(player) {
 
 module.exports = { 
     players, createPlayer, getPlayer, addScore, checkUnlocks, 
-    formatStatus, formatLeaderboard, checkLevelUp,
+    formatStatus, formatLeaderboard, checkLevelUp, getTimeOfDay,
     joinPvP, leavePvP, pvpQueue
 };
