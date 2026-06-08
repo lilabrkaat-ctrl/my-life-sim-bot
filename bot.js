@@ -74,7 +74,6 @@ async function sendPhoto(chatId, fileId, caption, keyboard) {
     }
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
-
 bot.on('channel_post', async (msg) => {
     if (msg.chat.id === -1003035245907) {
         const text = msg.text || msg.caption || '';
@@ -112,67 +111,34 @@ bot.onText(/\/admin (.+)/, (msg, match) => {
     const p = player.getPlayer(chatId); if (!p) return;
     p.chatId = chatId;
     const args = match[1].split(' '); const cmd = args.shift();
-    bot.sendMessage(chatId, adminCommand(p, cmd, args).message, { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
-    if (!text || text.startsWith('/')) return;
-    if (!isAdmin(chatId)) return;
+    const result = adminCommand(p, cmd, args);
     
-    const p = player.getPlayer(chatId);
-    if (!p) return;
-    p.chatId = chatId;
-    
-    if (adminState[chatId] && adminState[chatId].step === 'amount') {
-        const amount = parseInt(text);
-        if (isNaN(amount) || amount <= 0) { bot.sendMessage(chatId, '❌ یه عدد معتبر وارد کن!', mainMenu()); return; }
-        const state = adminState[chatId];
-        const target = player.getPlayer(state.targetId);
-        if (!target) { delete adminState[chatId]; bot.sendMessage(chatId, '❌ کاربر دیگه آنلاین نیست!', mainMenu()); return; }
-        target.inventory[state.item] = (target.inventory[state.item] || 0) + amount;
-        bot.sendMessage(chatId, `🎁 *هدیه فرستاده شد!*\n👤 ${target.name}\n🎒 ${state.item}: +${amount}`, { parse_mode: 'Markdown', ...mainMenu() });
-        delete adminState[chatId];
+    if (result.announceAll && result.announce) {
+        const announceMsg = `📢 *اعلان ادمین:*\n\n${result.announce}`;
+        for (let id in player.players) {
+            try { bot.sendMessage(id, announceMsg, { parse_mode: 'Markdown' }); } catch (e) {}
+        }
+        bot.sendMessage(chatId, `✅ پیام به همه ارسال شد!\n\n${announceMsg}`, { parse_mode: 'Markdown', ...mainMenu() });
         return;
     }
     
-    const args = text.split(' ');
-    const cmd = args.shift().toLowerCase();
-    
-    if ((cmd === 'کمک' || cmd === 'اهدای' || cmd === 'اهدا' || cmd === 'gift') && args[0] === 'به') {
-        const targetId = parseInt(args[1]);
-        if (!targetId || !player.getPlayer(targetId)) { bot.sendMessage(chatId, '❌ کاربر پیدا نشد!', mainMenu()); return; }
-        adminState[chatId] = { step: 'item', targetId: targetId };
-        bot.sendMessage(chatId, `🎁 *هدیه به ${player.getPlayer(targetId).name}*\n\n📋 یه آیتم انتخاب کن:`, {
-            parse_mode: 'Markdown',
-            reply_markup: { keyboard: [['👑 طلا', '💍 حلقه', '💎 الماس'], ['📜 طلسم', '🎵 آواز', '🩸 خون'], ['🔮 آرزو', '🗝️ کلید', '🧿 اشک'], ['💀 فنیشر', '🪵 چوب', '🪨 سنگ'], ['🍖 گوشت', '💧 آب', '🦴 پوست'], ['⛏️ آهن', '🔙 لغو']], resize_keyboard: true }
-        });
-        return;
-    }
-    
-    const adminCommands = ['gold', 'g', 'xp', 'exp', 'score', 'sc', 'heal', 'hp', 'item', 'give', 'attack', 'atk', 'defense', 'def', 'level', 'lvl', 'unlock', 'unlockall', 'max', 'maxall', 'god', 'godmode', 'prison', 'prisonall', 'gift', 'sendgift', 'info', 'whois', 'users', 'count', 'top', 'top10', 'resetuser', 'ru', 'ban', 'unban', 'announce', 'ann', 'save', 'reset', 'help', 'addnpc', 'addprison', 'addhouse', 'addhome', 'removenpc', 'removeprison', 'removehouse', 'removehome', 'setrelation', 'setrel', 'اهدای', 'اهدا', 'اطلاعات', 'کاربران', 'برترین‌ها', 'ذخیره', 'ریست', 'ریست کن', 'کمک'];
-    
-    if (adminCommands.includes(cmd)) {
-        const result = adminCommand(p, cmd, args);
-        bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-    }
+    bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/^(👑|💍|💎|📜|🎵|🩸|🔮|🗝️|🧿|💀|🪵|🪨|🍖|💧|🦴|⛏️) (.+)$/, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAdmin(chatId)) return;
     if (!adminState[chatId] || adminState[chatId].step !== 'item') return;
-    
+
     const itemMap = {
         '👑': 'gold', '💍': 'ring', '💎': 'diamond', '📜': 'spell', '🎵': 'song',
         '🩸': 'blood', '🔮': 'wish', '🗝️': 'key', '🧿': 'tear', '💀': 'finisher',
         '🪵': 'wood', '🪨': 'stone', '🍖': 'meat', '💧': 'water', '🦴': 'skin', '⛏️': 'iron'
     };
-    
+
     const item = itemMap[match[1]];
     if (!item) return;
-    
+
     adminState[chatId].item = item;
     adminState[chatId].step = 'amount';
     bot.sendMessage(chatId, `📝 چند تا *${item}* می‌خوای بفرستی؟\n(عدد رو تایپ کن)`, { parse_mode: 'Markdown' });
@@ -325,8 +291,14 @@ bot.onText(/💀 فنیشر/, async (msg) => {
 
 async function handleBattleResult(chatId, p, enemy, result) {
     if (result.battleOver) {
+        // اصلاح: چک می‌کنیم activeBattles برای حریف PvP وجود داره
+        if (enemy.isPlayer && enemy.opponentId) {
+            if (activeBattles[enemy.opponentId]) {
+                delete activeBattles[enemy.opponentId];
+                await bot.sendMessage(enemy.opponentId, `💀 باختی! ${p.name} برنده شد!`, mainMenu());
+            }
+        }
         delete activeBattles[chatId];
-        if (enemy.isPlayer && enemy.opponentId) { delete activeBattles[enemy.opponentId]; await bot.sendMessage(enemy.opponentId, `💀 باختی! ${p.name} برنده شد!`, mainMenu()); }
         if (result.playerWon) { player.addScore(p, enemy.isPlayer ? 50 : 20); player.checkUnlocks(p); }
         let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
         if (p.unlockedMessage) p.unlockedMessage = null;
@@ -355,7 +327,12 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
     }
     const result = playerEscape(p, enemy);
     if (result.battleOver) {
-        if (enemy.isPlayer && enemy.opponentId) { delete activeBattles[enemy.opponentId]; await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد!`, mainMenu()); }
+        if (enemy.isPlayer && enemy.opponentId) {
+            if (activeBattles[enemy.opponentId]) {
+                delete activeBattles[enemy.opponentId];
+                await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد!`, mainMenu());
+            }
+        }
         delete activeBattles[chatId];
         if (result.animation) await sendAnimation(chatId, result.animation, result.message, mainMenu());
         else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
@@ -437,20 +414,6 @@ bot.onText(/^(.+) فروش (.+)$/, (msg, match) => {
     p.chatId = chatId;
     const m = { 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron' };
     bot.sendMessage(chatId, startSell(p, m[match[2].trim()]).message, { parse_mode: 'Markdown', ...mainMenu() });
-});
-
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
-    if (!text || text.startsWith('/') || text.startsWith('🪵') || text.startsWith('🪨') || text.startsWith('🍖') || text.startsWith('💧') || text.startsWith('🦴') || text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') || text.startsWith('💎') || text.startsWith('💀') || text.startsWith('🔙') || text.startsWith('👤') || text.startsWith('🌿') || text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') || text.startsWith('📜') || text.startsWith('⚡') || text.startsWith('✅') || text.startsWith('❌') || text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('🏠') || text.startsWith('🔒') || text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || text.startsWith('🏃') || text.startsWith('💍') || text.startsWith('👰') || text.startsWith('🚪') || text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮')) return;
-    if (isAdmin(chatId)) return;
-    const p = player.getPlayer(chatId);
-    if (!p) return;
-    p.chatId = chatId;
-    const state = getShopState(p);
-    if (!state) return;
-    const result = processAmount(p, text);
-    if (result.message) bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.onText(/\/cancel/, (msg) => {
@@ -562,6 +525,82 @@ bot.onText(/^🔙 بازار$/, (msg) => {
     if (!p || p.location !== 'village') return bot.sendMessage(chatId, '🏪 فقط تو روستا!', mainMenu());
     p.chatId = chatId; cancelShop(p);
     bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory?.gold||0}`, { parse_mode: 'Markdown', reply_markup: { keyboard: [['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], ['🦴 خرید پوست', '⛏️ خرید آهن'], ['💀 خرید فنیشر', '💎 فروش الماس'], ['📤 فروش', '🔙 برگشت']], resize_keyboard: true } });
+});
+
+// ⚡ اصلاح: فقط یک handler برای message (مدیریت shop و admin با هم)
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    if (!text || text.startsWith('/')) return;
+
+    // اگه ادمین باشه و دستور ادمین باشه
+    if (isAdmin(chatId)) {
+        const p = player.getPlayer(chatId);
+        if (!p) return;
+        p.chatId = chatId;
+
+        if (adminState[chatId] && adminState[chatId].step === 'amount') {
+            const amount = parseInt(text);
+            if (isNaN(amount) || amount <= 0) { bot.sendMessage(chatId, '❌ یه عدد معتبر وارد کن!', mainMenu()); return; }
+            const state = adminState[chatId];
+            const target = player.getPlayer(state.targetId);
+            if (!target) { delete adminState[chatId]; bot.sendMessage(chatId, '❌ کاربر دیگه آنلاین نیست!', mainMenu()); return; }
+            target.inventory[state.item] = (target.inventory[state.item] || 0) + amount;
+            bot.sendMessage(chatId, `🎁 *هدیه فرستاده شد!*\n👤 ${target.name}\n🎒 ${state.item}: +${amount}`, { parse_mode: 'Markdown', ...mainMenu() });
+            delete adminState[chatId];
+            return;
+        }
+
+        const args = text.split(' ');
+        const cmd = args.shift().toLowerCase();
+
+        if ((cmd === 'کمک' || cmd === 'اهدای' || cmd === 'اهدا' || cmd === 'gift') && args[0] === 'به') {
+            const targetId = parseInt(args[1]);
+            if (!targetId || !player.getPlayer(targetId)) { bot.sendMessage(chatId, '❌ کاربر پیدا نشد!', mainMenu()); return; }
+            adminState[chatId] = { step: 'item', targetId: targetId };
+            bot.sendMessage(chatId, `🎁 *هدیه به ${player.getPlayer(targetId).name}*\n\n📋 یه آیتم انتخاب کن:`, {
+                parse_mode: 'Markdown',
+                reply_markup: { keyboard: [['👑 طلا', '💍 حلقه', '💎 الماس'], ['📜 طلسم', '🎵 آواز', '🩸 خون'], ['🔮 آرزو', '🗝️ کلید', '🧿 اشک'], ['💀 فنیشر', '🪵 چوب', '🪨 سنگ'], ['🍖 گوشت', '💧 آب', '🦴 پوست'], ['⛏️ آهن', '🔙 لغو']], resize_keyboard: true }
+            });
+            return;
+        }
+
+        const adminCommands = ['gold', 'g', 'xp', 'exp', 'score', 'sc', 'heal', 'hp', 'item', 'give', 'attack', 'atk', 'defense', 'def', 'level', 'lvl', 'unlock', 'unlockall', 'max', 'maxall', 'god', 'godmode', 'prison', 'prisonall', 'gift', 'sendgift', 'info', 'whois', 'users', 'count', 'top', 'top10', 'resetuser', 'ru', 'ban', 'unban', 'announce', 'ann', 'save', 'reset', 'help', 'addnpc', 'addprison', 'addhouse', 'addhome', 'removenpc', 'removeprison', 'removehouse', 'removehome', 'setrelation', 'setrel', 'اهدای', 'اهدا', 'اطلاعات', 'کاربران', 'برترین‌ها', 'ذخیره', 'ریست', 'ریست کن', 'کمک'];
+
+        if (adminCommands.includes(cmd)) {
+            const result = adminCommand(p, cmd, args);
+            if (result.announceAll && result.announce) {
+                const announceMsg = `📢 *اعلان ادمین:*\n\n${result.announce}`;
+                for (let id in player.players) {
+                    try { bot.sendMessage(id, announceMsg, { parse_mode: 'Markdown' }); } catch (e) {}
+                }
+                bot.sendMessage(chatId, `✅ پیام به همه ارسال شد!\n\n${announceMsg}`, { parse_mode: 'Markdown', ...mainMenu() });
+                return;
+            }
+            bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+            return;
+        }
+        return;
+    }
+
+    // خرید و فروش برای کاربرای عادی (فقط اعداد و پیام‌های ساده)
+    if (text.startsWith('🪵') || text.startsWith('🪨') || text.startsWith('🍖') || text.startsWith('💧') || 
+        text.startsWith('🦴') || text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') || 
+        text.startsWith('💎') || text.startsWith('💀') || text.startsWith('🔙') || text.startsWith('👤') || 
+        text.startsWith('🌿') || text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') || 
+        text.startsWith('📜') || text.startsWith('⚡') || text.startsWith('✅') || text.startsWith('❌') || 
+        text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('🏠') || text.startsWith('🔒') || 
+        text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || 
+        text.startsWith('🏃') || text.startsWith('💍') || text.startsWith('👰') || text.startsWith('🚪') || 
+        text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮')) return;
+
+    const p = player.getPlayer(chatId);
+    if (!p) return;
+    p.chatId = chatId;
+    const state = getShopState(p);
+    if (!state) return;
+    const result = processAmount(p, text);
+    if (result.message) bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
