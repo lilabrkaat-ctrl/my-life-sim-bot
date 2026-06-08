@@ -1,303 +1,289 @@
-const config = require('./config');
-const { getTimeOfDay } = require('./player');
+const { getPlayer, savePlayer, calcEquippedStats } = require('./player');
 
-const shopState = {};
+// ==================== فروشگاه سلاح و زره ====================
+const shopWeapons = [
+    // یک‌دستی (w_1h)
+    { name: "🗡️ Rusty Sword", type: "w_1h", damage: 3, defense: 0, price: 150, emoji: "🗡️", stock: 10, category: "weapon" },
+    { name: "⚔️ Iron Sword", type: "w_1h", damage: 7, defense: 0, price: 400, emoji: "⚔️", stock: 8, category: "weapon" },
+    { name: "🔪 Shadow Dagger", type: "w_1h", damage: 12, defense: 0, price: 900, emoji: "🔪", stock: 5, category: "weapon" },
+    { name: "💎 Crystal Blade", type: "w_1h", damage: 18, defense: 0, price: 2000, emoji: "💎", stock: 3, category: "weapon" },
 
-// تابع محاسبه قیمت پویا بر اساس شب/روز
-function getDynamicPrice(basePrice, isNight) {
-    if (isNight) return Math.floor(basePrice * 0.8); // شب: ۲۰٪ تخفیف
-    return Math.floor(basePrice * 1.2); // روز: ۲۰٪ گران‌تر
-}
+    // دو‌دستی (w_2h)
+    { name: "🪓 Woodcutter's Axe", type: "w_2h", damage: 15, defense: 0, price: 1200, emoji: "🪓", stock: 5, category: "weapon" },
+    { name: "⚡ Storm Hammer", type: "w_2h", damage: 22, defense: 0, price: 2800, emoji: "⚡", stock: 3, category: "weapon" },
 
-function showShopMenu() {
-    return `🏪 *بازار باستانی*\n\n📥 *خرید با طلا:*\n🪵 چوب: ۲👑 | 🪨 سنگ: ۳👑\n🍖 گوشت: ۳👑 | 💧 آب: ۱👑\n🦴 پوست: ۵👑 | ⛏️ آهن: ۸👑\n💀 فنیشر: ۵۰👑 | ⚡ انرژی: ۱۰👑 (+۲۰⚡)\n\n⚡ *خرید با انرژی:*\n🪵 چوب: ۵⚡ | 🪨 سنگ: ۷⚡\n🍖 گوشت: ۷⚡ | 💧 آب: ۳⚡\n🦴 پوست: ۱۲⚡ | ⛏️ آهن: ۱۸⚡\n💀 فنیشر: ۱۲۰⚡\n\n📤 *فروش برای طلا:*\n💎 الماس: ۱۰۰👑\n🪵 چوب: ۱👑 | 🪨 سنگ: ۲👑\n🍖 گوشت: ۲👑 | 💧 آب: ۰👑\n🦴 پوست: ۳👑 | ⛏️ آهن: ۵👑\n\n🔥 *فروش برای انرژی:*\n🪵 چوب: ۲⚡ | 🪨 سنگ: ۳⚡\n🍖 گوشت: ۳⚡ | 💧 آب: ۱⚡\n🦴 پوست: ۵⚡ | ⛏️ آهن: ۸⚡\n💎 الماس: ۸۰⚡`;
-}
+    // دفاعی (w_def)
+    { name: "🛡️ Wooden Shield", type: "w_def", damage: 0, defense: 4, price: 200, emoji: "🛡️", stock: 10, category: "armor" },
+    { name: "🔰 Iron Shield", type: "w_def", damage: 0, defense: 9, price: 600, emoji: "🔰", stock: 7, category: "armor" },
+    { name: "🛡️ Dragon Shield", type: "w_def", damage: 0, defense: 15, price: 2500, emoji: "🛡️", stock: 3, category: "armor" },
 
-// ======================== خرید با طلا (قبلی + تخفیف شب/روز) ========================
+    // زره بدن (w_body)
+    { name: "🧥 Leather Armor", type: "w_body", damage: 0, defense: 5, price: 300, emoji: "🧥", stock: 8, category: "armor" },
+    { name: "🦺 Iron Chestplate", type: "w_body", damage: 0, defense: 10, price: 800, emoji: "🦺", stock: 5, category: "armor" },
+    { name: "💠 Crystal Armor", type: "w_body", damage: 0, defense: 18, price: 3000, emoji: "💠", stock: 2, category: "armor" },
 
-function startBuy(player, item) {
-    const time = getTimeOfDay();
-    const isNight = (time.name === 'شب');
-    const priceNote = isNight ? '🌙 تخفیف شب' : '☀️ قیمت روز';
-    
-    if (item === 'finisher') {
-        const basePrice = config.shopPrices.finisher.buy;
-        const price = getDynamicPrice(basePrice, isNight);
-        if ((player.inventory.gold || 0) < price) {
-            return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${price}👑\n👑 داری: ${player.inventory.gold||0}👑` };
+    // کلاه‌خود (w_head)
+    { name: "⛑️ Iron Helmet", type: "w_head", damage: 0, defense: 6, price: 500, emoji: "⛑️", stock: 6, category: "armor" },
+    { name: "👑 Crown of Power", type: "w_head", damage: 3, defense: 10, price: 3500, emoji: "👑", stock: 1, category: "armor" },
+];
+
+// ==================== فروشگاه معجون و غذا ====================
+const shopPotions = [
+    { name: "❤️ Health Potion", heal: 30, price: 80, emoji: "❤️", stock: 20, category: "potion" },
+    { name: "💙 Energy Drink", energy: 40, price: 60, emoji: "💙", stock: 20, category: "potion" },
+    { name: "🍗 Roasted Chicken", hunger: 50, price: 50, emoji: "🍗", stock: 15, category: "food" },
+    { name: "🍞 Bread", hunger: 20, price: 20, emoji: "🍞", stock: 25, category: "food" },
+    { name: "🧪 Elixir of Life", heal: 80, energy: 80, hunger: 80, price: 500, emoji: "🧪", stock: 5, category: "special" },
+    { name: "💪 Strength Potion", damageBoost: 5, duration: 300, price: 300, emoji: "💪", stock: 5, category: "special" },
+];
+
+// ==================== فروشگاه کمیاب و کلکسیونی ====================
+const shopRare = [
+    { name: "💍 Ring of Luck", luck: 10, price: 5000, emoji: "💍", stock: 2, category: "rare" },
+    { name: "📿 Amulet of Protection", defenseBoost: 5, price: 4000, emoji: "📿", stock: 2, category: "rare" },
+    { name: "🔮 Mystery Box", randomItem: true, price: 1500, emoji: "🔮", stock: 5, category: "rare" },
+    { name: "🎫 Lottery Ticket", winChance: 0.1, prize: 10000, price: 500, emoji: "🎫", stock: 10, category: "rare" },
+    { name: "🗝️ Dungeon Key", dungeonAccess: true, price: 2000, emoji: "🗝️", stock: 3, category: "rare" },
+    { name: "🌾 Farm Key", farmAccess: true, price: 1000, emoji: "🌾", stock: 5, category: "rare" },
+    { name: "🏦 Bank Key", bankAccess: true, price: 5000, emoji: "🏦", stock: 2, category: "rare" },
+];
+
+// ==================== مصالح خانه و کاردستی ====================
+const shopMaterials = [
+    { name: "🪵 Wood", price: 30, emoji: "🪵", stock: 50, category: "material" },
+    { name: "🪨 Stone", price: 40, emoji: "🪨", stock: 40, category: "material" },
+    { name: "⛓️ Iron Ingot", price: 100, emoji: "⛓️", stock: 25, category: "material" },
+    { name: "🥇 Gold Ingot", price: 500, emoji: "🥇", stock: 10, category: "material" },
+    { name: "🥈 Silver Ingot", price: 300, emoji: "🥈", stock: 15, category: "material" },
+    { name: "💎 Diamond", price: 2000, emoji: "💎", stock: 5, category: "material" },
+    { name: "🔮 Magic Crystal", price: 3500, emoji: "🔮", stock: 3, category: "material" },
+];
+
+// ==================== لیست کل ====================
+const allShopSections = [
+    { title: "🛡️ سلاح‌ها و زره‌ها", items: shopWeapons },
+    { title: "🧪 معجون‌ها و غذا", items: shopPotions },
+    { title: "📦 آیتم‌های کلکسیونی و کمیاب", items: shopRare },
+    { title: "🏠 مصالح خانه و کاردستی", items: shopMaterials },
+];
+// ==================== نمایش فروشگاه ====================
+function showShop(bot, chatId, messageId = null, page = 0, categoryIndex = 0) {
+    const player = getPlayer(chatId);
+    if (!player) return;
+
+    const section = allShopSections[categoryIndex];
+    if (!section) return;
+
+    const itemsPerPage = 6;
+    const totalPages = Math.ceil(section.items.length / itemsPerPage);
+    if (page >= totalPages) page = totalPages - 1;
+    if (page < 0) page = 0;
+
+    const start = page * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = section.items.slice(start, end);
+
+    let text = `🏪 **فروشگاه** - ${section.title}\n`;
+    text += `💰 موجودی شما: ${player.coins} سکه\n`;
+    text += `📄 صفحه ${page + 1} از ${totalPages}\n\n`;
+
+    const inlineKeyboard = [];
+
+    pageItems.forEach((item, index) => {
+        const stockText = item.stock !== undefined ? ` (موجودی: ${item.stock})` : '';
+        text += `${item.emoji} **${item.name}** - ${item.price} سکه${stockText}\n`;
+
+        if (item.damage) text += `   ⚔️ آسیب: +${item.damage}\n`;
+        if (item.defense) text += `   🛡️ دفاع: +${item.defense}\n`;
+        if (item.heal) text += `   ❤️ درمان: +${item.heal}\n`;
+        if (item.energy) text += `   ⚡ انرژی: +${item.energy}\n`;
+        if (item.hunger) text += `   🍗 گرسنگی: +${item.hunger}\n`;
+        text += `\n`;
+
+        inlineKeyboard.push([{
+            text: `🛒 خرید ${item.name}`,
+            callback_data: `shop_buy_${categoryIndex}_${start + index}_${page}`
+        }]);
+    });
+
+    // دکمه‌های صفحه‌بندی
+    const navButtons = [];
+    if (page > 0) {
+        navButtons.push({
+            text: "⬅️ قبلی",
+            callback_data: `shop_page_${categoryIndex}_${page - 1}`
+        });
+    }
+    if (page < totalPages - 1) {
+        navButtons.push({
+            text: "بعدی ➡️",
+            callback_data: `shop_page_${categoryIndex}_${page + 1}`
+        });
+    }
+    if (navButtons.length > 0) inlineKeyboard.push(navButtons);
+
+    // دکمه‌های تغییر دسته
+    const categoryButtons = [];
+    allShopSections.forEach((sec, idx) => {
+        if (idx !== categoryIndex) {
+            categoryButtons.push({
+                text: sec.title.split(' ')[0],
+                callback_data: `shop_category_${idx}_0`
+            });
         }
-        player.inventory.gold -= price;
-        player.inventory.finisher = (player.inventory.finisher || 0) + 1;
-        return { success: true, message: `✅ 💀 فنیشر خریدی!\n💰 -${price}👑 (${priceNote})\n💀 موجودی: ${player.inventory.finisher}` };
+    });
+
+    // چیدمان دکمه‌های دسته‌ها دو تا دو تا
+    for (let i = 0; i < categoryButtons.length; i += 2) {
+        const row = [categoryButtons[i]];
+        if (categoryButtons[i + 1]) row.push(categoryButtons[i + 1]);
+        inlineKeyboard.push(row);
     }
-    
-    if (item === 'energy') {
-        const price = getDynamicPrice(10, isNight);
-        if ((player.inventory.gold || 0) < price) {
-            return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${price}👑\n👑 داری: ${player.inventory.gold||0}👑` };
+
+    inlineKeyboard.push([{ text: "🔙 خروج", callback_data: "shop_exit" }]);
+
+    const opts = {
+        parse_mode: "Markdown",
+        reply_markup: { inline_keyboard: inlineKeyboard }
+    };
+
+    if (messageId) {
+        bot.editMessageText(text, { chat_id: chatId, message_id: messageId, ...opts }).catch(() => {});
+    } else {
+        bot.sendMessage(chatId, text, opts).catch(() => {});
+    }
+}
+
+// ==================== خرید آیتم ====================
+function buyItem(bot, chatId, userId, categoryIndex, itemIndex, page) {
+    const player = getPlayer(chatId);
+    if (!player) return;
+
+    const section = allShopSections[categoryIndex];
+    if (!section) return;
+
+    const item = section.items[itemIndex];
+    if (!item) return;
+
+    // چک موجودی
+    if (item.stock !== undefined && item.stock <= 0) {
+        bot.answerCallbackQuery(userId, { text: "❌ این آیتم تموم شده!", show_alert: true });
+        return;
+    }
+
+    // چک پول
+    if (player.coins < item.price) {
+        bot.answerCallbackQuery(userId, { text: "❌ پول کافی نداری!", show_alert: true });
+        return;
+    }
+
+    // کم کردن پول
+    player.coins -= item.price;
+
+    // کم کردن موجودی
+    if (item.stock !== undefined) {
+        const foundInStock = section.items.find(si => si.name === item.name);
+        if (foundInStock) foundInStock.stock--;
+    }
+
+    // اضافه کردن به اینونتوری
+    if (!player.inventory) player.inventory = [];
+    player.inventory.push({ ...item, equipped: false });
+
+    // اگه اسلحه یا زره هست و equipped خالیه، auto-equip کن
+    if (item.category === 'weapon' || item.category === 'armor') {
+        if (!player.equipped) player.equipped = {};
+        const slot = item.type;
+        if (!player.equipped[slot]) {
+            // آخرین آیتم اضافه شده رو equipped کن
+            const lastItem = player.inventory[player.inventory.length - 1];
+            lastItem.equipped = true;
+            player.equipped[slot] = lastItem;
         }
-        player.inventory.gold -= price;
-        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 20);
-        return { success: true, message: `✅ ⚡ +۲۰ انرژی!\n💰 -${price}👑 (${priceNote})\n⚡ انرژی: ${player.energy}/${player.maxEnergy||100}` };
     }
-    
-    if (item === 'diamond') {
-        return startSell(player, 'diamond');
-    }
-    
-    const p = config.shopPrices[item];
-    if (!p) return { success: false, message: '❌ آیتم نامعتبر!' };
-    
-    const dynamicPrice = getDynamicPrice(p.buy, isNight);
-    shopState[player.chatId || 'default'] = { action: 'buy', item: item, price: dynamicPrice };
-    
-    return { 
-        success: true, 
-        message: `🛒 *خرید ${p.emoji} ${p.name}*\n⏰ ${time.emoji} ${time.name} | ${priceNote}\n💰 قیمت هر عدد: ${dynamicPrice}👑\n👑 موجودی تو: ${player.inventory.gold||0}👑\n\n📝 *چند تا می‌خوای؟* (عدد رو تایپ کن)\nیا بزن /cancel لغو کن` 
-    };
+
+    // آپدیت stats
+    calcEquippedStats(player);
+
+    savePlayer(chatId, player);
+
+    bot.answerCallbackQuery(userId, { text: `✅ ${item.name} خریداری شد!`, show_alert: false });
+
+    return true;
 }
 
-function buyItem(player, item, amount = 1) {
-    const p = config.shopPrices[item];
-    if (!p) return { success: false, message: '❌ وجود نداره!' };
-    
-    const state = shopState[player.chatId || 'default'];
-    const pricePerUnit = state?.price || p.buy;
-    
-    const totalCost = pricePerUnit * amount;
-    
-    if ((player.inventory.gold || 0) < totalCost) {
-        delete shopState[player.chatId || 'default'];
-        return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${totalCost}👑\n👑 داری: ${player.inventory.gold||0}👑` };
-    }
-    
-    player.inventory.gold -= totalCost;
-    player.inventory[item] = (player.inventory[item] || 0) + amount;
-    delete shopState[player.chatId || 'default'];
-    
-    return { 
-        success: true, 
-        message: `✅ *خرید موفق!*\n\n${p.emoji} ${p.name}: +${amount}\n💰 هزینه: ${totalCost}👑\n👑 باقی‌مانده: ${player.inventory.gold}👑` 
-    };
+// ==================== ریستاک فروشگاه ====================
+function restockShop() {
+    allShopSections.forEach(section => {
+        section.items.forEach(item => {
+            if (item.stock !== undefined) {
+                // برگردوندن به موجودی پیش‌فرض (مقادیر اولیه)
+                const defaults = {
+                    "🗡️ Rusty Sword": 10, "⚔️ Iron Sword": 8, "🔪 Shadow Dagger": 5,
+                    "💎 Crystal Blade": 3, "🪓 Woodcutter's Axe": 5, "⚡ Storm Hammer": 3,
+                    "🛡️ Wooden Shield": 10, "🔰 Iron Shield": 7, "🛡️ Dragon Shield": 3,
+                    "🧥 Leather Armor": 8, "🦺 Iron Chestplate": 5, "💠 Crystal Armor": 2,
+                    "⛑️ Iron Helmet": 6, "👑 Crown of Power": 1,
+                    "❤️ Health Potion": 20, "💙 Energy Drink": 20, "🍗 Roasted Chicken": 15,
+                    "🍞 Bread": 25, "🧪 Elixir of Life": 5, "💪 Strength Potion": 5,
+                    "💍 Ring of Luck": 2, "📿 Amulet of Protection": 2, "🔮 Mystery Box": 5,
+                    "🎫 Lottery Ticket": 10, "🗝️ Dungeon Key": 3, "🌾 Farm Key": 5, "🏦 Bank Key": 2,
+                    "🪵 Wood": 50, "🪨 Stone": 40, "⛓️ Iron Ingot": 25,
+                    "🥇 Gold Ingot": 10, "🥈 Silver Ingot": 15, "💎 Diamond": 5, "🔮 Magic Crystal": 3
+                };
+                if (defaults[item.name]) {
+                    item.stock = defaults[item.name];
+                }
+            }
+        });
+    });
 }
 
-// ======================== فروش برای طلا (قبلی) ========================
+// ==================== هندل فروشگاه ====================
+function handleShop(bot, chatId, messageId = null) {
+    showShop(bot, chatId, messageId, 0, 0);
+}
 
-function startSell(player, item) {
-    const time = getTimeOfDay();
-    const isNight = (time.name === 'شب');
-    const priceNote = isNight ? '🌙 تخفیف شب' : '☀️ قیمت روز';
-    
-    if (item === 'diamond') {
-        if ((player.inventory.diamond || 0) < 1) {
-            return { success: false, message: '❌ الماس نداری!' };
+function handleShopSelection(bot, chatId, userId, data) {
+    const parts = data.split('_');
+
+    if (parts[0] === 'shop' && parts[1] === 'exit') {
+        bot.deleteMessage(chatId, parts[2] || '').catch(() => {});
+        return;
+    }
+
+    if (parts[1] === 'category') {
+        const categoryIndex = parseInt(parts[2]);
+        const page = parseInt(parts[3]);
+        if (isNaN(categoryIndex) || isNaN(page)) return;
+        showShop(bot, chatId, userId, page, categoryIndex);
+        return;
+    }
+
+    if (parts[1] === 'page') {
+        const categoryIndex = parseInt(parts[2]);
+        const page = parseInt(parts[3]);
+        if (isNaN(categoryIndex) || isNaN(page)) return;
+        showShop(bot, chatId, userId, page, categoryIndex);
+        return;
+    }
+
+    if (parts[1] === 'buy') {
+        const categoryIndex = parseInt(parts[2]);
+        const itemIndex = parseInt(parts[3]);
+        const page = parseInt(parts[4]);
+        if (isNaN(categoryIndex) || isNaN(itemIndex) || isNaN(page)) return;
+
+        const success = buyItem(bot, chatId, userId, categoryIndex, itemIndex, page);
+        if (success) {
+            showShop(bot, chatId, userId, page, categoryIndex);
         }
-        player.inventory.diamond--;
-        player.inventory.gold = (player.inventory.gold || 0) + 100;
-        return { success: true, message: `💎 الماس فروخته شد! +۱۰۰👑\n👑 موجودی: ${player.inventory.gold}` };
-    }
-    
-    const p = config.shopPrices[item];
-    if (!p) return { success: false, message: '❌ آیتم نامعتبر!' };
-    
-    const dynamicPrice = getDynamicPrice(p.sell, isNight);
-    shopState[player.chatId || 'default'] = { action: 'sell', item: item, price: dynamicPrice };
-    
-    return { 
-        success: true, 
-        message: `📤 *فروش ${p.emoji} ${p.name}*\n⏰ ${time.emoji} ${time.name} | ${priceNote}\n💰 قیمت هر عدد: ${dynamicPrice}👑\n🎒 موجودی تو: ${player.inventory[item] || 0} عدد\n\n📝 *چند تا می‌خوای بفروشی؟* (عدد رو تایپ کن)\nیا بزن /cancel لغو کن` 
-    };
-}
-
-function sellItem(player, item, amount = 1) {
-    const p = config.shopPrices[item];
-    if (!p) return { success: false, message: '❌ وجود نداره!' };
-    
-    const state = shopState[player.chatId || 'default'];
-    const pricePerUnit = state?.price || p.sell;
-    
-    if ((player.inventory[item] || 0) < amount) {
-        delete shopState[player.chatId || 'default'];
-        return { success: false, message: `❌ به اندازه کافی نداری!\n🎒 داری: ${player.inventory[item] || 0} عدد` };
-    }
-    
-    const totalEarn = pricePerUnit * amount;
-    player.inventory[item] -= amount;
-    player.inventory.gold = (player.inventory.gold || 0) + totalEarn;
-    delete shopState[player.chatId || 'default'];
-    
-    return { 
-        success: true, 
-        message: `✅ *فروش موفق!*\n\n${p.emoji} ${p.name}: -${amount}\n💰 دریافتی: ${totalEarn}👑\n👑 موجودی: ${player.inventory.gold}👑` 
-    };
-}
-
-// ======================== خرید با انرژی (جدید) ========================
-
-function startBuyWithEnergy(player, item) {
-    const energyPrices = {
-        wood: { cost: 5, emoji: '🪵', name: 'چوب' },
-        stone: { cost: 7, emoji: '🪨', name: 'سنگ' },
-        meat: { cost: 7, emoji: '🍖', name: 'گوشت' },
-        water: { cost: 3, emoji: '💧', name: 'آب' },
-        skin: { cost: 12, emoji: '🦴', name: 'پوست' },
-        iron: { cost: 18, emoji: '⛏️', name: 'آهن' },
-        finisher: { cost: 120, emoji: '💀', name: 'فنیشر' }
-    };
-    
-    const p = energyPrices[item];
-    if (!p) return { success: false, message: '❌ با انرژی قابل خرید نیست!' };
-    
-    if ((player.energy || 0) < p.cost) {
-        return { 
-            success: false, 
-            message: `❌ انرژی کمه!\n⚡ نیاز: ${p.cost}\n⚡ داری: ${player.energy || 0}\n\n💡 راه‌های کسب انرژی:\n☀️ جمع‌آوری در صبح\n⚡ رعد و برق\n🌟 ستاره دنباله‌دار\n🔥 آتش\n🦅 عقاب` 
-        };
-    }
-    
-    shopState[player.chatId || 'default'] = { action: 'buyWithEnergy', item: item, energyCost: p.cost };
-    
-    return { 
-        success: true, 
-        message: `⚡ *خرید با انرژی*\n\n${p.emoji} ${p.name}\n⚡ قیمت هر عدد: ${p.cost} انرژی\n⚡ انرژی داری: ${player.energy || 0}/${player.maxEnergy || 100}\n\n📝 *چند تا می‌خوای؟* (عدد رو تایپ کن)\nیا بزن /cancel لغو کن` 
-    };
-}
-
-function buyItemWithEnergy(player, item, amount, energyCostPerUnit) {
-    const energyPrices = {
-        wood: { emoji: '🪵', name: 'چوب' },
-        stone: { emoji: '🪨', name: 'سنگ' },
-        meat: { emoji: '🍖', name: 'گوشت' },
-        water: { emoji: '💧', name: 'آب' },
-        skin: { emoji: '🦴', name: 'پوست' },
-        iron: { emoji: '⛏️', name: 'آهن' },
-        finisher: { emoji: '💀', name: 'فنیشر' }
-    };
-    
-    const totalEnergy = energyCostPerUnit * amount;
-    
-    if ((player.energy || 0) < totalEnergy) {
-        delete shopState[player.chatId || 'default'];
-        return { 
-            success: false, 
-            message: `❌ انرژی کافی نیست!\n⚡ نیاز: ${totalEnergy}\n⚡ داری: ${player.energy || 0}` 
-        };
-    }
-    
-    player.energy -= totalEnergy;
-    player.inventory[item] = (player.inventory[item] || 0) + amount;
-    delete shopState[player.chatId || 'default'];
-    
-    const p = energyPrices[item];
-    return { 
-        success: true, 
-        message: `✅ *خرید با انرژی موفق!*\n\n${p.emoji} ${p.name}: +${amount}\n⚡ هزینه: ${totalEnergy} انرژی\n⚡ انرژی باقی‌مانده: ${player.energy}/${player.maxEnergy || 100}` 
-    };
-}
-
-// ======================== فروش برای انرژی (جدید) ========================
-
-function startSellForEnergy(player, item) {
-    const energyRewards = {
-        wood: { reward: 2, emoji: '🪵', name: 'چوب' },
-        stone: { reward: 3, emoji: '🪨', name: 'سنگ' },
-        meat: { reward: 3, emoji: '🍖', name: 'گوشت' },
-        water: { reward: 1, emoji: '💧', name: 'آب' },
-        skin: { reward: 5, emoji: '🦴', name: 'پوست' },
-        iron: { reward: 8, emoji: '⛏️', name: 'آهن' },
-        diamond: { reward: 80, emoji: '💎', name: 'الماس' }
-    };
-    
-    const p = energyRewards[item];
-    if (!p) return { success: false, message: '❌ با انرژی قابل فروش نیست!' };
-    
-    if ((player.inventory[item] || 0) < 1) {
-        return { success: false, message: `❌ ${p.emoji} ${p.name} نداری!` };
-    }
-    
-    shopState[player.chatId || 'default'] = { action: 'sellForEnergy', item: item, energyReward: p.reward };
-    
-    return { 
-        success: true, 
-        message: `🔥 *فروش برای انرژی*\n\n${p.emoji} ${p.name}\n⚡ دریافت انرژی هر عدد: ${p.reward}\n🎒 داری: ${player.inventory[item] || 0}\n\n📝 *چند تا می‌خوای بفروشی؟* (عدد رو تایپ کن)\nیا بزن /cancel لغو کن` 
-    };
-}
-
-function sellItemForEnergy(player, item, amount, energyRewardPerUnit) {
-    const energyRewards = {
-        wood: { emoji: '🪵', name: 'چوب' },
-        stone: { emoji: '🪨', name: 'سنگ' },
-        meat: { emoji: '🍖', name: 'گوشت' },
-        water: { emoji: '💧', name: 'آب' },
-        skin: { emoji: '🦴', name: 'پوست' },
-        iron: { emoji: '⛏️', name: 'آهن' },
-        diamond: { emoji: '💎', name: 'الماس' }
-    };
-    
-    if ((player.inventory[item] || 0) < amount) {
-        delete shopState[player.chatId || 'default'];
-        return { success: false, message: `❌ به اندازه کافی نداری!\n🎒 داری: ${player.inventory[item] || 0}` };
-    }
-    
-    const totalEnergy = energyRewardPerUnit * amount;
-    const maxEnergy = player.maxEnergy || 100;
-    const newEnergy = Math.min(maxEnergy, (player.energy || 0) + totalEnergy);
-    const gained = newEnergy - (player.energy || 0);
-    
-    player.inventory[item] -= amount;
-    player.energy = newEnergy;
-    delete shopState[player.chatId || 'default'];
-    
-    const p = energyRewards[item];
-    return { 
-        success: true, 
-        message: `✅ *فروش موفق!*\n\n${p.emoji} ${p.name}: -${amount}\n⚡ دریافت: ${gained} انرژی\n⚡ انرژی: ${player.energy}/${maxEnergy}` 
-    };
-}
-
-// ======================== تابع اصلی پردازش ========================
-
-function processAmount(player, amount) {
-    const state = shopState[player.chatId || 'default'];
-    if (!state) return { success: false, message: null };
-    
-    const num = parseInt(amount);
-    if (isNaN(num) || num <= 0) {
-        return { success: false, message: '❌ یه عدد معتبر وارد کن!' };
-    }
-    
-    switch (state.action) {
-        case 'buy':
-            return buyItem(player, state.item, num);
-        case 'sell':
-            return sellItem(player, state.item, num);
-        case 'buyWithEnergy':
-            return buyItemWithEnergy(player, state.item, num, state.energyCost);
-        case 'sellForEnergy':
-            return sellItemForEnergy(player, state.item, num, state.energyReward);
-        default:
-            return { success: false, message: null };
     }
 }
 
-function cancelShop(player) {
-    delete shopState[player.chatId || 'default'];
-    return { success: true, message: '❌ خرید/فروش لغو شد.' };
-}
-
-function getShopState(player) {
-    return shopState[player.chatId || 'default'] || null;
-}
-
-module.exports = { 
-    showShopMenu, 
-    startBuy, 
-    startSell, 
-    startBuyWithEnergy,
-    startSellForEnergy,
-    processAmount, 
-    buyItem, 
-    sellItem, 
-    cancelShop, 
-    getShopState 
+module.exports = {
+    handleShop,
+    handleShopSelection,
+    restockShop,
+    allShopSections
 };
