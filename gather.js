@@ -29,19 +29,22 @@ function gather(player) {
         }
     }
 
-    // انرژی زمان
+    // انرژی زمان - اصلاح: مقادیر بیشتر
     if (time.energy > 0) {
-        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + time.energy);
-        results.push(`⚡ +${time.energy} انرژی`);
+        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + time.energy + 5);
+        results.push(`⚡ +${time.energy + 5} انرژی`);
     } else if (time.energy < 0) {
         player.energy = Math.max(0, (player.energy || 0) + time.energy);
+    } else {
+        // انرژی پایه حتی اگه زمان خنثی باشه
+        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 3);
+        results.push(`⚡ +۳ انرژی`);
     }
 
     player.gathers = (player.gathers || 0) + 1;
 
     if (!found) {
         const eventResult = triggerRandomEvent(player, 'gather');
-        // اصلاح: چک می‌کنیم eventResult وجود داره یا نه (به جای eventTriggered)
         if (eventResult) {
             return { success: true, message: `😞 چیزی پیدا نکردی...\n${eventResult.msg}`, eventImage: eventResult.img };
         }
@@ -51,7 +54,6 @@ function gather(player) {
     const event = Math.random() < 0.20 ? triggerRandomEvent(player, 'gather') : null;
     const msg = `🎒 ${results.join(' | ')}`;
 
-    // اصلاح: چک می‌کنیم event وجود داره (به جای event.eventTriggered)
     if (event) return { success: true, message: `${msg}\n\n${event.msg}`, eventImage: event.img };
     return { success: true, message: msg };
 }
