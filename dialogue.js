@@ -80,20 +80,22 @@ const dialogues = {
     ]
 };
 
+// ساختار جدید houseDialogues با کلیدهای ترکیبی
 const houseDialogues = {
-    invite_accept: ["🏠 با خوشحالی اومد خونه‌ات!", "🏠 بالاخره یه جای امن...", "🏠 خونه‌ات قشنگه..."],
-    invite_reject: ["😒 نه... شاید بعداً...", "😒 هنوز مطمئن نیستم...", "😒 نه! نمیام خونه‌ت!"],
-    kick: ["😡 منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 پشیمون میشی از این کارت...", "😤 باشه... ولی برمی‌گردم!"],
-    touch: ["🖐️ دستت گرمه... ادامه بده...", "🖐️ بیشتر لمس کن...", "🖐️ خوشم میاد..."],
-    kiss: ["💋 ммм... لبات...", "💋 دوباره ببوس...", "💋 معتاد بوسه‌ات شدم..."],
-    orgy: ["🔥 شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم...", "🔥 فوق‌العاده بود..."]
+    'invite_accept': ["🏠 با خوشحالی اومد خونه‌ات!", "🏠 بالاخره یه جای امن...", "🏠 خونه‌ات قشنگه..."],
+    'invite_reject': ["😒 نه... شاید بعداً...", "😒 هنوز مطمئن نیستم...", "😒 نه! نمیام خونه‌ت!"],
+    'kick_angry': ["😡 منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 پشیمون میشی از این کارت...", "😤 باشه... ولی برمی‌گردم!"],
+    'touch': ["🖐️ دستت گرمه... ادامه بده...", "🖐️ بیشتر لمس کن...", "🖐️ خوشم میاد..."],
+    'kiss': ["💋 ммm... لبات...", "💋 دوباره ببوس...", "💋 معتاد بوسه‌ات شدم..."],
+    'orgy': ["🔥 شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم...", "🔥 فوق‌العاده بود..."]
 };
 
+// ساختار جدید marryDialogues با کلیدهای ترکیبی
 const marryDialogues = {
-    propose_accept: "💍 آره! هزار بار آره! مال تو شدم!",
-    propose_reject: "💍 نه... هنوز آماده نیستم...",
-    marry: "👰 امروز بهترین روز زندگیمه... تا ابد مال تو...",
-    divorce: "💔 تموم شد... رفتیم..."
+    'propose_accept': "💍 آره! هزار بار آره! مال تو شدم!",
+    'propose_reject': "💍 نه... هنوز آماده نیستم...",
+    'marry_text': "👰 امروز بهترین روز زندگیمه... تا ابد مال تو...",
+    'divorce_text': "💔 تموم شد... رفتیم..."
 };
 
 const prisonDialogues = {
@@ -349,16 +351,20 @@ function getPrisonDialogue(npcId, relationLevel) {
     return { text: text || "🤐 ...", level: level };
 }
 
-function getHouseDialogue(type) {
+// اصلاح شده: حالا دو پارامتر می‌گیره
+function getHouseDialogue(type, subType) {
     if (!type) return "🤐 ...";
-    const dialogues = houseDialogues[type];
+    const key = subType ? `${type}_${subType}` : type;
+    const dialogues = houseDialogues[key] || houseDialogues[type];
     if (!dialogues || !Array.isArray(dialogues) || dialogues.length === 0) return "🤐 ...";
     return dialogues[Math.floor(Math.random() * dialogues.length)];
 }
 
-function getMarryDialogue(type) {
+// اصلاح شده: حالا دو پارامتر می‌گیره
+function getMarryDialogue(type, subType) {
     if (!type) return "🤐 ...";
-    return marryDialogues[type] || "🤐 ...";
+    const key = subType ? `${type}_${subType}` : `${type}_text`;
+    return marryDialogues[key] || "🤐 ...";
 }
 
 function getNpcConfig(npcId) {
