@@ -143,11 +143,11 @@ module.exports = {
         'زره چرمی': { skin: 4, iron: 2, effect: 'armor', bonus: 10, emoji: '🛡️' },
         'کلبه چوبی': { wood: 20, stone: 15, effect: 'house', bonus: 20, emoji: '🏠' },
         'تیروکمان': { wood: 5, stone: 3, skin: 2, effect: 'weapon', bonus: 8, emoji: '🏹' },
-        'شمشیر نورانی': { iron: 5, wood: 2, energy: 50, effect: 'weapon', bonus: 25, emoji: '⚔️', glow: true },
-        'سپر نور': { skin: 4, iron: 2, energy: 30, effect: 'armor', bonus: 20, emoji: '🛡️', glow: true },
-        'خونه نورانی': { wood: 20, stone: 15, energy: 100, effect: 'house', bonus: 50, emoji: '🏠', extraSlots: 2, glow: true },
-        'حلقه خورشید': { ring: 1, energy: 200, effect: 'armor', bonus: 20, emoji: '💍', dayPower: true },
-        'حلقه ماه': { ring: 1, energy: 200, effect: 'armor', bonus: 20, emoji: '💍', nightPower: true }
+        'شمشیر نورانی': { iron: 5, wood: 2, energy: 30, effect: 'weapon', bonus: 25, emoji: '⚔️', glow: true },
+        'سپر نور': { skin: 4, iron: 2, energy: 20, effect: 'armor', bonus: 20, emoji: '🛡️', glow: true },
+        'خونه نورانی': { wood: 20, stone: 15, energy: 50, effect: 'house', bonus: 50, emoji: '🏠', extraSlots: 2, glow: true },
+        'حلقه خورشید': { ring: 1, energy: 100, effect: 'armor', bonus: 20, emoji: '💍', dayPower: true },
+        'حلقه ماه': { ring: 1, energy: 100, effect: 'armor', bonus: 20, emoji: '💍', nightPower: true }
     },
     shopPrices: {
         wood: { buy: 2, sell: 1, name: 'چوب', emoji: '🪵' },
@@ -158,6 +158,7 @@ module.exports = {
         iron: { buy: 8, sell: 4, name: 'آهن', emoji: '⛏️' },
         gold: { buy: 1, sell: 1, name: 'طلا', emoji: '👑' },
         finisher: { buy: 50, sell: 25, name: 'فینیشر', emoji: '💀' },
+        energy: { buy: 10, sell: 0, name: 'انرژی', emoji: '⚡' },
         diamond_sell: { price: 100, emoji: '💎', name: 'الماس' }
     },
     houseSettings: { maxSlots: 3, maxMarry: 1 },
