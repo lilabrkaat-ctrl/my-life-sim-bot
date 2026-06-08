@@ -1,5 +1,11 @@
 const config = require('./config');
 
+// عکس‌های ماموریت
+const questImages = {
+    mission_icon: 'AgACAgQAAxkBAAEqVG1qJuy_jjCgUCRenY4hI0lmm3NjVQACZw9rG0FkMFFw2hiQK43shAEAAwIAA3gAAzsE',
+    reward_gif: 'AgACAgQAAxkBAAEqVGxqJuy_9582RPbpB65-Ik1bKzhbywACZg9rG0FkMFHcgjPbJHM74AEAAwIAA3gAAzsE'
+};
+
 // انواع ماموریت‌ها
 const questTypes = {
     hunt_wolf: {
@@ -234,6 +240,7 @@ function updateQuestProgress(player, action, target) {
     
     return null;
 }
+
 function checkCompletedQuests(player) {
     if (!player.dailyQuests || !player.dailyQuests.quests) return [];
     
@@ -288,7 +295,8 @@ function claimQuestReward(player, questKey) {
     
     return { 
         success: true, 
-        message: `✅ *${questData.name}* کامل شد!\n🎁 جایزه:${rewardMsg}` 
+        message: `✅ *${questData.name}* کامل شد!\n🎁 جایزه:${rewardMsg}`,
+        image: questImages.reward_gif
     };
 }
 
@@ -377,6 +385,7 @@ function getQuestCompletionMessage(player) {
 
 module.exports = {
     questTypes,
+    questImages,
     initDailyQuests,
     generateDailyQuests,
     updateQuestProgress,
