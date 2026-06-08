@@ -38,7 +38,7 @@ function checkUnlocks(player) {
     if (!player.unlocked) {
         player.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
     }
-    
+
     const locReqs = config.locationRequirements;
     for (let loc in locReqs) {
         if (player.score >= locReqs[loc] && !player.unlocked.locations.includes(loc)) {
@@ -46,7 +46,7 @@ function checkUnlocks(player) {
             player.unlockedMessage = `${config.images.locations[loc].emoji} *${config.images.locations[loc].name}* باز شد! (${locReqs[loc]} امتیاز) 🎉`;
         }
     }
-    
+
     const enemyUnlocks = [
         { name: 'fairy', score: 200 }, { name: 'lion', score: 400 }, { name: 'bear', score: 500 },
         { name: 'soldier', score: 700 }, { name: 'skeleton', score: 900 }, { name: 'werewolf', score: 1200 },
@@ -57,7 +57,7 @@ function checkUnlocks(player) {
             player.unlocked.enemies.push(e.name);
         }
     }
-    
+
     if (player.score >= 150 && !player.unlocked.recipes.includes('تبر سنگی')) player.unlocked.recipes.push('تبر سنگی');
     if (player.score >= 400 && !player.unlocked.recipes.includes('زره چرمی')) player.unlocked.recipes.push('زره چرمی');
     if (player.score >= 600 && !player.unlocked.recipes.includes('تیروکمان')) player.unlocked.recipes.push('تیروکمان');
@@ -68,10 +68,10 @@ function checkUnlocks(player) {
 function formatStatus(p) {
     const time = p.timeOfDay || getTimeOfDay();
     p.timeOfDay = time;
-    
+
     const loc = config.images.locations[p.location] || config.images.locations.village;
     const hpPercent = Math.floor((p.hp||100) / (p.maxHp||100) * 100);
-    
+
     let bar = '';
     for (let i = 0; i < 10; i++) {
         if (i < Math.floor(hpPercent / 10)) {
@@ -82,14 +82,14 @@ function formatStatus(p) {
             bar += '⬛';
         }
     }
-    
+
     return `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n${time.name} | ⚡ ${p.energy||0}/${p.maxEnergy||100}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n${bar} ${hpPercent}٪\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندان: ${p.prison?.length||0}\n🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}\n🏆 امتیاز: ${p.score||0}`;
 }
 
 function formatLeaderboard() {
     const sorted = Object.entries(players).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)).slice(0, 10);
     if (sorted.length === 0) return '📊 *هنوز کسی بازی نکرده!*';
-    
+
     let msg = '🏆 *برترین بازماندگان:*\n\n';
     const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
     for (let i = 0; i < sorted.length; i++) {
@@ -99,8 +99,11 @@ function formatLeaderboard() {
 }
 
 function checkLevelUp(p) {
-    const needed = (p.level || 1) * 20;
-    if ((p.xp || 0) >= needed) {
+    let leveledUp = false;
+    let totalMessages = '';
+    
+    while ((p.xp || 0) >= (p.level || 1) * 20) {
+        const needed = (p.level || 1) * 20;
         p.level = (p.level || 1) + 1;
         p.maxHp = (p.maxHp || 100) + 10;
         p.hp = Math.min(p.maxHp, (p.hp || 100) + 10);
@@ -109,6 +112,9 @@ function checkLevelUp(p) {
         p.xp -= needed;
         addScore(p, p.level * 10);
         
+        // انرژی موقع لول آپ
+        p.energy = Math.min((p.maxEnergy || 100), (p.energy || 0) + 20);
+
         const rewards = config.levelUpRewards[p.level];
         let rewardMsg = '';
         if (rewards) {
@@ -119,10 +125,17 @@ function checkLevelUp(p) {
             }
         }
         
-        p.levelUpMessage = `⬆️ *لول آپ!* سطح ${p.level}!\n❤️ +۱۰ جان\n⚔️ +۲ حمله\n🛡️ +۱ دفاع${rewardMsg}`;
-        return true;
+        rewardMsg += `\n⚡ +۲۰ انرژی`;
+
+        totalMessages += `⬆️ *لول آپ!* سطح ${p.level}!\n❤️ +۱۰ جان\n⚔️ +۲ حمله\n🛡️ +۱ دفاع${rewardMsg}\n\n`;
+        leveledUp = true;
     }
-    return false;
+    
+    if (leveledUp) {
+        p.levelUpMessage = totalMessages.trim();
+    }
+    
+    return leveledUp;
 }
 
 const pvpQueue = [];
