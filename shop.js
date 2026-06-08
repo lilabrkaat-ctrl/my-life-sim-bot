@@ -3,18 +3,28 @@ const config = require('./config');
 const shopState = {};
 
 function showShopMenu() {
-    return `🏪 *بازار باستانی*\n\n📥 *خرید:*\n🪵 چوب: ۲👑 | 🪨 سنگ: ۳👑\n🍖 گوشت: ۳👑 | 💧 آب: ۱👑\n🦴 پوست: ۵👑 | ⛏️ آهن: ۸👑\n💀 فنیشر: ۵۰👑\n\n📤 *فروش ویژه:*\n💎 الماس: ۱۰۰👑`;
+    return `🏪 *بازار باستانی*\n\n📥 *خرید:*\n🪵 چوب: ۲👑 | 🪨 سنگ: ۳👑\n🍖 گوشت: ۳👑 | 💧 آب: ۱👑\n🦴 پوست: ۵👑 | ⛏️ آهن: ۸👑\n💀 فنیشر: ۵۰👑 | ⚡ انرژی: ۱۰👑 (+۲۰⚡)\n\n📤 *فروش ویژه:*\n💎 الماس: ۱۰۰👑`;
 }
 
 function startBuy(player, item) {
     if (item === 'finisher') {
         const price = config.shopPrices.finisher.buy;
         if ((player.inventory.gold || 0) < price) {
-            return { success: false, message: `❌ طلا کمه! 💀 فنیشر ${price}👑\n👑 داری: ${player.inventory.gold||0}` };
+            return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${price}👑\n👑 داری: ${player.inventory.gold||0}👑` };
         }
         player.inventory.gold -= price;
         player.inventory.finisher = (player.inventory.finisher || 0) + 1;
-        return { success: true, message: `✅ 💀 فنیشر خریدی! -${price}👑\n💀 موجودی: ${player.inventory.finisher}` };
+        return { success: true, message: `✅ 💀 فنیشر خریدی!\n💰 -${price}👑\n💀 موجودی: ${player.inventory.finisher}` };
+    }
+    
+    if (item === 'energy') {
+        const price = 10;
+        if ((player.inventory.gold || 0) < price) {
+            return { success: false, message: `❌ طلا کمه!\n💰 نیاز: ${price}👑\n👑 داری: ${player.inventory.gold||0}👑` };
+        }
+        player.inventory.gold -= price;
+        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 20);
+        return { success: true, message: `✅ ⚡ +۲۰ انرژی!\n💰 -${price}👑\n⚡ انرژی: ${player.energy}/${player.maxEnergy||100}` };
     }
     
     if (item === 'diamond') {
