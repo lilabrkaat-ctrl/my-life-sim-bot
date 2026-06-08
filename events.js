@@ -1,4 +1,5 @@
 const config = require('./config');
+const { getTimeOfDay } = require('./player');
 
 function triggerRandomEvent(player, action) {
     const ev = config.images.events;
@@ -105,8 +106,9 @@ function triggerRandomEvent(player, action) {
 }
 
 function checkNpcEncounter(player, action, location) {
+    const time = getTimeOfDay();
+    const npcMultiplier = time.npcChance;
     const r = Math.random();
-    let npcId = null;
 
     if (player.house && player.house.length >= (config.houseSettings?.maxSlots || 3)) {
         return null;
@@ -115,54 +117,54 @@ function checkNpcEncounter(player, action, location) {
     const validNpcs = config.images.npcs ? Object.keys(config.images.npcs) : [];
 
     if (action === 'gather' && location === 'forest') {
-        if (r < 0.25 && validNpcs.includes('witch')) npcId = 'witch';
-        else if (r < 0.40 && validNpcs.includes('fairy')) npcId = 'fairy';
-        else if (r < 0.50 && validNpcs.includes('werewolf')) npcId = 'werewolf';
-        else if (r < 0.60 && validNpcs.includes('sage')) npcId = 'sage';
+        if (r < 0.25 * npcMultiplier && validNpcs.includes('witch')) return 'witch';
+        if (r < 0.40 * npcMultiplier && validNpcs.includes('fairy')) return 'fairy';
+        if (r < 0.50 * npcMultiplier && validNpcs.includes('werewolf')) return 'werewolf';
+        if (r < 0.60 * npcMultiplier && validNpcs.includes('sage')) return 'sage';
     }
     if (action === 'gather' && location === 'cave') {
-        if (r < 0.30 && validNpcs.includes('ghost_sexy')) npcId = 'ghost_sexy';
-        else if (r < 0.50 && validNpcs.includes('skeleton')) npcId = 'skeleton';
-        else if (r < 0.65 && validNpcs.includes('wizard')) npcId = 'wizard';
-        else if (r < 0.80 && validNpcs.includes('vampire')) npcId = 'vampire';
+        if (r < 0.30 * npcMultiplier && validNpcs.includes('ghost_sexy')) return 'ghost_sexy';
+        if (r < 0.50 * npcMultiplier && validNpcs.includes('skeleton')) return 'skeleton';
+        if (r < 0.65 * npcMultiplier && validNpcs.includes('wizard')) return 'wizard';
+        if (r < 0.80 * npcMultiplier && validNpcs.includes('vampire')) return 'vampire';
     }
     if (action === 'travel') {
-        if (r < 0.20 && validNpcs.includes('knight')) npcId = 'knight';
-        else if (r < 0.35 && validNpcs.includes('prince')) npcId = 'prince';
-        else if (r < 0.50 && validNpcs.includes('wizard')) npcId = 'wizard';
-        else if (r < 0.60 && validNpcs.includes('sage')) npcId = 'sage';
-        else if (r < 0.70 && validNpcs.includes('farmer')) npcId = 'farmer';
-        else if (r < 0.80 && validNpcs.includes('jester')) npcId = 'jester';
-        else if (r < 0.90 && validNpcs.includes('angel')) npcId = 'angel';
+        if (r < 0.20 * npcMultiplier && validNpcs.includes('knight')) return 'knight';
+        if (r < 0.35 * npcMultiplier && validNpcs.includes('prince')) return 'prince';
+        if (r < 0.50 * npcMultiplier && validNpcs.includes('wizard')) return 'wizard';
+        if (r < 0.60 * npcMultiplier && validNpcs.includes('sage')) return 'sage';
+        if (r < 0.70 * npcMultiplier && validNpcs.includes('farmer')) return 'farmer';
+        if (r < 0.80 * npcMultiplier && validNpcs.includes('jester')) return 'jester';
+        if (r < 0.90 * npcMultiplier && validNpcs.includes('angel')) return 'angel';
     }
     if (action === 'gather' && location === 'village') {
-        if (r < 0.20 && validNpcs.includes('angel')) npcId = 'angel';
-        else if (r < 0.35 && validNpcs.includes('jester')) npcId = 'jester';
-        else if (r < 0.50 && validNpcs.includes('merchant')) npcId = 'merchant';
-        else if (r < 0.60 && validNpcs.includes('farmer')) npcId = 'farmer';
-        else if (r < 0.75 && validNpcs.includes('bride')) npcId = 'bride';
-        else if (r < 0.90 && validNpcs.includes('singer')) npcId = 'singer';
+        if (r < 0.20 * npcMultiplier && validNpcs.includes('angel')) return 'angel';
+        if (r < 0.35 * npcMultiplier && validNpcs.includes('jester')) return 'jester';
+        if (r < 0.50 * npcMultiplier && validNpcs.includes('merchant')) return 'merchant';
+        if (r < 0.60 * npcMultiplier && validNpcs.includes('farmer')) return 'farmer';
+        if (r < 0.75 * npcMultiplier && validNpcs.includes('bride')) return 'bride';
+        if (r < 0.90 * npcMultiplier && validNpcs.includes('singer')) return 'singer';
     }
     if (action === 'gather' && location === 'mountain') {
-        if (r < 0.25 && validNpcs.includes('blacksmith')) npcId = 'blacksmith';
-        else if (r < 0.40 && validNpcs.includes('knight')) npcId = 'knight';
-        else if (r < 0.55 && validNpcs.includes('young_witch')) npcId = 'young_witch';
+        if (r < 0.25 * npcMultiplier && validNpcs.includes('blacksmith')) return 'blacksmith';
+        if (r < 0.40 * npcMultiplier && validNpcs.includes('knight')) return 'knight';
+        if (r < 0.55 * npcMultiplier && validNpcs.includes('young_witch')) return 'young_witch';
     }
     if (action === 'gather' && location === 'plain') {
-        if (r < 0.25 && validNpcs.includes('knight')) npcId = 'knight';
-        else if (r < 0.40 && validNpcs.includes('prince')) npcId = 'prince';
-        else if (r < 0.55 && validNpcs.includes('bandit_female')) npcId = 'bandit_female';
+        if (r < 0.25 * npcMultiplier && validNpcs.includes('knight')) return 'knight';
+        if (r < 0.40 * npcMultiplier && validNpcs.includes('prince')) return 'prince';
+        if (r < 0.55 * npcMultiplier && validNpcs.includes('bandit_female')) return 'bandit_female';
     }
     if (action === 'gather' && location === 'desert') {
-        if (r < 0.30 && validNpcs.includes('witch')) npcId = 'witch';
-        else if (r < 0.45 && validNpcs.includes('prince')) npcId = 'prince';
-        else if (r < 0.60 && validNpcs.includes('genie')) npcId = 'genie';
+        if (r < 0.30 * npcMultiplier && validNpcs.includes('witch')) return 'witch';
+        if (r < 0.45 * npcMultiplier && validNpcs.includes('prince')) return 'prince';
+        if (r < 0.60 * npcMultiplier && validNpcs.includes('genie')) return 'genie';
     }
     if (action === 'gather' && location === 'river') {
-        if (r < 0.30 && validNpcs.includes('mermaid')) npcId = 'mermaid';
+        if (r < 0.30 * npcMultiplier && validNpcs.includes('mermaid')) return 'mermaid';
     }
 
-    return npcId;
+    return null;
 }
 
 module.exports = { triggerRandomEvent, checkNpcEncounter };
