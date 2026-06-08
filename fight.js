@@ -143,6 +143,10 @@ function playerAttack(player, enemy) {
         player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
         player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+        
+        // انرژی بعد کشتن دشمن
+        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
+        log += `\n⚡ +۵ انرژی`;
 
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
@@ -195,6 +199,11 @@ function useSpell(player, enemy) {
         player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
         player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+        
+        // انرژی بعد کشتن دشمن
+        player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
+        log += `\n⚡ +۵ انرژی`;
+        
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
                 player.inventory[rw] += enemy.reward[rw] || 1;
@@ -223,6 +232,11 @@ function useFinisher(player, enemy) {
     player.xp += enemy.reward.xp || 10;
     player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
     player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+    
+    // انرژی بعد کشتن دشمن
+    player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
+    log += `\n⚡ +۵ انرژی`;
+    
     for (let rw in enemy.reward) {
         if (rw !== 'xp' && player.inventory[rw] !== undefined) {
             player.inventory[rw] += enemy.reward[rw] || 1;
