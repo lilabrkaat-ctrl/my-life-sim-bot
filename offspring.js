@@ -55,10 +55,10 @@ const evolutionPaths = {
 
 // سیستم بارداری
 const pregnancyData = {
-    duration: 3, // روز
-    chance: 0.20, // ۲۰٪ شانس
-    highRelationChance: 0.40, // ۴۰٪ با رابطه ۱۰۰
-    cooldown: 1 // روز
+    duration: 3,
+    chance: 0.20,
+    highRelationChance: 0.40,
+    cooldown: 1
 };
 
 function initChildren(player) {
@@ -100,7 +100,7 @@ function checkPregnancy(player, npcId, isSpouse) {
     }
     
     const points = (player.prisonRelations && player.prisonRelations[npcId]) || 0;
-    const chance = points >= 100 ? pregnancyData.highRelationChance : pregnancyData.chance;
+    const chance = 0.80; // ۸۰٪ شانس بارداری
     
     if (Math.random() < chance) {
         player.lastPregnancyCheck = now;
@@ -120,6 +120,7 @@ function checkPregnancy(player, npcId, isSpouse) {
     player.lastPregnancyCheck = now;
     return null;
 }
+
 function checkBirths(player) {
     initChildren(player);
     
@@ -180,9 +181,9 @@ function checkBirths(player) {
             
             player.children.push(child);
             births.push(child);
-            return false; // حذف از بارداری‌ها
+            return false;
         }
-        return true; // نگه داشتن
+        return true;
     });
     
     return births;
@@ -261,7 +262,6 @@ function feedChild(player, childId) {
     child.inventory.food++;
     child.loyalty = Math.min(100, child.loyalty + 2);
     
-    // چک ارتقا
     const evolutionResult = checkEvolution(player, child);
     
     return {
@@ -296,6 +296,7 @@ function trainChild(player, childId) {
         evolution: evolutionResult
     };
 }
+
 function checkEvolution(player, child) {
     if (!child || !child.isAlive) return null;
     
@@ -305,10 +306,9 @@ function checkEvolution(player, child) {
     const currentLevel = child.evolutionLevel || 1;
     const nextLevel = path.find(p => p.level === currentLevel + 1);
     
-    if (!nextLevel) return null; // حداکثر سطح
+    if (!nextLevel) return null;
     
     if (child.xp >= nextLevel.xpNeeded) {
-        // چک کردن آیتم لازم
         const hasItem = child.isLegendary || (player.inventory && player.inventory[nextLevel.itemNeeded] && player.inventory[nextLevel.itemNeeded] > 0);
         
         if (hasItem && !child.isLegendary) {
@@ -358,7 +358,6 @@ function assignHeir(player, childId) {
         return { success: false, message: '❌ بچه هنوز خیلی کوچیکه!' };
     }
     
-    // حذف ولیعهدی از بقیه
     for (let c of player.children) {
         if (c.isHeir) c.isHeir = false;
     }
@@ -379,12 +378,10 @@ function childBattleHelp(player) {
     const adultChildren = player.children.filter(c => c.isAlive && (c.ageStage === 'teen' || c.ageStage === 'adult' || c.ageStage === 'mature' || c.ageStage === 'elder'));
     if (adultChildren.length === 0) return { helped: false };
     
-    // ۱۵٪ شانس کمک
     if (Math.random() < 0.15) {
         const child = adultChildren[Math.floor(Math.random() * adultChildren.length)];
         const damage = Math.floor(child.attack * 1.5);
         
-        // چک مهارت‌های ویژه
         let skillUsed = null;
         for (let skill of child.skills) {
             if (Math.random() < skill.chance) {
@@ -419,11 +416,9 @@ function tournamentFight(child1, child2) {
     const winner = Math.random() < chance1 ? child1 : child2;
     const loser = winner === child1 ? child2 : child1;
     
-    // بازنده ۱۰٪ قدرت از دست میده
     loser.power = Math.max(1, Math.floor(loser.power * 0.9));
     loser.loyalty = Math.max(0, loser.loyalty - 10);
     
-    // برنده ۵٪ قدرت می‌گیره
     winner.power += Math.floor(winner.power * 0.05);
     winner.xp += 20;
     
@@ -433,6 +428,7 @@ function tournamentFight(child1, child2) {
         message: `⚔️ *${winner.emoji} ${winner.name}* برنده شد!\n💪 +${Math.floor(winner.power * 0.05)} قدرت\n💔 *${loser.emoji} ${loser.name}* باخت (-۱۰٪ قدرت)`
     };
 }
+
 function holdTournament(player) {
     initChildren(player);
     
@@ -450,7 +446,6 @@ function holdTournament(player) {
         const nextRound = [];
         results.push({ round, fights: [] });
         
-        // جفت کردن تصادفی
         roundFighters = roundFighters.sort(() => Math.random() - 0.5);
         
         for (let i = 0; i < roundFighters.length; i += 2) {
@@ -459,7 +454,6 @@ function holdTournament(player) {
                 results[results.length - 1].fights.push(fight);
                 nextRound.push(fight.winner);
             } else {
-                // اگه فرد باشه، مستقیم میره بعدی
                 nextRound.push(roundFighters[i]);
             }
         }
@@ -470,7 +464,6 @@ function holdTournament(player) {
     
     const champion = roundFighters[0];
     
-    // قهرمان ولیعهد میشه
     assignHeir(player, champion.id);
     champion.power += 25;
     
@@ -501,10 +494,8 @@ function childDies(player, childId, reason) {
     child.deathReason = reason;
     child.diedAt = Date.now();
     
-    // اگه ولیعهد بود، حذف میشه
     if (child.isHeir) {
         child.isHeir = false;
-        // پیدا کردن فرزند ارشد بعدی
         const aliveChildren = player.children.filter(c => c.isAlive && c.id !== childId);
         if (aliveChildren.length > 0) {
             const eldest = aliveChildren.sort((a, b) => b.age - a.age)[0];
@@ -518,95 +509,6 @@ function childDies(player, childId, reason) {
     };
 }
 
-function poisonChild(player, targetId, poisonerId) {
-    initChildren(player);
-    
-    const target = player.children.find(c => c.id === targetId);
-    const poisoner = player.children.find(c => c.id === poisonerId);
-    
-    if (!target || !target.isAlive) return { success: false, message: '❌ هدف پیدا نشد!' };
-    if (!poisoner || !poisoner.isAlive) return { success: false, message: '❌ مسموم‌کننده پیدا نشد!' };
-    
-    const successChance = poisoner.class === 'mage' ? 0.6 : 0.3;
-    const caughtChance = 0.4;
-    
-    if (Math.random() < successChance) {
-        const poisonDamage = Math.floor(target.hp * 0.3);
-        target.hp -= poisonDamage;
-        target.loyalty = Math.max(0, target.loyalty - 30);
-        
-        // شانس لو رفتن
-        if (Math.random() < caughtChance) {
-            poisoner.loyalty = Math.max(0, poisoner.loyalty - 50);
-            poisoner.power = Math.max(1, Math.floor(poisoner.power * 0.8));
-            
-            return {
-                success: true,
-                caught: true,
-                message: `🧪 ${target.emoji} *${target.name}* مسموم شد! (-${poisonDamage} HP)\n🚨 اما *${poisoner.name}* لو رفت و مجازات شد! (-۲۰٪ قدرت)`
-            };
-        }
-        
-        return {
-            success: true,
-            caught: false,
-            message: `🧪 ${target.emoji} *${target.name}* مسموم شد! (-${poisonDamage} HP)\n🕵️ هیچ‌کس نفهمید کی بود...`
-        };
-    }
-    
-    return {
-        success: false,
-        message: `❌ مسمومیت ناموفق بود! ${target.name} جون سالم به در برد.`
-    };
-}
-
-function coupAttempt(player, leaderId, supporterIds) {
-    initChildren(player);
-    
-    const leader = player.children.find(c => c.id === leaderId);
-    if (!leader || !leader.isAlive) return { success: false, message: '❌ رهبر کودتا پیدا نشد!' };
-    
-    const supporters = supporterIds.map(id => player.children.find(c => c.id === id)).filter(c => c && c.isAlive);
-    const totalRebelPower = leader.power + supporters.reduce((sum, c) => sum + c.power, 0);
-    const playerPower = player.attack + player.defense + (player.level || 1) * 10;
-    
-    // شانس موفقیت کودتا
-    const coupChance = Math.min(0.7, totalRebelPower / (playerPower + totalRebelPower));
-    
-    if (Math.random() < coupChance) {
-        // کودتا موفق
-        leader.isHeir = true;
-        leader.power += 30;
-        player.score = Math.max(0, player.score - 500);
-        player.inventory.gold = Math.max(0, (player.inventory?.gold || 0) - 1000);
-        
-        for (let c of player.children) {
-            if (c.isHeir && c.id !== leaderId) c.isHeir = false;
-        }
-        
-        return {
-            success: true,
-            coupWon: true,
-            message: `🗡️👑 *کودتا موفق!*\n${leader.emoji} *${leader.name}* امپراطور جدید شد!\n💔 -۵۰۰ امتیاز\n💰 -۱۰۰۰ طلا`
-        };
-    } else {
-        // کودتا ناموفق
-        leader.loyalty = 0;
-        leader.power = Math.max(1, Math.floor(leader.power * 0.5));
-        leader.isAlive = false;
-        
-        for (let s of supporters) {
-            s.loyalty = Math.max(0, s.loyalty - 30);
-            s.power = Math.max(1, Math.floor(s.power * 0.7));
-        }
-        
-        return {
-            success: true,
-            coupWon: false,
-            message: `🚨 *کودتا سرکوب شد!*\n💀 ${leader.emoji} *${leader.name}* اعدام شد!\n😡 ${supporters.length} نفر دیگه مجازات شدن.`
-        };
-    }
-}
 function formatChildren(player) {
     initChildren(player);
     
@@ -650,7 +552,6 @@ function formatChildren(player) {
         msg += '\n';
     }
     
-    // بارداری‌ها
     if (player.pregnancies && player.pregnancies.length > 0) {
         msg += '🤰 *بارداری‌ها:*\n';
         for (let preg of player.pregnancies) {
@@ -680,7 +581,6 @@ function getChildrenKeyboard(player) {
             buttons.push(['⚔️ تورنمنت امپراطوری']);
         }
         
-        // دکمه ولیعهد برای بچه‌های بالغ
         const adults = alive.filter(c => c.ageStage === 'adult' || c.ageStage === 'mature' || c.ageStage === 'elder');
         for (let child of adults) {
             if (!child.isHeir) {
@@ -721,8 +621,6 @@ module.exports = {
     tournamentFight,
     holdTournament,
     childDies,
-    poisonChild,
-    coupAttempt,
     formatChildren,
     getChildrenKeyboard,
     getChildBattleBonus
