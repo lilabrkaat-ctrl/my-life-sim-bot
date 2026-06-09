@@ -23,16 +23,52 @@ function createPlayer(chatId, firstName) {
     players[chatId].chatId = chatId;
     players[chatId].timeOfDay = getTimeOfDay();
     
-    // سیستم‌های جدید
+    // حیوانات
     players[chatId].pets = [];
     players[chatId].petFood = 0;
+    
+    // صندوقچه
     players[chatId].lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
-    players[chatId].dailyQuests = {
-        quests: [],
-        completed: [],
-        lastReset: Date.now(),
-        progress: {}
+    
+    // ماموریت روزانه
+    players[chatId].dailyQuests = { quests: [], completed: [], lastReset: Date.now(), progress: {} };
+    
+    // فرزندان
+    players[chatId].children = [];
+    players[chatId].pregnancies = [];
+    players[chatId].childSlots = 3;
+    players[chatId].lastPregnancyCheck = 0;
+    
+    // امپراطوری
+    players[chatId].empire = { level: 0, score: 0, roles: {}, wonders: [], foundedAt: Date.now(), lastCollection: Date.now(), dynastyName: '', treasury: 0 };
+    
+    // مردم
+    players[chatId].people = {
+        population: {},
+        lands: [],
+        buildings: [],
+        stats: { happiness: 60, hunger: 70, safety: 50, justice: 50, faith: 50 },
+        storage: { food: 100, water: 50 },
+        lastUpdate: Date.now(),
+        events: []
     };
+    
+    // مقداردهی اولیه جمعیت
+    const { populationTypes } = require('./people');
+    for (let type in populationTypes) {
+        players[chatId].people.population[type] = {
+            count: populationTypes[type].baseCount,
+            employed: 0,
+            sick: 0,
+            unhappy: 0
+        };
+    }
+    
+    // دربار
+    players[chatId].court = { prisoners: [], scandals: [], recentEvents: [], lastEvent: 0, intrigueCooldowns: {}, alertLevel: 0 };
+    
+    // بازار سیاه
+    players[chatId].blackMarket = { items: [], specialDeal: null, lastRefresh: 0 };
     
     return players[chatId];
 }
@@ -95,30 +131,57 @@ function formatStatus(p) {
         }
     }
 
-    let status = `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n${time.name} | ⚡ ${p.energy||0}/${p.maxEnergy||100}\n✨ XP: ${p.xp||0}/${(p.level||1)*20}\n${bar} ${hpPercent}٪\n\n📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length} | 🔒 زندان: ${p.prison?.length||0}\n🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}`;
+    let status = `👤 *${p.name}* | ⭐ Lv.${p.level||1}\n`;
+    status += `${time.name} | ⚡ ${p.energy||0}/${p.maxEnergy||100}\n`;
+    status += `✨ XP: ${p.xp||0}/${(p.level||1)*20}\n`;
+    status += `${bar} ${hpPercent}٪\n\n`;
+    status += `📍 ${loc?.emoji||'🏘️'} ${loc?.name||'روستا'}\n\n`;
     
-    // نمایش حیوون‌ها
-    if (p.pets && p.pets.length > 0) {
-        status += '\n\n🐾 *حیوون‌ها:* ';
-        for (let pet of p.pets) {
-            status += `${pet.emoji} `;
+    if (p.empire && p.empire.level > 0) {
+        const { empireLevels } = require('./empire');
+        const empLvl = empireLevels[p.empire.level];
+        if (empLvl) {
+            status += `${empLvl.emoji} *${empLvl.name}*\n`;
+            if (p.empire.dynastyName) status += `📜 سلسله ${p.empire.dynastyName}\n`;
+            try {
+                const { getTotalPopulation } = require('./people');
+                status += `👥 جمعیت: ${getTotalPopulation(p)} نفر\n`;
+            } catch (e) {}
+            status += `🏦 خزانه: ${p.empire.treasury || 0}👑\n\n`;
         }
-        status += `(${p.pets.length}/۳)`;
     }
     
-    // نمایش صندوق‌ها
+    status += `🎒 *منابع:*\n🪵${p.inventory?.wood||0} 🪨${p.inventory?.stone||0} 🍖${p.inventory?.meat||0}\n💧${p.inventory?.water||0} 🦴${p.inventory?.skin||0} ⛏️${p.inventory?.iron||0} 👑${p.inventory?.gold||0}\n\n`;
+    status += `🎁 *آیتم‌ها:*\n💍${p.inventory?.ring||0} 💎${p.inventory?.diamond||0} 📜${p.inventory?.spell||0} 🎵${p.inventory?.song||0}\n🩸${p.inventory?.blood||0} 🔮${p.inventory?.wish||0} 🗝️${p.inventory?.key||0} 🧿${p.inventory?.tear||0} 💀${p.inventory?.finisher||0}\n\n`;
+    status += `🛡️ *تجهیزات:* 🏠${p.equipment?.house||'❌'} 🗡️${p.equipment?.weapon||'❌'} 🛡️${p.equipment?.armor||'❌'}\n`;
+    status += `💀 شکار: ${p.enemiesDefeated||0} | 💋 تصاحب: ${Object.keys(p.seduced||{}).length}\n`;
+    status += `🔒 زندان: ${p.prison?.length||0} | 🏠 خونه: ${p.house?.length||0} | 💍 همسر: ${p.marry||'نداره'}\n`;
+    
+    if (p.pets && p.pets.length > 0) {
+        status += `🐾 حیوون‌ها: `;
+        for (let pet of p.pets) status += `${pet.emoji} `;
+        status += `(${p.pets.length}/۳)\n`;
+    }
+    
+    if (p.children && p.children.length > 0) {
+        const alive = p.children.filter(c => c.isAlive);
+        if (alive.length > 0) {
+            status += `👶 فرزندان: ${alive.length} نفر\n`;
+            const heir = alive.find(c => c.isHeir);
+            if (heir) status += `👑 ولیعهد: ${heir.emoji} ${heir.name}\n`;
+        }
+    }
+    
+    if (p.pregnancies && p.pregnancies.length > 0) status += `🤰 بارداری: ${p.pregnancies.length} نفر\n`;
+    
     if (p.lootBoxes) {
         const totalBoxes = (p.lootBoxes.wooden || 0) + (p.lootBoxes.silver || 0) + (p.lootBoxes.golden || 0) + (p.lootBoxes.legendary || 0);
-        if (totalBoxes > 0) {
-            status += `\n📦 صندوقچه: ${totalBoxes} عدد`;
-        }
+        if (totalBoxes > 0) status += `📦 صندوقچه: ${totalBoxes} عدد\n`;
     }
     
-    // نمایش ماموریت‌ها
     if (p.dailyQuests && p.dailyQuests.quests && p.dailyQuests.quests.length > 0) {
         const completed = p.dailyQuests.quests.filter(q => q.completed && !q.claimed).length;
-        const total = p.dailyQuests.quests.length;
-        status += `\n📋 ماموریت: ${completed}/${total} تکمیل شده`;
+        if (completed > 0) status += `📋 ماموریت آماده: ${completed} عدد\n`;
     }
     
     status += `\n🏆 امتیاز: ${p.score||0}`;
@@ -132,10 +195,17 @@ function formatLeaderboard() {
 
     let msg = '🏆 *برترین بازماندگان:*\n\n';
     const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+    
     for (let i = 0; i < sorted.length; i++) {
         const p = sorted[i][1];
         let extra = '';
+        if (p.empire && p.empire.level > 0) {
+            const { empireLevels } = require('./empire');
+            const empLvl = empireLevels[p.empire.level];
+            if (empLvl) extra += ` ${empLvl.emoji}`;
+        }
         if (p.pets && p.pets.length > 0) extra += ' 🐾';
+        if (p.children && p.children.filter(c => c.isAlive).length > 0) extra += ' 👶';
         msg += `${medals[i]} ${p.name}: ${p.score} امتیاز | ⭐Lv.${p.level}${extra}\n`;
     }
     return msg;
@@ -154,8 +224,6 @@ function checkLevelUp(p) {
         p.defense = (p.defense || 2) + 1;
         p.xp -= needed;
         addScore(p, p.level * 10);
-        
-        // انرژی موقع لول آپ
         p.energy = Math.min((p.maxEnergy || 100), (p.energy || 0) + 20);
 
         const rewards = config.levelUpRewards[p.level];
@@ -167,7 +235,6 @@ function checkLevelUp(p) {
                 rewardMsg += `\n🎁 ${emojiMap[item]||item} +${rewards[item]}`;
             }
         }
-        
         rewardMsg += `\n⚡ +۲۰ انرژی`;
 
         totalMessages += `⬆️ *لول آپ!* سطح ${p.level}!\n❤️ +۱۰ جان\n⚔️ +۲ حمله\n🛡️ +۱ دفاع${rewardMsg}\n\n`;
@@ -197,8 +264,81 @@ function leavePvP(player) {
     if (index > -1) pvpQueue.splice(index, 1);
 }
 
+function dailyUpdate(player) {
+    const updates = [];
+    
+    try {
+        const { updatePopulation } = require('./people');
+        const popUpdates = updatePopulation(player);
+        if (popUpdates && popUpdates.length > 0) updates.push(...popUpdates);
+    } catch (e) {}
+    
+    try {
+        const { dailyEmpireUpdate } = require('./empire');
+        const empUpdates = dailyEmpireUpdate(player);
+        if (empUpdates && empUpdates.length > 0) updates.push(...empUpdates);
+    } catch (e) {}
+    
+    try {
+        const { updateCourtAlerts } = require('./court');
+        const escapes = updateCourtAlerts(player);
+        if (escapes && escapes.length > 0) {
+            for (let escape of escapes) updates.push(`🏃 ${escape.emoji} ${escape.name} از زندان فرار کرد!`);
+        }
+    } catch (e) {}
+    
+    try {
+        const { initDailyQuests } = require('./dailyQuest');
+        initDailyQuests(player);
+    } catch (e) {}
+    
+    try {
+        const { initBlackMarket } = require('./blackMarket');
+        initBlackMarket(player);
+    } catch (e) {}
+    
+    return updates;
+}
+
+function initAllSystems(player) {
+    if (!player.pets) player.pets = [];
+    if (!player.petFood) player.petFood = 0;
+    if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
+    if (!player.dailyQuests) player.dailyQuests = { quests: [], completed: [], lastReset: Date.now(), progress: {} };
+    if (!player.children) player.children = [];
+    if (!player.pregnancies) player.pregnancies = [];
+    if (!player.childSlots) player.childSlots = 3;
+    if (!player.empire) player.empire = { level: 0, score: 0, roles: {}, wonders: [], foundedAt: Date.now(), lastCollection: Date.now(), dynastyName: '', treasury: 0 };
+    if (!player.people) {
+        player.people = {
+            population: {},
+            lands: [],
+            buildings: [],
+            stats: { happiness: 60, hunger: 70, safety: 50, justice: 50, faith: 50 },
+            storage: { food: 100, water: 50 },
+            lastUpdate: Date.now(),
+            events: []
+        };
+        
+        try {
+            const { populationTypes } = require('./people');
+            for (let type in populationTypes) {
+                player.people.population[type] = {
+                    count: populationTypes[type].baseCount,
+                    employed: 0,
+                    sick: 0,
+                    unhappy: 0
+                };
+            }
+        } catch (e) {}
+    }
+    if (!player.court) player.court = { prisoners: [], scandals: [], recentEvents: [], lastEvent: 0, intrigueCooldowns: {}, alertLevel: 0 };
+    if (!player.blackMarket) player.blackMarket = { items: [], specialDeal: null, lastRefresh: 0 };
+}
+
 module.exports = { 
     players, createPlayer, getPlayer, addScore, checkUnlocks, 
     formatStatus, formatLeaderboard, checkLevelUp, getTimeOfDay,
-    joinPvP, leavePvP, pvpQueue
+    joinPvP, leavePvP, pvpQueue,
+    dailyUpdate, initAllSystems
 };
