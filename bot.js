@@ -911,4 +911,4 @@ bot.on('message', (msg) => {
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی - نسخه کامل امپراطوری آماده شد! 🎉👑');
+console.log('✅ ربات بقای باستانی - نسخه کامل امپراطوری آماده  شد! 🎉👑');
