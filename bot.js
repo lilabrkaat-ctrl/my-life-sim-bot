@@ -31,13 +31,13 @@ const { isAdmin, isBanned, adminCommand } = require('./admin');
 const { initPrison, captureNpc, getRelationPoints, getRelationLevel, touchPrisoner, kissPrisoner, orgyPrisoner, releasePrisoner, checkEscapes, formatPrison, getPrisonerKeyboard } = require('./prison');
 const { initHouse, inviteToHouse, kickFromHouse, formatHouse, getHouseKeyboard, touchInHouse, kissInHouse, orgyInHouse } = require('./house');
 const { propose, marry, divorce } = require('./marry');
-const { formatPets, getPetKeyboard, feedPet, feedAllPets, releasePet, initPets, addPet } = require('./pet');
+const { formatPets, getPetKeyboard, feedPet, feedAllPets, releasePet, initPets } = require('./pet');
 const { formatLootBoxes, getLootBoxKeyboard, openLootBox } = require('./lootbox');
 const { formatDailyQuests, getDailyQuestKeyboard, claimQuestReward, initDailyQuests } = require('./dailyQuest');
 const { formatChildren, getChildrenKeyboard, feedChild, trainChild, assignHeir, holdTournament, initChildren, checkBirths, checkPregnancy } = require('./offspring');
 const { formatEmpire, getEmpireKeyboard, collectEmpireIncome, assignRole, buildWonder, setDynastyName } = require('./empire');
-const { formatPeople, getPeopleKeyboard, assignLand, harvestAllLands, buildPublicBuilding, collectTaxes, makeDecision, getRandomEvent, handleEventChoice, waterLand } = require('./people');
-const { formatCourt, getCourtKeyboard, performIntrigue, managePrisoners, getCourtEvent, handleCourtEvent, updateCourtAlerts } = require('./court');
+const { formatPeople, getPeopleKeyboard, getLandKeyboard, getBuildingKeyboard, getDecisionKeyboard, assignLand, harvestAllLands, buildPublicBuilding, collectTaxes, makeDecision, waterLand } = require('./people');
+const { formatCourt, getCourtKeyboard, getIntrigueKeyboard, getPrisonerKeyboard, getCourtEventKeyboard, performIntrigue, managePrisoners, getCourtEvent, handleCourtEvent } = require('./court');
 const { formatBlackMarket, getBlackMarketKeyboard, buyBlackMarketItem, acceptSpecialDeal, initBlackMarket } = require('./blackMarket');
 const config = require('./config');
 
@@ -58,7 +58,7 @@ function mainMenu() {
         ['🗺️ سفر', '⚔️ نبرد'],
         ['🔨 ساخت‌وساز', '🏪 بازار'],
         ['🏠 خونه', '🏰 زندان'],
-        ['📊 رتبه‌بندی', '🔮 آرزو']
+        ['👑 امپراطوری', '📊 رتبه‌بندی']
     ], resize_keyboard: true } };
 }
 
@@ -119,22 +119,10 @@ bot.onText(/\/start/, async (msg) => {
     initChildren(p);
     initBlackMarket(p);
     
-    try {
-        const { initEmpire } = require('./empire');
-        initEmpire(p);
-    } catch (e) {}
+    try { const { initEmpire } = require('./empire'); initEmpire(p); } catch (e) {}
+    try { const { initPeople } = require('./people'); initPeople(p); } catch (e) {}
+    try { const { initCourt } = require('./court'); initCourt(p); } catch (e) {}
     
-    try {
-        const { initPeople } = require('./people');
-        initPeople(p);
-    } catch (e) {}
-    
-    try {
-        const { initCourt } = require('./court');
-        initCourt(p);
-    } catch (e) {}
-    
-    // چک تولدها
     const births = checkBirths(p);
     if (births.length > 0) {
         for (let child of births) {
@@ -156,7 +144,6 @@ bot.onText(/\/admin (.+)/, (msg, match) => {
     p.chatId = chatId;
     const args = match[1].split(' '); const cmd = args.shift();
     const result = adminCommand(p, cmd, args);
-    
     if (result.announceAll && result.announce) {
         const announceMsg = `📢 *اعلان ادمین:*\n\n${result.announce}`;
         for (let id in player.players) {
@@ -165,37 +152,13 @@ bot.onText(/\/admin (.+)/, (msg, match) => {
         bot.sendMessage(chatId, `✅ پیام به همه ارسال شد!\n\n${announceMsg}`, { parse_mode: 'Markdown', ...mainMenu() });
         return;
     }
-    
     bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
 });
-
-bot.onText(/^(👑|💍|💎|📜|🎵|🩸|🔮|🗝️|🧿|💀|🪵|🪨|🍖|💧|🦴|⛏️) (.+)$/, (msg, match) => {
-    const chatId = msg.chat.id;
-    if (!isAdmin(chatId)) return;
-    if (!adminState[chatId] || adminState[chatId].step !== 'item') return;
-
-    const itemMap = {
-        '👑': 'gold', '💍': 'ring', '💎': 'diamond', '📜': 'spell', '🎵': 'song',
-        '🩸': 'blood', '🔮': 'wish', '🗝️': 'key', '🧿': 'tear', '💀': 'finisher',
-        '🪵': 'wood', '🪨': 'stone', '🍖': 'meat', '💧': 'water', '🦴': 'skin', '⛏️': 'iron'
-    };
-
-    const item = itemMap[match[1]];
-    if (!item) return;
-
-    adminState[chatId].item = item;
-    adminState[chatId].step = 'amount';
-    bot.sendMessage(chatId, `📝 چند تا *${item}* می‌خوای بفرستی؟\n(عدد رو تایپ کن)`, { parse_mode: 'Markdown' });
-});
-
-bot.onText(/^🔙 لغو$/, (msg) => { const chatId = msg.chat.id; delete adminState[chatId]; bot.sendMessage(chatId, '❌ لغو شد.', mainMenu()); });
 
 bot.onText(/^👤 وضعیت$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    const time = getTimeOfDay();
-    p.timeOfDay = time;
-    
+    const time = getTimeOfDay(); p.timeOfDay = time;
     const questMsg = formatDailyQuests(p);
     await bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown', ...mainMenu() });
     await bot.sendMessage(chatId, questMsg, { parse_mode: 'Markdown', ...getDailyQuestKeyboard(p) });
@@ -204,6 +167,7 @@ bot.onText(/^👤 وضعیت$/, async (msg) => {
 bot.onText(/^📊 رتبه‌بندی$/, async (msg) => {
     await bot.sendMessage(msg.chat.id, player.formatLeaderboard(), { parse_mode: 'Markdown', ...mainMenu() });
 });
+
 bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -212,15 +176,9 @@ bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
     player.addScore(p, 5); player.checkUnlocks(p);
     let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
     if (p.unlockedMessage) p.unlockedMessage = null;
-    
-    if (result.petImage) {
-        await sendPhoto(chatId, result.petImage, result.message + extra, mainMenu());
-    } else if (result.boxImage) {
-        await sendPhoto(chatId, result.boxImage, result.message + extra, mainMenu());
-    } else {
-        await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
-    }
-    
+    if (result.petImage) await sendPhoto(chatId, result.petImage, result.message + extra, mainMenu());
+    else if (result.boxImage) await sendPhoto(chatId, result.boxImage, result.message + extra, mainMenu());
+    else await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
     if (result.npcEncounter) {
         const npcId = result.npcEncounter;
         if (!p.npcEncounters) p.npcEncounters = {};
@@ -248,7 +206,6 @@ bot.onText(/^🗺️ سفر$/, async (msg) => {
     mapMsg += '📍 روی نقشه کلیک کن:';
     await bot.sendMessage(chatId, mapMsg, { parse_mode: 'Markdown', ...locationMenu(p) });
 });
-
 bot.onText(/^✅ (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
     const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
@@ -318,6 +275,7 @@ bot.onText(/^⚔️ نبرد$/, async (msg) => {
         }
     }
 });
+
 bot.onText(/⚔️ 🗡️ حمله کن/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
@@ -369,19 +327,10 @@ async function handleBattleResult(chatId, p, enemy, result) {
 bot.onText(/🏃 💨 فرار کن/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); const enemy = activeBattles[chatId];
     if (!p || !enemy) return bot.sendMessage(chatId, '⚔️ نبردی نیست!', mainMenu());
-    if ((p.inventory?.key || 0) > 0) {
-        p.inventory.key--;
-        delete activeBattles[chatId];
-        return bot.sendMessage(chatId, '🗝️ با کلید فرار کردی! -۱ کلید', mainMenu());
-    }
+    if ((p.inventory?.key || 0) > 0) { p.inventory.key--; delete activeBattles[chatId]; return bot.sendMessage(chatId, '🗝️ با کلید فرار کردی! -۱ کلید', mainMenu()); }
     const result = playerEscape(p, enemy);
     if (result.battleOver) {
-        if (enemy.isPlayer && enemy.opponentId) {
-            if (activeBattles[enemy.opponentId]) {
-                delete activeBattles[enemy.opponentId];
-                await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد!`, mainMenu());
-            }
-        }
+        if (enemy.isPlayer && enemy.opponentId) { if (activeBattles[enemy.opponentId]) { delete activeBattles[enemy.opponentId]; await bot.sendMessage(enemy.opponentId, `🏃 ${p.name} فرار کرد!`, mainMenu()); } }
         delete activeBattles[chatId];
         if (result.animation) await sendAnimation(chatId, result.animation, result.message, mainMenu());
         else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
@@ -445,7 +394,7 @@ bot.onText(/^🕶️ بازار مکاره$/, async (msg) => {
     await bot.sendMessage(chatId, formatBlackMarket(p), { parse_mode: 'Markdown', ...getBlackMarketKeyboard(p) });
 });
 
-bot.onText(/^🛒 خرید (.+)$/, async (msg, match) => {
+bot.onText(/^🛒 خرید (\d+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return;
     const itemId = parseInt(match[1]);
@@ -467,65 +416,10 @@ bot.onText(/^📦 صندوقچه گنج$/, async (msg) => {
     await bot.sendMessage(chatId, formatLootBoxes(p), { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
 });
 
-bot.onText(/^📦 باز کردن صندوق چوبی$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = openLootBox(p, 'wooden');
-    if (result.success && result.pet) {
-        const addResult = addPet(p, result.pet);
-        if (addResult.success && addResult.image) {
-            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
-            return;
-        }
-    }
-    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
-});
-
-bot.onText(/^📦⚪ باز کردن صندوق نقره‌ای$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = openLootBox(p, 'silver');
-    if (result.success && result.pet) {
-        const addResult = addPet(p, result.pet);
-        if (addResult.success && addResult.image) {
-            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
-            return;
-        }
-    }
-    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
-});
-
-bot.onText(/^📦🟡 باز کردن صندوق طلایی$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = openLootBox(p, 'golden');
-    if (result.success && result.pet) {
-        const addResult = addPet(p, result.pet);
-        if (addResult.success && addResult.image) {
-            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
-            return;
-        }
-    }
-    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
-});
-
-bot.onText(/^📦🟣 باز کردن صندوق افسانه‌ای$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = openLootBox(p, 'legendary');
-    if (result.success && result.pet) {
-        const addResult = addPet(p, result.pet);
-        if (addResult.success && addResult.image) {
-            await sendPhoto(chatId, addResult.image, result.message, getLootBoxKeyboard(p));
-            return;
-        }
-    }
-    if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p));
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) });
-});
+bot.onText(/^📦 باز کردن صندوق چوبی$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; const result = openLootBox(p, 'wooden'); if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p)); else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) }); });
+bot.onText(/^📦⚪ باز کردن صندوق نقره‌ای$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; const result = openLootBox(p, 'silver'); if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p)); else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) }); });
+bot.onText(/^📦🟡 باز کردن صندوق طلایی$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; const result = openLootBox(p, 'golden'); if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p)); else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) }); });
+bot.onText(/^📦🟣 باز کردن صندوق افسانه‌ای$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; const result = openLootBox(p, 'legendary'); if (result.image) await sendPhoto(chatId, result.image, result.message, getLootBoxKeyboard(p)); else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getLootBoxKeyboard(p) }); });
 
 bot.onText(/^(.+) خرید (.+)$/, (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
@@ -574,6 +468,27 @@ bot.onText(/\/cancel/, (msg) => {
     bot.sendMessage(chatId, cancelShop(p).message, mainMenu());
 });
 
+// ============ 🏠 خونه ============
+bot.onText(/^🏠 خونه$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    initHouse(p); initPets(p); initChildren(p);
+    
+    let houseMsg = formatHouse(p);
+    const buttons = [];
+    if (p.house?.length > 0) {
+        for (let h of p.house) buttons.push([`🏠 ${h.emoji} ${h.name}`]);
+    }
+    buttons.push(['👶 فرزندان']);
+    buttons.push(['🐾 حیوون‌ها']);
+    buttons.push(['🔮 آرزو']);
+    if (p.level >= 30 || (p.empire && p.empire.level > 0)) buttons.push(['👑 امپراطوری']);
+    buttons.push(['🔙 برگشت']);
+    
+    await bot.sendMessage(chatId, houseMsg, { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
+});
+
+// ============ 🔮 آرزو توی خونه ============
 bot.onText(/^🔮 آرزو$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -589,6 +504,269 @@ bot.onText(/^💰 ثروت/, async (msg) => { const chatId = msg.chat.id; const 
 bot.onText(/^⚔️ قدرت/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.attack=(p.attack||5)+20; delete wishState[chatId]; bot.sendMessage(chatId, '⚔️ *آرزوی قدرت!*\n+۲۰⚔️ دائمی', {parse_mode:'Markdown',...mainMenu()}); });
 bot.onText(/^❤️ سلامتی/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.maxHp=(p.maxHp||100)+100; p.hp=p.maxHp; delete wishState[chatId]; bot.sendMessage(chatId, '❤️ *آرزوی سلامتی!*\n+۱۰۰❤️ دائمی', {parse_mode:'Markdown',...mainMenu()}); });
 bot.onText(/^✨ تجربه/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p || !wishState[chatId]) return; if ((p.inventory?.wish||0)<1) return bot.sendMessage(chatId, '❌ آرزو نداری!', mainMenu()); p.inventory.wish--; p.xp=(p.xp||0)+100; player.checkLevelUp(p); delete wishState[chatId]; let extra=p.levelUpMessage?'\n\n'+p.levelUpMessage:''; if(p.levelUpMessage)p.levelUpMessage=null; bot.sendMessage(chatId, '✨ *آرزوی تجربه!*\n+۱۰۰✨'+extra, {parse_mode:'Markdown',...mainMenu()}); });
+
+// ============ 🐾 حیوانات ============
+bot.onText(/^🐾 حیوون‌ها$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    initPets(p);
+    await bot.sendMessage(chatId, formatPets(p), { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^🍖 غذا بده به (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const petInfo = match[1].trim();
+    const pet = p.pets?.find(pt => `${pt.emoji} ${pt.name}` === petInfo);
+    if (!pet) return bot.sendMessage(chatId, '❌ حیوون پیدا نشد!', getPetKeyboard(p));
+    const result = feedPet(p, pet.id);
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getPetKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^🍖 غذا بده به همه$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const result = feedAllPets(p);
+    if (result.image) await sendPhoto(chatId, result.image, result.message, getPetKeyboard(p));
+    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+bot.onText(/^💔 آزاد کن (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const petInfo = match[1].trim();
+    const pet = p.pets?.find(pt => `${pt.emoji} ${pt.name}` === petInfo);
+    if (!pet) return bot.sendMessage(chatId, '❌ حیوون پیدا نشد!', getPetKeyboard(p));
+    const result = releasePet(p, pet.id);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
+});
+
+// ============ 👶 فرزندان ============
+bot.onText(/^👶 فرزندان$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    initChildren(p);
+    const births = checkBirths(p);
+    if (births.length > 0) {
+        for (let child of births) {
+            await bot.sendMessage(chatId, `👶 *${child.name}* متولد شد! ${child.emoji}\n🎉 یه فرزند جدید به امپراطوری اضافه شد!`, { parse_mode: 'Markdown' });
+        }
+    }
+    await bot.sendMessage(chatId, formatChildren(p), { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
+});
+
+bot.onText(/^🍼 غذا بده به (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const childInfo = match[1].trim();
+    const child = p.children?.find(c => `${c.emoji} ${c.name}` === childInfo && c.isAlive);
+    if (!child) return bot.sendMessage(chatId, '❌ فرزند پیدا نشد!', getChildrenKeyboard(p));
+    const result = feedChild(p, child.id);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
+});
+
+bot.onText(/^📚 آموزش بده به (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const childInfo = match[1].trim();
+    const child = p.children?.find(c => `${c.emoji} ${c.name}` === childInfo && c.isAlive);
+    if (!child) return bot.sendMessage(chatId, '❌ فرزند پیدا نشد!', getChildrenKeyboard(p));
+    const result = trainChild(p, child.id);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
+});
+
+bot.onText(/^👑 ولیعهد کن (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const childInfo = match[1].trim();
+    const child = p.children?.find(c => `${c.emoji} ${c.name}` === childInfo && c.isAlive);
+    if (!child) return bot.sendMessage(chatId, '❌ فرزند پیدا نشد!', getChildrenKeyboard(p));
+    const result = assignHeir(p, child.id);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
+});
+
+bot.onText(/^⚔️ تورنمنت امپراطوری$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+    const result = holdTournament(p);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
+});
+// ============ 👑 امپراطوری (منوی اصلی) ============
+bot.onText(/^👑 امپراطوری$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    
+    if (p.level < 30 && (!p.empire || p.empire.level === 0)) {
+        return bot.sendMessage(chatId, '🔒 *امپراطوری*\n\n⚠️ باید به سطح ۳۰ برسی تا امپراطوری خودت رو بسازی!\n\n🎯 سطح فعلی: ' + p.level, { parse_mode: 'Markdown', ...mainMenu() });
+    }
+    
+    try { const { initEmpire } = require('./empire'); initEmpire(p); } catch (e) {}
+    try { const { initPeople } = require('./people'); initPeople(p); } catch (e) {}
+    try { const { initCourt } = require('./court'); initCourt(p); } catch (e) {}
+    initChildren(p);
+    
+    await bot.sendMessage(chatId, formatEmpire(p), {
+        parse_mode: 'Markdown',
+        reply_markup: { keyboard: [
+            ['👶 فرزندان و سلسله', '👥 مردم و رعایا'],
+            ['💰 اقتصاد و مالیات', '🏛️ عجایب'],
+            ['🐍 دربار و دسیسه', '⚔️ تورنمنت'],
+            ['🔙 برگشت']
+        ], resize_keyboard: true }
+    });
+});
+
+// ============ 👥 مردم ============
+bot.onText(/^👥 مردم و رعایا$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    try { const { initPeople } = require('./people'); initPeople(p); } catch (e) {}
+    await bot.sendMessage(chatId, formatPeople(p), { parse_mode: 'Markdown', ...getPeopleKeyboard(p) });
+});
+
+bot.onText(/^🌾 مدیریت زمین‌ها$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    await bot.sendMessage(chatId, '🌾 *زمین‌های کشاورزی*\n\nیک نوع زمین انتخاب کن:', { parse_mode: 'Markdown', ...getLandKeyboard() });
+    peopleState[chatId] = { action: 'selectLand' };
+});
+
+bot.onText(/^🌾 (.+) \((\d+)👑\)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p || !peopleState[chatId] || peopleState[chatId].action !== 'selectLand') return;
+    
+    const landInfo = match[1].trim();
+    const { landTypes } = require('./people');
+    let landType = null;
+    for (let key in landTypes) {
+        if (landInfo.includes(landTypes[key].emoji) && landInfo.includes(landTypes[key].name)) {
+            landType = key; break;
+        }
+    }
+    
+    if (!landType) return bot.sendMessage(chatId, '❌ زمین نامعتبر!', getPeopleKeyboard(p));
+    
+    const result = assignLand(p, landType, 1);
+    delete peopleState[chatId];
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPeopleKeyboard(p) });
+});
+
+bot.onText(/^💧 آبیاری همه زمین‌ها$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    if (!p.people || !p.people.lands || p.people.lands.length === 0) {
+        return bot.sendMessage(chatId, '❌ هیچ زمینی نداری!', getPeopleKeyboard(p));
+    }
+    for (let land of p.people.lands) {
+        waterLand(p, land.id);
+    }
+    await bot.sendMessage(chatId, '✅ همه زمین‌ها آبیاری شدن! 💧', getPeopleKeyboard(p));
+});
+
+bot.onText(/^🌾 برداشت همه زمین‌ها$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = harvestAllLands(p);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPeopleKeyboard(p) });
+});
+
+bot.onText(/^🏗️ ساخت ساختمان$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    await bot.sendMessage(chatId, '🏗️ *ساختمان‌های عمومی*\n\nیک ساختمان انتخاب کن:', { parse_mode: 'Markdown', ...getBuildingKeyboard() });
+    peopleState[chatId] = { action: 'selectBuilding' };
+});
+
+bot.onText(/^🏗️ (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p || !peopleState[chatId] || peopleState[chatId].action !== 'selectBuilding') return;
+    
+    const buildingInfo = match[1].trim();
+    const { buildings } = require('./people');
+    let buildingKey = null;
+    for (let key in buildings) {
+        if (buildingInfo.includes(buildings[key].emoji) && buildingInfo.includes(buildings[key].name)) {
+            buildingKey = key; break;
+        }
+    }
+    
+    if (!buildingKey) return;
+    
+    const result = buildPublicBuilding(p, buildingKey);
+    delete peopleState[chatId];
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPeopleKeyboard(p) });
+});
+
+// ============ 💰 اقتصاد ============
+bot.onText(/^💰 اقتصاد و مالیات$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const result = collectTaxes(p);
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPeopleKeyboard(p) });
+});
+
+// ============ 🏛️ عجایب ============
+bot.onText(/^🏛️ عجایب$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    const { wonders } = require('./empire');
+    let msg2 = '🏛️ *عجایب باستانی*\n\n';
+    for (let key in wonders) {
+        const w = wonders[key];
+        const built = p.empire?.wonders?.includes(key);
+        msg2 += `${built ? '✅' : '⬜'} ${w.emoji} *${w.name}*\n   📝 ${w.description}\n   🏗️ مواد: `;
+        for (let item in w.cost) {
+            msg2 += `${w.cost[item]} ${item}, `;
+        }
+        msg2 = msg2.slice(0, -2) + '\n\n';
+    }
+    const buttons = [];
+    for (let key in wonders) {
+        if (!p.empire?.wonders?.includes(key)) {
+            buttons.push([`🏗️ ساخت ${wonders[key].emoji} ${wonders[key].name}`]);
+        }
+    }
+    buttons.push(['🔙 برگشت']);
+    await bot.sendMessage(chatId, msg2, { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
+    empireState[chatId] = { action: 'buildWonder' };
+});
+
+bot.onText(/^🏗️ ساخت (.+) (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p || !empireState[chatId] || empireState[chatId].action !== 'buildWonder') return;
+    
+    const wonderName = match[2].trim();
+    const { wonders } = require('./empire');
+    let wonderKey = null;
+    for (let key in wonders) {
+        if (wonders[key].name === wonderName) { wonderKey = key; break; }
+    }
+    
+    if (!wonderKey) return;
+    
+    const result = buildWonder(p, wonderKey);
+    delete empireState[chatId];
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
+});
+
+// ============ 🐍 دربار ============
+bot.onText(/^🐍 دربار و دسیسه$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    try { const { initCourt } = require('./court'); initCourt(p); } catch (e) {}
+    await bot.sendMessage(chatId, formatCourt(p), { parse_mode: 'Markdown', ...getCourtKeyboard(p) });
+});
+
+bot.onText(/^🐍 انجام دسیسه$/, async (msg) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p) return;
+    await bot.sendMessage(chatId, '🐍 *دسیسه‌های درباری*\n\nیک نوع دسیسه انتخاب کن:', { parse_mode: 'Markdown', ...getIntrigueKeyboard(p) });
+    courtState[chatId] = { action: 'selectIntrigue' };
+});
+
+bot.onText(/^🐍 (.+) (.+)$/, async (msg, match) => {
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
+    if (!p || !courtState[chatId] || courtState[chatId].action !== 'selectIntrigue') return;
+    // این بخش ساده‌ست - فقط نشون میده دسیسه‌ها رو
+    await bot.sendMessage(chatId, '🔜 این بخش به زودی تکمیل میشه...', getCourtKeyboard(p));
+    delete courtState[chatId];
+});
+
+// ============ 🏰 زندان ============
 bot.onText(/^🏰 زندان$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -620,177 +798,8 @@ bot.onText(/^💋 ببوس$/, async (msg) => { const chatId = msg.chat.id; const
 bot.onText(/^🎵 آواز$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; if ((p.inventory?.song||0)<1) return bot.sendMessage(chatId, '❌ آواز نداری!', mainMenu()); p.inventory.song--; const isHouse = p.house?.find(h => h.npcId === npcId); if (isHouse) { if(!p.prisonRelations)p.prisonRelations={}; p.prisonRelations[npcId]=(p.prisonRelations[npcId]||0)+15; } else { if(!p.prisonRelations)p.prisonRelations={}; p.prisonRelations[npcId]=(p.prisonRelations[npcId]||0)+15; } const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; bot.sendMessage(chatId, `🎵 *آواز جادویی!* +۱۵ رابطه\n\n${dialogue}`, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
 bot.onText(/^🧿 اشک$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId]; if (!p || !npcId) return; if ((p.inventory?.tear||0)<1) return bot.sendMessage(chatId, '❌ اشک نداری!', mainMenu()); p.inventory.tear--; const prisoner = p.prison.find(pr => pr.npcId === npcId); if (prisoner) { prisoner.daysUntilEscape += 5; bot.sendMessage(chatId, `🧿 *اشک استفاده شد!* +۵ روز زندان\n⏰ ${prisoner.daysUntilEscape} روز تا فرار`, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) }); } });
 bot.onText(/^🩸 خون$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; if ((p.inventory?.blood||0)<1) return bot.sendMessage(chatId, '❌ خون نداری!', mainMenu()); p.inventory.blood--; p.hp = Math.min((p.maxHp||100), (p.hp||100)+50); bot.sendMessage(chatId, `🩸 *خون استفاده شد!* +۵۰❤️\n❤️ ${p.hp}/${p.maxHp}`, { parse_mode: 'Markdown', ...mainMenu() }); });
-bot.onText(/^🔥 عیاشی$/, async (msg) => { 
-    const chatId = msg.chat.id; 
-    const p = player.getPlayer(chatId); 
-    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; 
-    if (!p || !npcId) return; 
-    const isHouse = p.house?.find(h => h.npcId === npcId); 
-    const result = isHouse ? orgyInHouse(p, npcId) : orgyPrisoner(p, npcId); 
-    
-    // چک بارداری - ۸۰٪ شانس
-    const isSpouse = p.marry === npcId;
-    const pregnancy = checkPregnancy(p, npcId, isSpouse);
-    let extraMsg = '';
-    if (pregnancy) {
-        extraMsg = `\n\n🤰 *${pregnancy.motherEmoji} ${pregnancy.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...`;
-    } else {
-        const points = (p.prisonRelations && p.prisonRelations[npcId]) || 0;
-        extraMsg = `\n\n🔮 شانس بارداری: ۸۰٪\n💕 رابطه: ${points}\n😢 این دفعه نشد...`;
-    }
-    
-    const dialogue = isHouse ? getHouseDialogue('orgy') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; 
-    if (result.animation) {
-        await sendAnimation(chatId, result.animation, result.message + extraMsg + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); 
-    } else {
-        await bot.sendMessage(chatId, result.message + extraMsg + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); 
-    }
-});
+bot.onText(/^🔥 عیاشی$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? orgyInHouse(p, npcId) : orgyPrisoner(p, npcId); const isSpouse = p.marry === npcId; const pregnancy = checkPregnancy(p, npcId, isSpouse); let extraMsg = ''; if (pregnancy) { extraMsg = `\n\n🤰 *${pregnancy.motherEmoji} ${pregnancy.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...`; } else { const points = (p.prisonRelations && p.prisonRelations[npcId]) || 0; extraMsg = `\n\n🔮 شانس بارداری: ۸۰٪\n💕 رابطه: ${points}`; } const dialogue = isHouse ? getHouseDialogue('orgy') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + extraMsg + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + extraMsg + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
 bot.onText(/^🔓 آزاد کن$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId]; if (!p || !npcId) return; const result = releasePrisoner(p, npcId); delete activePrisoner[chatId]; if (result.loyal) player.addScore(p, 50); await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); });
-
-bot.onText(/^🏠 خونه$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    initHouse(p);
-    initPets(p);
-    initChildren(p);
-    
-    let houseMsg = formatHouse(p);
-    
-    const buttons = [];
-    if (p.house?.length > 0) {
-        for (let h of p.house) buttons.push([`🏠 ${h.emoji} ${h.name}`]);
-    }
-    buttons.push(['🐾 حیوون‌ها']);
-    if (p.children && p.children.length > 0) buttons.push(['👶 فرزندان']);
-    if (p.empire && p.empire.level > 0) buttons.push(['👑 امپراطوری']);
-    buttons.push(['🔙 برگشت']);
-    
-    await bot.sendMessage(chatId, houseMsg, { parse_mode: 'Markdown', reply_markup: { keyboard: buttons, resize_keyboard: true } });
-});
-
-bot.onText(/^🐾 حیوون‌ها$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    initPets(p);
-    await bot.sendMessage(chatId, formatPets(p), { parse_mode: 'Markdown', ...getPetKeyboard(p) });
-});
-
-bot.onText(/^🍖 غذا بده به (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const petInfo = match[1].trim();
-    const pet = p.pets?.find(pt => `${pt.emoji} ${pt.name}` === petInfo);
-    if (!pet) return bot.sendMessage(chatId, '❌ حیوون پیدا نشد!', getPetKeyboard(p));
-    const result = feedPet(p, pet.id);
-    if (result.image) await sendPhoto(chatId, result.image, result.message, getPetKeyboard(p));
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
-});
-
-bot.onText(/^🍖 غذا بده به همه$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = feedAllPets(p);
-    if (result.image) await sendPhoto(chatId, result.image, result.message, getPetKeyboard(p));
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
-});
-
-bot.onText(/^💔 آزاد کن (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const petInfo = match[1].trim();
-    const pet = p.pets?.find(pt => `${pt.emoji} ${pt.name}` === petInfo);
-    if (!pet) return bot.sendMessage(chatId, '❌ حیوون پیدا نشد!', getPetKeyboard(p));
-    const result = releasePet(p, pet.id);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getPetKeyboard(p) });
-});
-
-bot.onText(/^👶 فرزندان$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    initChildren(p);
-    
-    // چک تولدها
-    const births = checkBirths(p);
-    if (births.length > 0) {
-        for (let child of births) {
-            await bot.sendMessage(chatId, `👶 *${child.name}* متولد شد! ${child.emoji}\n🎉 یه فرزند جدید به امپراطوری اضافه شد!`, { parse_mode: 'Markdown' });
-        }
-    }
-    
-    await bot.sendMessage(chatId, formatChildren(p), { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
-});
-
-bot.onText(/^🍼 غذا بده به (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const childInfo = match[1].trim();
-    const child = p.children?.find(c => `${c.emoji} ${c.name}` === childInfo && c.isAlive);
-    if (!child) return bot.sendMessage(chatId, '❌ فرزند پیدا نشد!', getChildrenKeyboard(p));
-    const result = feedChild(p, child.id);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
-});
-
-bot.onText(/^📚 آموزش بده به (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const childInfo = match[1].trim();
-    const child = p.children?.find(c => `${c.emoji} ${c.name}` === childInfo && c.isAlive);
-    if (!child) return bot.sendMessage(chatId, '❌ فرزند پیدا نشد!', getChildrenKeyboard(p));
-    const result = trainChild(p, child.id);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
-});
-
-bot.onText(/^👑 ولیعهد کن (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const childInfo = match[1].trim();
-    const child = p.children?.find(c => `${c.emoji} ${c.name}` === childInfo && c.isAlive);
-    if (!child) return bot.sendMessage(chatId, '❌ فرزند پیدا نشد!', getChildrenKeyboard(p));
-    const result = assignHeir(p, child.id);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
-});
-
-bot.onText(/^⚔️ تورنمنت امپراطوری$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = holdTournament(p);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
-});
-
-bot.onText(/^👑 امپراطوری$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    try {
-        const { initEmpire } = require('./empire');
-        initEmpire(p);
-    } catch (e) {}
-    await bot.sendMessage(chatId, formatEmpire(p), { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
-});
-
-bot.onText(/^💰 جمع‌آوری درآمد$/, async (msg) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const result = collectEmpireIncome(p);
-    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
-});
-bot.onText(/^🎁 دریافت جایزه (.+)$/, async (msg, match) => {
-    const chatId = msg.chat.id; const p = player.getPlayer(chatId);
-    if (!p) return;
-    const questInfo = match[1].trim();
-    const { questTypes } = require('./dailyQuest');
-    let questKey = null;
-    for (let key in questTypes) {
-        if (`${questTypes[key].emoji} ${questTypes[key].name}` === questInfo) {
-            questKey = key;
-            break;
-        }
-    }
-    if (!questKey) return bot.sendMessage(chatId, '❌ ماموریت پیدا نشد!', mainMenu());
-    const result = claimQuestReward(p, questKey);
-    if (result.image) await sendPhoto(chatId, result.image, result.message, mainMenu());
-    else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-});
 
 bot.onText(/^🏠 (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p?.house) return;
@@ -837,18 +846,14 @@ bot.onText(/^🔙 بازار$/, (msg) => {
     bot.sendMessage(chatId, `${showShopMenu()}\n\n👑 ${p.inventory?.gold||0}`, { 
         parse_mode: 'Markdown', 
         reply_markup: { keyboard: [
-            ['🪵 خرید چوب', '🪨 خرید سنگ'], 
-            ['🍖 خرید گوشت', '💧 خرید آب'], 
-            ['🦴 خرید پوست', '⛏️ خرید آهن'], 
-            ['💀 خرید فنیشر', '⚡ خرید انرژی'], 
-            ['💎 فروش الماس', '📤 فروش'],
-            ['📦 صندوقچه گنج', '🕶️ بازار مکاره'],
-            ['🔙 برگشت']
+            ['🪵 خرید چوب', '🪨 خرید سنگ'], ['🍖 خرید گوشت', '💧 خرید آب'], 
+            ['🦴 خرید پوست', '⛏️ خرید آهن'], ['💀 خرید فنیشر', '⚡ خرید انرژی'], 
+            ['💎 فروش الماس', '📤 فروش'], ['📦 صندوقچه گنج', '🕶️ بازار مکاره'], ['🔙 برگشت']
         ], resize_keyboard: true } 
     });
 });
 
-// handler برای message (مدیریت shop و admin)
+// ============ message handler ============
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -873,7 +878,6 @@ bot.on('message', (msg) => {
 
         const args = text.split(' ');
         const cmd = args.shift().toLowerCase();
-
         if ((cmd === 'کمک' || cmd === 'اهدای' || cmd === 'اهدا' || cmd === 'gift') && args[0] === 'به') {
             const targetId = parseInt(args[1]);
             if (!targetId || !player.getPlayer(targetId)) { bot.sendMessage(chatId, '❌ کاربر پیدا نشد!', mainMenu()); return; }
@@ -885,7 +889,7 @@ bot.on('message', (msg) => {
             return;
         }
 
-        const adminCommands = ['gold', 'g', 'xp', 'exp', 'score', 'sc', 'heal', 'hp', 'item', 'give', 'attack', 'atk', 'defense', 'def', 'level', 'lvl', 'energy', 'en', 'unlock', 'unlockall', 'max', 'maxall', 'god', 'godmode', 'pet', 'addpet', 'removepet', 'delpet', 'petfood', 'feedpet', 'box', 'addbox', 'openbox', 'unbox', 'boxes', 'myboxes', 'quest', 'newquest', 'completequest', 'finishquest', 'child', 'addchild', 'heir', 'setheir', 'killchild', 'deadchild', 'tournament', 'tour', 'empirelevel', 'setempire', 'dynasty', 'setdynasty', 'wonder', 'addwonder', 'income', 'collectincome', 'role', 'assignrole', 'population', 'pop', 'food', 'addfood', 'water', 'addwater', 'building', 'addbuilding', 'stats', 'setstats', 'intrigue', 'doIntrigue', 'courtevent', 'triggercourt', 'blackmarket', 'bm', 'prison', 'prisonall', 'gift', 'sendgift', 'info', 'whois', 'users', 'count', 'top', 'top10', 'resetuser', 'ru', 'ban', 'unban', 'announce', 'ann', 'save', 'reset', 'help', 'addnpc', 'addprison', 'addhouse', 'addhome', 'removenpc', 'removeprison', 'removehouse', 'removehome', 'setrelation', 'setrel', 'marrynow', 'forcemarry', 'اهدای', 'اهدا', 'اطلاعات', 'کاربران', 'برترین‌ها', 'ذخیره', 'ریست', 'ریست کن', 'کمک'];
+        const adminCommands = ['gold', 'g', 'xp', 'exp', 'score', 'sc', 'heal', 'hp', 'item', 'give', 'attack', 'atk', 'defense', 'def', 'level', 'lvl', 'energy', 'en', 'unlock', 'unlockall', 'max', 'maxall', 'god', 'godmode', 'pet', 'addpet', 'removepet', 'delpet', 'petfood', 'feedpet', 'box', 'addbox', 'openbox', 'unbox', 'boxes', 'myboxes', 'quest', 'newquest', 'completequest', 'finishquest', 'child', 'addchild', 'heir', 'setheir', 'killchild', 'deadchild', 'tournament', 'tour', 'empirelevel', 'setempire', 'dynasty', 'setdynasty', 'income', 'collectincome', 'wonder', 'addwonder', 'population', 'pop', 'food', 'addfood', 'water', 'addwater', 'building', 'addbuilding', 'stats', 'setstats', 'blackmarket', 'bm', 'prison', 'prisonall', 'gift', 'sendgift', 'info', 'whois', 'users', 'count', 'top', 'top10', 'resetuser', 'ru', 'ban', 'unban', 'announce', 'ann', 'save', 'reset', 'help', 'addnpc', 'addprison', 'addhouse', 'addhome', 'removenpc', 'removeprison', 'removehouse', 'removehome', 'setrelation', 'setrel', 'marrynow', 'forcemarry', 'اهدای', 'اهدا', 'اطلاعات', 'کاربران', 'برترین‌ها', 'ذخیره', 'ریست', 'ریست کن', 'کمک'];
 
         if (adminCommands.includes(cmd)) {
             const result = adminCommand(p, cmd, args);
@@ -903,21 +907,10 @@ bot.on('message', (msg) => {
         return;
     }
 
-    if (text.startsWith('🪵') || text.startsWith('🪨') || text.startsWith('🍖') || text.startsWith('💧') || 
-        text.startsWith('🦴') || text.startsWith('⛏️') || text.startsWith('📤') || text.startsWith('🏪') || 
-        text.startsWith('💎') || text.startsWith('💀') || text.startsWith('🔙') || text.startsWith('👤') || 
-        text.startsWith('🌿') || text.startsWith('🗺️') || text.startsWith('⚔️') || text.startsWith('🔨') || 
-        text.startsWith('📜') || text.startsWith('⚡') || text.startsWith('✅') || text.startsWith('❌') || 
-        text.startsWith('📊') || text.startsWith('🏰') || text.startsWith('🏠') || text.startsWith('🔒') || 
-        text.startsWith('🖐️') || text.startsWith('💋') || text.startsWith('🔥') || text.startsWith('🔓') || 
-        text.startsWith('🏃') || text.startsWith('💍') || text.startsWith('👰') || text.startsWith('🚪') || 
-        text.startsWith('🎵') || text.startsWith('🧿') || text.startsWith('🩸') || text.startsWith('🔮') ||
-        text.startsWith('🐾') || text.startsWith('🍖') || text.startsWith('💔') || text.startsWith('📦') ||
-        text.startsWith('🎁') || text.startsWith('👶') || text.startsWith('👑') || text.startsWith('💰') ||
-        text.startsWith('🕶️') || text.startsWith('🛒') || text.startsWith('🤝') || text.startsWith('🍼') ||
-        text.startsWith('📚') || text.startsWith('🌾') || text.startsWith('🏗️') || text.startsWith('🐍') ||
-        text.startsWith('📋') || text.startsWith('🏛️') || text.startsWith('📝') || text.startsWith('👥') ||
-        text.startsWith('⚖️') || text.startsWith('🙏') || text.startsWith('🎉') || text.startsWith('🍞')) return;
+    const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','🔙','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','📝','👥','⚖️','🙏','🎉','🍞','🧙','🛡️','🏹','🗡️','🔵','🟢','🟤','🟡','🟣','🌟'];
+    for (let prefix of prefixes) {
+        if (text.startsWith(prefix)) return;
+    }
 
     const p = player.getPlayer(chatId);
     if (!p) return;
@@ -929,4 +922,4 @@ bot.on('message', (msg) => {
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی - نسخه کامل امپراطوری آماده  شد! 🎉👑');
+console.log('✅ ربات بقای باستانی - نسخه نهایی امپراطوری آماده شد! 🎉👑');
