@@ -36,8 +36,8 @@ const { formatLootBoxes, getLootBoxKeyboard, openLootBox } = require('./lootbox'
 const { formatDailyQuests, getDailyQuestKeyboard, claimQuestReward, initDailyQuests } = require('./dailyQuest');
 const { formatChildren, getChildrenKeyboard, feedChild, trainChild, assignHeir, holdTournament, initChildren, checkBirths, checkPregnancy } = require('./offspring');
 const { formatEmpire, getEmpireKeyboard, collectEmpireIncome, assignRole, buildWonder, setDynastyName } = require('./empire');
-const { formatPeople, getPeopleKeyboard, getLandKeyboard, getBuildingKeyboard, getDecisionKeyboard, assignLand, harvestAllLands, buildPublicBuilding, collectTaxes, makeDecision, waterLand } = require('./people');
-const { formatCourt, getCourtKeyboard, getIntrigueKeyboard, getPrisonerKeyboard, getCourtEventKeyboard, performIntrigue, managePrisoners, getCourtEvent, handleCourtEvent } = require('./court');
+const { formatPeople, getPeopleKeyboard, getLandKeyboard, getBuildingKeyboard, assignLand, harvestAllLands, buildPublicBuilding, collectTaxes, waterLand } = require('./people');
+const { formatCourt, getCourtKeyboard, getIntrigueKeyboard, getCourtEventKeyboard, performIntrigue, managePrisoners, getCourtEvent, handleCourtEvent } = require('./court');
 const { formatBlackMarket, getBlackMarketKeyboard, buyBlackMarketItem, acceptSpecialDeal, initBlackMarket } = require('./blackMarket');
 const config = require('./config');
 
@@ -50,7 +50,6 @@ const wishState = {};
 const empireState = {};
 const peopleState = {};
 const courtState = {};
-const childState = {};
 
 function mainMenu() {
     return { reply_markup: { keyboard: [
@@ -339,7 +338,6 @@ bot.onText(/🏃 💨 فرار کن/, async (msg) => {
         else await sendPhoto(chatId, enemy.file_id, `${formatBattle(p, enemy)}\n\n${result.message}`, getBattleKeyboard(p, enemy));
     }
 });
-
 bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -368,6 +366,7 @@ bot.onText(/^[✅❌] (.+) \((\d+)⚡\)$/, async (msg, match) => {
     if (result.success) player.addScore(p, 50);
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEnergyCraftKeyboard(p) });
 });
+
 bot.onText(/^🏪 بازار$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -467,7 +466,6 @@ bot.onText(/\/cancel/, (msg) => {
     if (!p) return; p.chatId = chatId;
     bot.sendMessage(chatId, cancelShop(p).message, mainMenu());
 });
-
 // ============ 🏠 خونه ============
 bot.onText(/^🏠 خونه$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
@@ -547,7 +545,7 @@ bot.onText(/^👶 فرزندان$/, async (msg) => {
     const births = checkBirths(p);
     if (births.length > 0) {
         for (let child of births) {
-            await bot.sendMessage(chatId, `👶 *${child.name}* متولد شد! ${child.emoji}\n🎉 یه فرزند جدید به امپراطوری اضافه شد!`, { parse_mode: 'Markdown' });
+            await bot.sendMessage(chatId, `👶 *${child.name}* متولد شد! ${child.emoji}`, { parse_mode: 'Markdown' });
         }
     }
     await bot.sendMessage(chatId, formatChildren(p), { parse_mode: 'Markdown', ...getChildrenKeyboard(p) });
@@ -742,7 +740,6 @@ bot.onText(/^🏗️ ساخت (.+) (.+)$/, async (msg, match) => {
     delete empireState[chatId];
     await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
 });
-
 // ============ 🐍 دربار ============
 bot.onText(/^🐍 دربار و دسیسه$/, async (msg) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
@@ -761,7 +758,6 @@ bot.onText(/^🐍 انجام دسیسه$/, async (msg) => {
 bot.onText(/^🐍 (.+) (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId);
     if (!p || !courtState[chatId] || courtState[chatId].action !== 'selectIntrigue') return;
-    // این بخش ساده‌ست - فقط نشون میده دسیسه‌ها رو
     await bot.sendMessage(chatId, '🔜 این بخش به زودی تکمیل میشه...', getCourtKeyboard(p));
     delete courtState[chatId];
 });
@@ -793,14 +789,88 @@ bot.onText(/^🔒 (.+)$/, async (msg, match) => {
     await sendPhoto(chatId, img, `${prisoner.emoji} *${prisoner.name}* | ${relation.name}\n\n${dialogue.text}`, getPrisonerKeyboard(p, prisoner.npcId));
 });
 
-bot.onText(/^🖐️ لمس کن$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? touchInHouse(p, npcId) : touchPrisoner(p, npcId); const dialogue = isHouse ? getHouseDialogue('touch') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
-bot.onText(/^💋 ببوس$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? kissInHouse(p, npcId) : kissPrisoner(p, npcId); const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
-bot.onText(/^🎵 آواز$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; if ((p.inventory?.song||0)<1) return bot.sendMessage(chatId, '❌ آواز نداری!', mainMenu()); p.inventory.song--; const isHouse = p.house?.find(h => h.npcId === npcId); if (isHouse) { if(!p.prisonRelations)p.prisonRelations={}; p.prisonRelations[npcId]=(p.prisonRelations[npcId]||0)+15; } else { if(!p.prisonRelations)p.prisonRelations={}; p.prisonRelations[npcId]=(p.prisonRelations[npcId]||0)+15; } const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; bot.sendMessage(chatId, `🎵 *آواز جادویی!* +۱۵ رابطه\n\n${dialogue}`, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
-bot.onText(/^🧿 اشک$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId]; if (!p || !npcId) return; if ((p.inventory?.tear||0)<1) return bot.sendMessage(chatId, '❌ اشک نداری!', mainMenu()); p.inventory.tear--; const prisoner = p.prison.find(pr => pr.npcId === npcId); if (prisoner) { prisoner.daysUntilEscape += 5; bot.sendMessage(chatId, `🧿 *اشک استفاده شد!* +۵ روز زندان\n⏰ ${prisoner.daysUntilEscape} روز تا فرار`, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) }); } });
-bot.onText(/^🩸 خون$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return; if ((p.inventory?.blood||0)<1) return bot.sendMessage(chatId, '❌ خون نداری!', mainMenu()); p.inventory.blood--; p.hp = Math.min((p.maxHp||100), (p.hp||100)+50); bot.sendMessage(chatId, `🩸 *خون استفاده شد!* +۵۰❤️\n❤️ ${p.hp}/${p.maxHp}`, { parse_mode: 'Markdown', ...mainMenu() }); });
-bot.onText(/^🔥 عیاشی$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; if (!p || !npcId) return; const isHouse = p.house?.find(h => h.npcId === npcId); const result = isHouse ? orgyInHouse(p, npcId) : orgyPrisoner(p, npcId); const isSpouse = p.marry === npcId; const pregnancy = checkPregnancy(p, npcId, isSpouse); let extraMsg = ''; if (pregnancy) { extraMsg = `\n\n🤰 *${pregnancy.motherEmoji} ${pregnancy.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...`; } else { const points = (p.prisonRelations && p.prisonRelations[npcId]) || 0; extraMsg = `\n\n🔮 شانس بارداری: ۸۰٪\n💕 رابطه: ${points}`; } const dialogue = isHouse ? getHouseDialogue('orgy') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; if (result.animation) await sendAnimation(chatId, result.animation, result.message + extraMsg + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); else await bot.sendMessage(chatId, result.message + extraMsg + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); });
-bot.onText(/^🔓 آزاد کن$/, async (msg) => { const chatId = msg.chat.id; const p = player.getPlayer(chatId); const npcId = activePrisoner[chatId]; if (!p || !npcId) return; const result = releasePrisoner(p, npcId); delete activePrisoner[chatId]; if (result.loyal) player.addScore(p, 50); await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); });
+bot.onText(/^🖐️ لمس کن$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; 
+    if (!p || !npcId) return; 
+    const isHouse = p.house?.find(h => h.npcId === npcId); 
+    const result = isHouse ? touchInHouse(p, npcId) : touchPrisoner(p, npcId); 
+    const dialogue = isHouse ? getHouseDialogue('touch') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; 
+    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); 
+    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); 
+});
 
+bot.onText(/^💋 ببوس$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; 
+    if (!p || !npcId) return; 
+    const isHouse = p.house?.find(h => h.npcId === npcId); 
+    const result = isHouse ? kissInHouse(p, npcId) : kissPrisoner(p, npcId); 
+    const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; 
+    if (result.animation) await sendAnimation(chatId, result.animation, result.message + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); 
+    else await bot.sendMessage(chatId, result.message + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); 
+});
+
+bot.onText(/^🎵 آواز$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; 
+    if (!p || !npcId) return; 
+    if ((p.inventory?.song||0)<1) return bot.sendMessage(chatId, '❌ آواز نداری!', mainMenu()); 
+    p.inventory.song--; 
+    const isHouse = p.house?.find(h => h.npcId === npcId); 
+    if (!p.prisonRelations) p.prisonRelations = {}; 
+    p.prisonRelations[npcId] = (p.prisonRelations[npcId]||0) + 15; 
+    const dialogue = isHouse ? getHouseDialogue('kiss') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; 
+    bot.sendMessage(chatId, `🎵 *آواز جادویی!* +۱۵ رابطه\n\n${dialogue}`, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); 
+});
+
+bot.onText(/^🧿 اشک$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    const npcId = activePrisoner[chatId]; 
+    if (!p || !npcId) return; 
+    if ((p.inventory?.tear||0)<1) return bot.sendMessage(chatId, '❌ اشک نداری!', mainMenu()); 
+    p.inventory.tear--; 
+    const prisoner = p.prison.find(pr => pr.npcId === npcId); 
+    if (prisoner) { prisoner.daysUntilEscape += 5; bot.sendMessage(chatId, `🧿 *اشک استفاده شد!* +۵ روز زندان\n⏰ ${prisoner.daysUntilEscape} روز تا فرار`, { parse_mode: 'Markdown', ...getPrisonerKeyboard(p, npcId) }); } 
+});
+
+bot.onText(/^🩸 خون$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    if (!p) return; 
+    if ((p.inventory?.blood||0)<1) return bot.sendMessage(chatId, '❌ خون نداری!', mainMenu()); 
+    p.inventory.blood--; p.hp = Math.min((p.maxHp||100), (p.hp||100)+50); 
+    bot.sendMessage(chatId, `🩸 *خون استفاده شد!* +۵۰❤️\n❤️ ${p.hp}/${p.maxHp}`, { parse_mode: 'Markdown', ...mainMenu() }); 
+});
+
+bot.onText(/^🔥 عیاشی$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    const npcId = activePrisoner[chatId] || activeHouseNpc[chatId]; 
+    if (!p || !npcId) return; 
+    const isHouse = p.house?.find(h => h.npcId === npcId); 
+    const result = isHouse ? orgyInHouse(p, npcId) : orgyPrisoner(p, npcId); 
+    const isSpouse = p.marry === npcId; 
+    const pregnancy = checkPregnancy(p, npcId, isSpouse); 
+    let extraMsg = ''; 
+    if (pregnancy) { 
+        extraMsg = `\n\n🤰 *${pregnancy.motherEmoji} ${pregnancy.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...`; 
+    } else { 
+        const points = (p.prisonRelations && p.prisonRelations[npcId]) || 0; 
+        extraMsg = `\n\n🔮 شانس بارداری: ۸۰٪\n💕 رابطه: ${points}`; 
+    } 
+    const dialogue = isHouse ? getHouseDialogue('orgy') : getPrisonDialogue(npcId, getRelationLevel(getRelationPoints(p, npcId)).level).text; 
+    if (result.animation) await sendAnimation(chatId, result.animation, result.message + extraMsg + '\n\n' + dialogue, isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)); 
+    else await bot.sendMessage(chatId, result.message + extraMsg + '\n\n' + dialogue, { parse_mode: 'Markdown', ...(isHouse ? getHouseKeyboard(p, npcId) : getPrisonerKeyboard(p, npcId)) }); 
+});
+
+bot.onText(/^🔓 آزاد کن$/, async (msg) => { 
+    const chatId = msg.chat.id; const p = player.getPlayer(chatId); 
+    const npcId = activePrisoner[chatId]; 
+    if (!p || !npcId) return; 
+    const result = releasePrisoner(p, npcId); 
+    delete activePrisoner[chatId]; 
+    if (result.loyal) player.addScore(p, 50); 
+    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); 
+});
 bot.onText(/^🏠 (.+)$/, async (msg, match) => {
     const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p?.house) return;
     const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
@@ -834,7 +904,7 @@ bot.onText(/^🔙 برگشت$/, (msg) => {
     const chatId = msg.chat.id;
     if (pvpSearching[chatId]) { clearTimeout(pvpSearching[chatId]); delete pvpSearching[chatId]; }
     delete activeBattles[chatId]; delete activeDialogues[chatId]; delete activePrisoner[chatId]; delete activeHouseNpc[chatId]; 
-    delete adminState[chatId]; delete wishState[chatId]; delete empireState[chatId]; delete peopleState[chatId]; delete courtState[chatId]; delete childState[chatId];
+    delete adminState[chatId]; delete wishState[chatId]; delete empireState[chatId]; delete peopleState[chatId]; delete courtState[chatId];
     const p = player.getPlayer(chatId); if (p) cancelShop(p);
     bot.sendMessage(chatId, '🏛️ *منوی اصلی*', { parse_mode: 'Markdown', ...mainMenu() });
 });
@@ -889,7 +959,7 @@ bot.on('message', (msg) => {
             return;
         }
 
-        const adminCommands = ['gold', 'g', 'xp', 'exp', 'score', 'sc', 'heal', 'hp', 'item', 'give', 'attack', 'atk', 'defense', 'def', 'level', 'lvl', 'energy', 'en', 'unlock', 'unlockall', 'max', 'maxall', 'god', 'godmode', 'pet', 'addpet', 'removepet', 'delpet', 'petfood', 'feedpet', 'box', 'addbox', 'openbox', 'unbox', 'boxes', 'myboxes', 'quest', 'newquest', 'completequest', 'finishquest', 'child', 'addchild', 'heir', 'setheir', 'killchild', 'deadchild', 'tournament', 'tour', 'empirelevel', 'setempire', 'dynasty', 'setdynasty', 'income', 'collectincome', 'wonder', 'addwonder', 'population', 'pop', 'food', 'addfood', 'water', 'addwater', 'building', 'addbuilding', 'stats', 'setstats', 'blackmarket', 'bm', 'prison', 'prisonall', 'gift', 'sendgift', 'info', 'whois', 'users', 'count', 'top', 'top10', 'resetuser', 'ru', 'ban', 'unban', 'announce', 'ann', 'save', 'reset', 'help', 'addnpc', 'addprison', 'addhouse', 'addhome', 'removenpc', 'removeprison', 'removehouse', 'removehome', 'setrelation', 'setrel', 'marrynow', 'forcemarry', 'اهدای', 'اهدا', 'اطلاعات', 'کاربران', 'برترین‌ها', 'ذخیره', 'ریست', 'ریست کن', 'کمک'];
+        const adminCommands = ['gold','g','xp','exp','score','sc','heal','hp','item','give','attack','atk','defense','def','level','lvl','energy','en','unlock','unlockall','max','maxall','god','godmode','pet','addpet','removepet','delpet','petfood','feedpet','box','addbox','openbox','unbox','boxes','myboxes','quest','newquest','completequest','finishquest','child','addchild','heir','setheir','killchild','deadchild','tournament','tour','empirelevel','setempire','dynasty','setdynasty','income','collectincome','wonder','addwonder','population','pop','food','addfood','water','addwater','building','addbuilding','stats','setstats','blackmarket','bm','prison','prisonall','gift','sendgift','info','whois','users','count','top','top10','resetuser','ru','ban','unban','announce','ann','save','reset','help','addnpc','addprison','addhouse','addhome','removenpc','removeprison','removehouse','removehome','setrelation','setrel','marrynow','forcemarry','اهدای','اهدا','اطلاعات','کاربران','برترین‌ها','ذخیره','ریست','ریست کن','کمک'];
 
         if (adminCommands.includes(cmd)) {
             const result = adminCommand(p, cmd, args);
@@ -907,7 +977,7 @@ bot.on('message', (msg) => {
         return;
     }
 
-    const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','🔙','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','📝','👥','⚖️','🙏','🎉','🍞','🧙','🛡️','🏹','🗡️','🔵','🟢','🟤','🟡','🟣','🌟'];
+    const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','🔙','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','📝','👥','⚖️','🙏','🎉','🍞','🧙','🛡️','🏹','🗡️'];
     for (let prefix of prefixes) {
         if (text.startsWith(prefix)) return;
     }
