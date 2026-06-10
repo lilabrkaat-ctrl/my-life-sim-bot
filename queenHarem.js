@@ -7,34 +7,34 @@ const haremImages = {
     pregnant_queen2: 'AgACAgQAAxkBAAEqcbhqKX_a3_hckqFHx6laLWuFHTKhHQACLw9rG9N3UVEx5s_CVaUYHQEAAwIAA3gAAzsE'
 };
 
-// ============ سلسله‌مراتب ============
+// ============ سلسله‌مراتب حرمسرا (فارسی) ============
 const haremRanks = {
-    queen_mother: { name: 'ملکه مادر', emoji: '👑👸', max: 1, salary: 300, food: 50, clothes: 3, roomBonus: 20, fertilityBonus: 15 },
-    main_queen: { name: 'ملکه اصلی', emoji: '👸', max: 1, salary: 200, food: 40, clothes: 2, roomBonus: 15, fertilityBonus: 10 },
-    favorite: { name: 'سوگلی', emoji: '💋', max: 2, salary: 100, food: 30, clothes: 1, roomBonus: 10, fertilityBonus: 5 },
-    wife: { name: 'همسر', emoji: '👰', max: 3, salary: 50, food: 20, clothes: 0.5, roomBonus: 5, fertilityBonus: 2 },
-    concubine: { name: 'کنیز', emoji: '🧹', max: 99, salary: 10, food: 10, clothes: 0.17, roomBonus: 0, fertilityBonus: 0 }
+    queen_mother: { name: 'ملکه مادر', emoji: '👑👸', max: 1, salary: 300, food: 50, respect: 100, roomBonus: 20, fertilityBonus: 15, power: 'حق وتو در تصمیمات' },
+    main_queen: { name: 'ملکه اصلی', emoji: '👸', max: 1, salary: 200, food: 40, respect: 80, roomBonus: 15, fertilityBonus: 10, power: 'مدیریت حرمسرا' },
+    favorite: { name: 'سوگلی', emoji: '💋', max: 2, salary: 100, food: 30, respect: 60, roomBonus: 10, fertilityBonus: 5, power: 'اتاق شخصی و خدمتکار' },
+    wife: { name: 'همسر', emoji: '👰', max: 3, salary: 50, food: 20, respect: 40, roomBonus: 5, fertilityBonus: 2, power: 'جیره غذایی خوب' },
+    concubine: { name: 'کنیز', emoji: '🧹', max: 99, salary: 10, food: 10, respect: 20, roomBonus: 0, fertilityBonus: 0, power: 'فقط غذا و سرپناه' }
 };
 
-// ============ اتاق‌ها ============
+// ============ اتاق‌ها (فارسی) ============
 const rooms = {
-    shared: { name: 'اتاق مشترک', emoji: '🛏️', cost: 0, bonus: 0, minRank: 'concubine', description: 'زیرزمین - مخصوص کنیزها' },
+    basement: { name: 'زیرزمین', emoji: '🛏️', cost: 0, bonus: 0, minRank: 'concubine', description: 'اتاق مشترک کنیزها' },
     simple: { name: 'اتاق ساده', emoji: '🛏️', cost: 200, bonus: 5, minRank: 'concubine', description: 'همکف - ۱ تخت، ۱ کمد' },
     medium: { name: 'اتاق متوسط', emoji: '🛏️✨', cost: 500, bonus: 10, minRank: 'wife', description: 'طبقه ۱ - تخت بزرگ، آینه' },
     luxury: { name: 'اتاق لوکس', emoji: '🛏️💫', cost: 1000, bonus: 15, minRank: 'favorite', description: 'طبقه ۲ - بالکن، حمام شخصی' },
     royal: { name: 'سوئیت سلطنتی', emoji: '👑🛏️', cost: 5000, bonus: 25, minRank: 'main_queen', description: 'طبقه ۳ - منظره باغ، ۲ خدمتکار' }
 };
 
-// ============ خدمتکاران ============
+// ============ خدمتکاران (فارسی) ============
 const servants = {
     maid: { name: 'کلفت', emoji: '🧹', salary: 20, effect: 'نظافت اتاق', roomBonus: 2 },
     cook: { name: 'آشپز', emoji: '👩‍🍳', salary: 30, effect: 'غذای مخصوص', healthBonus: 5 },
     stylist: { name: 'آرایشگر', emoji: '💇', salary: 40, effect: 'آرایش روزانه', moodBonus: 10 },
-    tailor: { name: 'خیاط', emoji: '👗', salary: 50, effect: 'لباس جدید', clothesBonus: 1 },
+    tailor: { name: 'خیاط', emoji: '👗', salary: 50, effect: 'دوخت لباس', clothesBonus: 1 },
     guard: { name: 'محافظ', emoji: '🛡️', salary: 100, effect: 'محافظت شخصی', safetyBonus: 15 }
 };
 
-// ============ لباس‌ها ============
+// ============ لباس‌ها (فارسی) ============
 const dresses = {
     cotton: { name: 'کتان ساده', emoji: '👗', cost: 50, moodBonus: 5, durability: 30, description: 'ساده و ارزان' },
     silk: { name: 'ابریشم', emoji: '👗✨', cost: 200, moodBonus: 10, durability: 60, description: 'نرم و لطیف' },
@@ -43,28 +43,28 @@ const dresses = {
     silkGauze: { name: 'حریر', emoji: '👗💎', cost: 2000, moodBonus: 30, fertilityBonus: 5, durability: 180, description: 'نفیس و کمیاب' }
 };
 
-// ============ جواهرات ============
+// ============ جواهرات (فارسی) ============
 const jewelry = {
-    silver: { name: 'نقره', emoji: '💍', cost: 100, moodBonus: 5, description: 'ساده' },
+    silver: { name: 'نقره', emoji: '💍', cost: 100, moodBonus: 5, description: 'ساده و زیبا' },
     gold: { name: 'طلا', emoji: '💍✨', cost: 500, moodBonus: 10, description: 'با ارزش' },
     ruby: { name: 'یاقوت', emoji: '💍🔴', cost: 1000, moodBonus: 15, fertilityBonus: 5, description: 'شانس بارداری +۵٪' },
     diamond: { name: 'الماس', emoji: '💍💎', cost: 5000, moodBonus: 20, loyaltyBonus: 30, description: 'وفاداری +۳۰' },
     crown: { name: 'تاج', emoji: '👑', cost: 10000, moodBonus: 30, makesQueen: true, description: 'ملکه اصلی میشه' }
 };
 
-// ============ دسیسه‌ها ============
+// ============ دسیسه‌ها (فارسی) ============
 const intrigues = {
-    stealDress: { name: 'دزدیدن لباس', emoji: '👗', successChance: 0.60, penalty: 'تنزل رتبه', cost: 0, effects: { targetMood: -15, myMood: 10 } },
-    ruinMakeup: { name: 'خراب کردن لوازم آرایش', emoji: '💄', successChance: 0.70, penalty: 'جبران خسارت (۱۰۰👑)', cost: 0, effects: { targetMood: -10, myMood: 5 } },
-    poisonFood: { name: 'مسمومیت غذا', emoji: '🍽️', successChance: 0.40, penalty: 'اعدام', cost: 0, effects: { targetHealth: -50, targetMood: -30 } },
-    stealDiary: { name: 'دزدیدن دفتر خاطرات', emoji: '📔', successChance: 0.50, penalty: 'حبس در اتاق', cost: 0, effects: { targetMood: -20, myInfo: true } },
-    bastardRumor: { name: 'شایعه بچه نامشروع', emoji: '👶', successChance: 0.30, penalty: 'تنزل به کنیز', cost: 0, effects: { targetReputation: -50, targetMood: -40 } },
-    stealJewelry: { name: 'دزدی از جواهرات', emoji: '💰', successChance: 0.45, penalty: 'جریمه ۲ برابر', cost: 0, effects: { targetJewelry: -1, myGold: 200 } },
-    lockDoor: { name: 'قفل کردن در اتاق', emoji: '🔒', successChance: 0.80, penalty: 'تنبیه سبک', cost: 0, effects: { targetCanVisit: false, duration: 1 } },
-    spreadRumor: { name: 'پخش شایعه', emoji: '🗣️', successChance: 0.55, penalty: 'عذرخواهی اجباری', cost: 0, effects: { targetReputation: -20, targetMood: -15 } }
+    stealDress: { name: 'دزدیدن لباس', emoji: '👗', successChance: 0.60, penalty: 'تنزل رتبه', effects: { targetMood: -15, myMood: 10 } },
+    ruinMakeup: { name: 'خراب کردن لوازم آرایش', emoji: '💄', successChance: 0.70, penalty: 'جبران خسارت (۱۰۰👑)', effects: { targetMood: -10 } },
+    poisonFood: { name: 'مسمومیت غذا', emoji: '🍽️', successChance: 0.40, penalty: 'اعدام', effects: { targetHealth: -50, targetMood: -30 } },
+    stealDiary: { name: 'دزدیدن دفتر خاطرات', emoji: '📔', successChance: 0.50, penalty: 'حبس در اتاق', effects: { targetMood: -20 } },
+    bastardRumor: { name: 'شایعه بچه نامشروع', emoji: '👶', successChance: 0.30, penalty: 'تنزل به کنیز', effects: { targetReputation: -50 } },
+    stealJewelry: { name: 'دزدی جواهرات', emoji: '💰', successChance: 0.45, penalty: 'جریمه ۲ برابر', effects: { targetJewelry: -1, myGold: 200 } },
+    lockDoor: { name: 'قفل کردن در اتاق', emoji: '🔒', successChance: 0.80, penalty: 'تنبیه سبک', effects: { targetCanVisit: false } },
+    spreadRumor: { name: 'پخش شایعه', emoji: '🗣️', successChance: 0.55, penalty: 'عذرخواهی اجباری', effects: { targetReputation: -20 } }
 };
 
-// ============ سبک‌های تربیت بچه ============
+// ============ سبک‌های تربیت بچه (فارسی) ============
 const childUpbringing = {
     military: { name: 'نظامی', emoji: '⚔️', effects: { attack: 20, loyalty: 10 }, description: 'قوی و وفادار' },
     academic: { name: 'علمی', emoji: '📚', effects: { intelligence: 20, class: 'sage' }, description: 'باهوش و دانا' },
@@ -74,7 +74,7 @@ const childUpbringing = {
     natural: { name: 'طبیعت', emoji: '🌿', effects: { health: 20, class: 'hunter' }, description: 'سالم و شکارچی' }
 };
 
-// ============ جشن‌ها ============
+// ============ جشن‌ها (فارسی) ============
 const celebrations = {
     babyShower: { name: 'حموم بچه', emoji: '👶', cost: 200, effects: { motherMood: 20, babyHealth: 10 } },
     hennaNight: { name: 'شب حنا', emoji: '👰', cost: 300, effects: { brideMood: 30, allMood: 10 } },
@@ -83,7 +83,7 @@ const celebrations = {
     anniversary: { name: 'سالگرد ازدواج', emoji: '💍', cost: 200, effects: { queenMood: 40, loyalty: 20 } }
 };
 
-// ============ زمان‌بندی بارداری ============
+// ============ زمان‌بندی بارداری (فارسی) ============
 const pregnancyTimes = {
     normal: { hours: 72, diamondCost: 0, name: 'عادی (۷۲ ساعت)' },
     fast: { hours: 48, diamondCost: 5, name: 'سریع (۴۸ ساعت) - ۵💎' },
@@ -110,7 +110,7 @@ function addQueenToHarem(player, npcId) {
     initHarem(player);
     
     const inHouse = player.house?.find(h => h.npcId === npcId);
-    if (!inHouse) return { success: false, message: '❌ اول باید NPC رو دعوت کنی به خونه!' };
+    if (!inHouse) return { success: false, message: '❌ اول باید با دستور addhouse دعوتش کنی به خونه!' };
     
     if (player.harem.queens.find(q => q.npcId === npcId)) {
         return { success: false, message: '❌ این ملکه قبلاً توی حرمسراست!' };
@@ -139,7 +139,7 @@ function addQueenToHarem(player, npcId) {
         reputation: 50,
         lastCare: Date.now(),
         isSpouse: player.marry === npcId,
-        room: 'shared',
+        room: 'basement',
         servants: [],
         dress: null,
         jewelry: [],
@@ -151,52 +151,43 @@ function addQueenToHarem(player, npcId) {
     
     player.harem.queens.push(queen);
     
+    // حذف از خونه
     const houseIndex = player.house.findIndex(h => h.npcId === npcId);
     if (houseIndex > -1) player.house.splice(houseIndex, 1);
     
     return {
         success: true,
-        message: `${queen.emoji} *${queen.name}* وارد حرمسرا شد!\n👑 رتبه: ${haremRanks[rank].emoji} ${haremRanks[rank].name}`
+        message: `${queen.emoji} *${queen.name}* وارد حرمسرا شد!\n👑 رتبه: ${haremRanks[rank].emoji} ${haremRanks[rank].name}\n💕 رابطه: ${points}`
     };
 }
 function removeQueenFromHarem(player, queenId) {
     initHarem(player);
-    
     const index = player.harem.queens.findIndex(q => q.id === queenId);
     if (index === -1) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const queen = player.harem.queens[index];
-    
     if (!player.house) player.house = [];
     if (!player.house.find(h => h.npcId === queen.npcId)) {
         player.house.push({ npcId: queen.npcId, name: queen.name, emoji: queen.emoji, joinedAt: Date.now() });
     }
-    
     player.harem.queens.splice(index, 1);
-    
-    return { success: true, message: `${queen.emoji} *${queen.name}* از حرمسرا خارج شد.` };
+    return { success: true, message: `${queen.emoji} *${queen.name}* از حرمسرا خارج شد و به خونه برگشت.` };
 }
 
 function startPregnancy(player, queenId, speedType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     if (queen.pregnancies.find(p => !p.born && Date.now() < p.dueDate)) {
         return { success: false, message: '❌ این ملکه قبلاً بارداره!' };
     }
-    
     if (player.children && player.children.filter(c => c.isAlive).length >= (player.childSlots || 3)) {
-        return { success: false, message: '❌ ظرفیت فرزندان پره!' };
+        return { success: false, message: '❌ ظرفیت فرزندان پره! (حداکثر ۳)' };
     }
     
     const speed = pregnancyTimes[speedType] || pregnancyTimes.normal;
-    
     if (speed.diamondCost > 0 && (player.inventory?.diamond || 0) < speed.diamondCost) {
         return { success: false, message: `❌ الماس کافی نداری!\n💎 نیاز: ${speed.diamondCost}` };
     }
-    
     if (speed.diamondCost > 0) player.inventory.diamond -= speed.diamondCost;
     
     const rankBonus = haremRanks[queen.rank]?.fertilityBonus || 0;
@@ -211,53 +202,38 @@ function startPregnancy(player, queenId, speedType) {
         diamondUsed: speed.diamondCost,
         born: false
     };
-    
     queen.pregnancies.push(pregnancy);
     
-    let msg = `🤰 ${queen.emoji} *${queen.name}* باردار شد!\n`;
-    msg += `⏰ ${totalHours} ساعت تا تولد\n`;
-    msg += `👑 رتبه: ${haremRanks[queen.rank]?.name} (${rankBonus}h تخفیف)\n`;
-    if (speed.diamondCost > 0) msg += `💎 -${speed.diamondCost} الماس\n`;
-    
+    let msg = `🤰 ${queen.emoji} *${queen.name}* باردار شد!\n⏰ ${totalHours} ساعت تا تولد`;
+    if (speed.diamondCost > 0) msg += `\n💎 -${speed.diamondCost} الماس`;
     return { success: true, message: msg, pregnancy };
 }
 
 function speedUpPregnancy(player, queenId, pregnancyId, speedType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const pregnancy = queen.pregnancies.find(p => p.id === pregnancyId && !p.born);
     if (!pregnancy) return { success: false, message: '❌ بارداری فعال پیدا نشد!' };
     
     const speed = pregnancyTimes[speedType];
     if (!speed || speed.diamondCost === 0) return { success: false, message: '❌ نوع سرعت نامعتبر!' };
-    
     if ((player.inventory?.diamond || 0) < speed.diamondCost) {
         return { success: false, message: `❌ الماس کافی نداری!\n💎 نیاز: ${speed.diamondCost}` };
     }
     
     player.inventory.diamond -= speed.diamondCost;
-    
     const rankBonus = haremRanks[queen.rank]?.fertilityBonus || 0;
     const totalHours = Math.max(0, speed.hours - Math.floor(rankBonus / 2));
-    const newDueDate = Date.now() + totalHours * 60 * 60 * 1000;
-    
-    pregnancy.dueDate = newDueDate;
-    pregnancy.speedType = speedType;
+    pregnancy.dueDate = Date.now() + totalHours * 60 * 60 * 1000;
     pregnancy.diamondUsed += speed.diamondCost;
     
-    const remaining = Math.max(0, Math.ceil((newDueDate - Date.now()) / (60 * 60 * 1000)));
-    return {
-        success: true,
-        message: `⚡ بارداری تسریع شد!\n⏰ ${remaining} ساعت تا تولد\n💎 -${speed.diamondCost} الماس`
-    };
+    const remaining = Math.max(0, Math.ceil((pregnancy.dueDate - Date.now()) / (60 * 60 * 1000)));
+    return { success: true, message: `⚡ بارداری تسریع شد!\n⏰ ${remaining} ساعت تا تولد\n💎 -${speed.diamondCost} الماس` };
 }
 
 function checkHaremBirths(player) {
     initHarem(player);
-    
     const now = Date.now();
     const births = [];
     
@@ -270,39 +246,25 @@ function checkHaremBirths(player) {
                 const gender = getRandomGender();
                 const className = getRandomClass();
                 const classData = childClasses[className];
-                
                 const fertilityBonus = haremRanks[queen.rank]?.fertilityBonus || 0;
-                const legendaryChance = 0.02 + (fertilityBonus / 500);
                 
                 const child = {
                     id: 'child_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                    name: getRandomName(gender),
-                    gender,
+                    name: getRandomName(gender), gender,
                     emoji: gender === 'male' ? '👦' : '👧',
-                    class: className,
-                    classEmoji: classData.emoji,
-                    className: classData.name,
-                    motherId: queen.npcId,
-                    motherName: queen.name,
-                    motherEmoji: queen.emoji,
-                    isSpouse: queen.isSpouse,
-                    bornAt: now,
-                    age: 0,
-                    ageStage: 'baby',
-                    stageEmoji: '👶',
+                    class: className, classEmoji: classData.emoji, className: classData.name,
+                    motherId: queen.npcId, motherName: queen.name, motherEmoji: queen.emoji,
+                    isSpouse: queen.isSpouse, bornAt: now, age: 0, ageStage: 'baby', stageEmoji: '👶',
                     level: 1, evolutionLevel: 1, evolutionName: 'نوزاد',
                     xp: 0, xpNeeded: 20,
                     attack: Math.floor(Math.random() * 5) + 1 + Math.floor(fertilityBonus / 5),
                     defense: Math.floor(Math.random() * 3) + 1 + Math.floor(fertilityBonus / 7),
                     hp: Math.floor(Math.random() * 20) + 10 + fertilityBonus,
-                    power: 5 + Math.floor(fertilityBonus / 3),
-                    loyalty: 100,
-                    isLegendary: Math.random() < legendaryChance,
-                    isHeir: false,
-                    isAlive: true,
+                    power: 5 + Math.floor(fertilityBonus / 3), loyalty: 100,
+                    isLegendary: Math.random() < (0.02 + fertilityBonus / 500),
+                    isHeir: false, isAlive: true,
                     upbringing: queen.upbringing || null,
-                    missions: [], lastMission: 0,
-                    skills: [],
+                    missions: [], lastMission: 0, skills: [],
                     inventory: { food: 0, toys: 0, books: 0 }
                 };
                 
@@ -311,83 +273,58 @@ function checkHaremBirths(player) {
                     child.power = 15; child.attack *= 3; child.defense *= 3; child.hp *= 3;
                 }
                 
-                // اعمال سبک تربیت
                 if (queen.upbringing) {
-                    const upbringing = childUpbringing[queen.upbringing];
-                    if (upbringing && upbringing.effects) {
-                        if (upbringing.effects.attack) child.attack += upbringing.effects.attack;
-                        if (upbringing.effects.loyalty) child.loyalty += upbringing.effects.loyalty;
-                        if (upbringing.effects.health) child.hp += upbringing.effects.health;
-                        if (upbringing.effects.class) {
-                            child.class = upbringing.effects.class;
-                            child.className = upbringing.name;
-                            child.classEmoji = upbringing.emoji;
-                        }
+                    const up = childUpbringing[queen.upbringing];
+                    if (up && up.effects) {
+                        if (up.effects.attack) child.attack += up.effects.attack;
+                        if (up.effects.loyalty) child.loyalty += up.effects.loyalty;
+                        if (up.effects.health) child.hp += up.effects.health;
                     }
                 }
                 
                 queen.children.push(child.id);
                 if (!player.children) player.children = [];
                 player.children.push(child);
-                
                 births.push({ queen, child });
             }
         }
     }
-    
     return births;
 }
+
 function queenCare(player, queenId) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
-    if ((player.inventory?.gold || 0) < 50) {
-        return { success: false, message: '❌ طلا کافی نداری! (نیاز: ۵۰👑)' };
-    }
-    
+    if ((player.inventory?.gold || 0) < 50) return { success: false, message: '❌ طلا کافی نداری! (نیاز: ۵۰👑)' };
     player.inventory.gold -= 50;
     queen.mood = Math.min(100, queen.mood + 20);
     queen.health = Math.min(100, queen.health + 10);
     queen.lastCare = Date.now();
-    
-    return {
-        success: true,
-        message: `💆 ${queen.emoji} *${queen.name}* رسیدگی شد!\n😊 روحیه: ${queen.mood}%\n❤️ سلامت: ${queen.health}%`
-    };
+    return { success: true, message: `💆 ${queen.emoji} *${queen.name}* رسیدگی شد!\n😊 روحیه: ${queen.mood}%\n❤️ سلامت: ${queen.health}%` };
 }
 
 function careAllQueens(player) {
     initHarem(player);
-    
     if (player.harem.queens.length === 0) return { success: false, message: '❌ حرمسرا خالیه!' };
-    
     const totalCost = player.harem.queens.length * 50;
-    if ((player.inventory?.gold || 0) < totalCost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${totalCost}` };
-    }
-    
+    if ((player.inventory?.gold || 0) < totalCost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${totalCost}` };
     player.inventory.gold -= totalCost;
-    
     for (let queen of player.harem.queens) {
         queen.mood = Math.min(100, queen.mood + 20);
         queen.health = Math.min(100, queen.health + 10);
         queen.lastCare = Date.now();
     }
-    
-    return { success: true, message: `💆 همه ${player.harem.queens.length} ملکه رسیدگی شدن!\n😊 +۲۰ | ❤️ +۱۰` };
+    return { success: true, message: `💆 همه ${player.harem.queens.length} ملکه رسیدگی شدن!\n😊 روحیه +۲۰ | ❤️ سلامت +۱۰\n👑 -${totalCost} طلا` };
 }
 
 function paySalaries(player) {
     initHarem(player);
-    
     const now = Date.now();
     const oneMonth = 30 * 24 * 60 * 60 * 1000;
-    
     if (now - player.harem.lastSalary < oneMonth) {
         const remaining = Math.ceil((oneMonth - (now - player.harem.lastSalary)) / (24 * 60 * 60 * 1000));
-        return { success: false, message: `⏰ ${remaining} روز تا پرداخت حقوق بعدی` };
+        return { success: false, message: `⏰ ${remaining} روز تا پرداخت حقوق` };
     }
     
     let totalSalary = 0;
@@ -399,8 +336,6 @@ function paySalaries(player) {
             queen.foodRation = rankData.food;
             queen.mood = Math.min(100, queen.mood + 5);
         }
-        
-        // حقوق خدمتکاران
         for (let servantId of queen.servants) {
             const servant = servants[servantId];
             if (servant) totalSalary += servant.salary;
@@ -408,142 +343,85 @@ function paySalaries(player) {
     }
     
     if ((player.inventory?.gold || 0) < totalSalary) {
-        for (let queen of player.harem.queens) {
-            queen.mood = Math.max(0, queen.mood - 20);
-        }
-        return { success: false, message: `❌ طلا کافی برای حقوق نداری!\n👑 نیاز: ${totalSalary}\n😡 روحیه همه ملکه‌ها -۲۰` };
+        for (let queen of player.harem.queens) queen.mood = Math.max(0, queen.mood - 20);
+        return { success: false, message: `❌ طلا کافی برای حقوق نداری!\n👑 نیاز: ${totalSalary}\n😡 روحیه همه -۲۰` };
     }
     
     player.inventory.gold -= totalSalary;
     player.harem.lastSalary = now;
     player.harem.budget = totalSalary;
-    
     return { success: true, message: `💰 حقوق پرداخت شد!\n👑 مجموع: ${totalSalary} طلا\n👥 ${player.harem.queens.length} ملکه\n😊 روحیه همه +۵` };
 }
 
 function buyDress(player, queenId, dressType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const dress = dresses[dressType];
     if (!dress) return { success: false, message: '❌ لباس نامعتبر!' };
-    
-    if ((player.inventory?.gold || 0) < dress.cost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${dress.cost}` };
-    }
-    
+    if ((player.inventory?.gold || 0) < dress.cost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${dress.cost}` };
     player.inventory.gold -= dress.cost;
     queen.dress = dressType;
     queen.mood = Math.min(100, queen.mood + dress.moodBonus);
-    if (dress.fertilityBonus) queen.fertilityBonus = (queen.fertilityBonus || 0) + dress.fertilityBonus;
-    
-    return {
-        success: true,
-        message: `👗 ${dress.emoji} *${dress.name}* برای ${queen.emoji} ${queen.name} خریداری شد!\n😊 روحیه +${dress.moodBonus}\n👑 -${dress.cost} طلا`
-    };
+    return { success: true, message: `👗 ${dress.emoji} *${dress.name}* برای ${queen.emoji} ${queen.name} خریداری شد!\n😊 روحیه +${dress.moodBonus}\n👑 -${dress.cost} طلا` };
 }
 
 function buyJewelry(player, queenId, jewelryType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const jewel = jewelry[jewelryType];
     if (!jewel) return { success: false, message: '❌ جواهر نامعتبر!' };
-    
-    if ((player.inventory?.gold || 0) < jewel.cost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${jewel.cost}` };
-    }
-    
+    if ((player.inventory?.gold || 0) < jewel.cost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${jewel.cost}` };
     player.inventory.gold -= jewel.cost;
     queen.jewelry.push(jewelryType);
     queen.mood = Math.min(100, queen.mood + jewel.moodBonus);
-    
     if (jewel.makesQueen) {
-        // تبدیل به ملکه اصلی
-        for (let q of player.harem.queens) {
-            if (q.rank === 'main_queen') q.rank = 'wife';
-        }
+        for (let q of player.harem.queens) { if (q.rank === 'main_queen') q.rank = 'wife'; }
         queen.rank = 'main_queen';
     }
-    
-    if (jewel.fertilityBonus) queen.fertilityBonus = (queen.fertilityBonus || 0) + jewel.fertilityBonus;
-    if (jewel.loyaltyBonus) queen.loyalty = Math.min(100, (queen.loyalty || 50) + jewel.loyaltyBonus);
-    
-    return {
-        success: true,
-        message: `${jewel.emoji} *${jewel.name}* به ${queen.emoji} ${queen.name} هدیه داده شد!\n😊 روحیه +${jewel.moodBonus}\n👑 -${jewel.cost} طلا`
-    };
+    return { success: true, message: `${jewel.emoji} *${jewel.name}* به ${queen.emoji} ${queen.name} هدیه داده شد!\n😊 روحیه +${jewel.moodBonus}\n👑 -${jewel.cost} طلا` };
 }
-
 function upgradeRoom(player, queenId, roomType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const room = rooms[roomType];
     if (!room) return { success: false, message: '❌ اتاق نامعتبر!' };
     
-    // چک کردن رتبه
     const rankOrder = ['concubine', 'wife', 'favorite', 'main_queen', 'queen_mother'];
     const queenRankIndex = rankOrder.indexOf(queen.rank);
     const roomMinRankIndex = rankOrder.indexOf(room.minRank);
-    
     if (queenRankIndex < roomMinRankIndex) {
         return { success: false, message: `❌ این اتاق مخصوص ${haremRanks[room.minRank]?.name} به بالاست!' }` };
     }
     
-    if ((player.inventory?.gold || 0) < room.cost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${room.cost}` };
-    }
-    
+    if ((player.inventory?.gold || 0) < room.cost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${room.cost}` };
     player.inventory.gold -= room.cost;
     queen.room = roomType;
     queen.mood = Math.min(100, queen.mood + room.bonus);
-    
-    return {
-        success: true,
-        message: `${room.emoji} *${room.name}* برای ${queen.emoji} ${queen.name} آماده شد!\n😊 روحیه +${room.bonus}\n👑 -${room.cost} طلا`
-    };
+    return { success: true, message: `${room.emoji} *${room.name}* برای ${queen.emoji} ${queen.name} آماده شد!\n😊 روحیه +${room.bonus}\n👑 -${room.cost} طلا` };
 }
 
 function hireServant(player, queenId, servantType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const servant = servants[servantType];
     if (!servant) return { success: false, message: '❌ خدمتکار نامعتبر!' };
-    
-    if (queen.servants.includes(servantType)) {
-        return { success: false, message: '❌ این خدمتکار قبلاً استخدام شده!' };
-    }
-    
-    if (queen.servants.length >= 3) {
-        return { success: false, message: '❌ حداکثر ۳ خدمتکار برای هر ملکه!' };
-    }
+    if (queen.servants.includes(servantType)) return { success: false, message: '❌ این خدمتکار قبلاً استخدام شده!' };
+    if (queen.servants.length >= 3) return { success: false, message: '❌ حداکثر ۳ خدمتکار برای هر ملکه!' };
     
     queen.servants.push(servantType);
-    
     if (servant.moodBonus) queen.mood = Math.min(100, queen.mood + servant.moodBonus);
     if (servant.healthBonus) queen.health = Math.min(100, queen.health + servant.healthBonus);
-    
-    return {
-        success: true,
-        message: `${servant.emoji} *${servant.name}* برای ${queen.emoji} ${queen.name} استخدام شد!\n💰 حقوق ماهانه: ${servant.salary}👑\n📝 ${servant.effect}`
-    };
+    return { success: true, message: `${servant.emoji} *${servant.name}* برای ${queen.emoji} ${queen.name} استخدام شد!\n💰 حقوق ماهانه: ${servant.salary}👑\n📝 ${servant.effect}` };
 }
+
 function performIntrigue(player, performerQueenId, targetQueenId, intrigueType) {
     initHarem(player);
-    
     const performer = player.harem.queens.find(q => q.id === performerQueenId);
     const target = player.harem.queens.find(q => q.id === targetQueenId);
-    
     if (!performer || !target) return { success: false, message: '❌ ملکه پیدا نشد!' };
     if (performer.id === target.id) return { success: false, message: '❌ نمی‌تونه علیه خودش دسیسه کنه!' };
     
@@ -551,31 +429,25 @@ function performIntrigue(player, performerQueenId, targetQueenId, intrigueType) 
     if (!intrigue) return { success: false, message: '❌ دسیسه نامعتبر!' };
     
     if (Math.random() < intrigue.successChance) {
-        // موفقیت
         let msg = `${intrigue.emoji} *${intrigue.name}* موفق!\n${performer.emoji} ${performer.name} علیه ${target.emoji} ${target.name}\n\n`;
-        
         if (intrigue.effects.targetMood) { target.mood = Math.max(0, target.mood + intrigue.effects.targetMood); msg += `😢 روحیه ${target.name}: ${intrigue.effects.targetMood}\n`; }
         if (intrigue.effects.targetHealth) { target.health = Math.max(0, target.health + intrigue.effects.targetHealth); msg += `🤒 سلامت ${target.name}: ${intrigue.effects.targetHealth}\n`; }
         if (intrigue.effects.targetReputation) { target.reputation = Math.max(0, target.reputation + intrigue.effects.targetReputation); msg += `📉 اعتبار ${target.name}: ${intrigue.effects.targetReputation}\n`; }
         if (intrigue.effects.myMood) { performer.mood = Math.min(100, performer.mood + intrigue.effects.myMood); msg += `😊 روحیه ${performer.name}: +${intrigue.effects.myMood}\n`; }
         if (intrigue.effects.myGold) { player.inventory.gold = (player.inventory.gold || 0) + intrigue.effects.myGold; msg += `💰 +${intrigue.effects.myGold} طلا\n`; }
         if (intrigue.effects.targetJewelry && target.jewelry.length > 0) { target.jewelry.pop(); msg += `💍 جواهر ${target.name} دزدیده شد!\n`; }
-        
         return { success: true, caught: false, message: msg };
     } else {
-        // لو رفتن
         performer.mood = Math.max(0, performer.mood - 30);
         performer.reputation = Math.max(0, performer.reputation - 20);
-        
         let penaltyMsg = `🚨 *لو رفت!*\n${performer.emoji} ${performer.name} لو رفت!\n\n📝 مجازات: ${intrigue.penalty}\n😢 روحیه -۳۰\n📉 اعتبار -۲۰`;
-        
         if (intrigue.penalty.includes('اعدام')) {
             const index = player.harem.queens.findIndex(q => q.id === performerQueenId);
             if (index > -1) player.harem.queens.splice(index, 1);
             penaltyMsg += '\n💀 ملکه اعدام شد!';
         } else if (intrigue.penalty.includes('تنزل')) {
             performer.rank = 'concubine';
-            performer.room = 'shared';
+            performer.room = 'basement';
             penaltyMsg += '\n📉 تنزل به کنیز!';
         } else if (intrigue.penalty.includes('جریمه')) {
             const fine = 200;
@@ -585,95 +457,59 @@ function performIntrigue(player, performerQueenId, targetQueenId, intrigueType) 
             performer.mood = Math.max(0, performer.mood - 20);
             penaltyMsg += '\n🔒 حبس در اتاق';
         }
-        
         return { success: false, caught: true, message: penaltyMsg };
     }
 }
 
 function setChildUpbringing(player, queenId, upbringingType) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
     const upbringing = childUpbringing[upbringingType];
     if (!upbringing) return { success: false, message: '❌ سبک تربیت نامعتبر!' };
-    
     queen.upbringing = upbringingType;
     
-    // اعمال روی بچه‌های موجود
     for (let childId of queen.children) {
         const child = player.children?.find(c => c.id === childId && c.isAlive);
         if (child) {
             if (upbringing.effects.attack) child.attack += upbringing.effects.attack;
             if (upbringing.effects.loyalty) child.loyalty += upbringing.effects.loyalty;
             if (upbringing.effects.health) child.hp += upbringing.effects.health;
-            if (upbringing.effects.class) {
-                child.class = upbringing.effects.class;
-                child.className = upbringing.name;
-                child.classEmoji = upbringing.emoji;
-            }
         }
     }
-    
-    return {
-        success: true,
-        message: `${upbringing.emoji} *${upbringing.name}*: سبک تربیت بچه‌های ${queen.emoji} ${queen.name} تعیین شد!\n📝 ${upbringing.description}`
-    };
+    return { success: true, message: `${upbringing.emoji} *${upbringing.name}*: سبک تربیت بچه‌های ${queen.emoji} ${queen.name} تعیین شد!\n📝 ${upbringing.description}` };
 }
 
 function celebrateFestival(player, celebrationType) {
     initHarem(player);
-    
     const celebration = celebrations[celebrationType];
     if (!celebration) return { success: false, message: '❌ جشن نامعتبر!' };
-    
-    if ((player.inventory?.gold || 0) < celebration.cost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${celebration.cost}` };
-    }
-    
+    if ((player.inventory?.gold || 0) < celebration.cost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${celebration.cost}` };
     player.inventory.gold -= celebration.cost;
     
     let msg = `${celebration.emoji} *${celebration.name}* برگزار شد!\n\n`;
-    
     for (let queen of player.harem.queens) {
-        if (celebration.effects.allMood) {
-            queen.mood = Math.min(100, queen.mood + celebration.effects.allMood);
-        }
-        if (celebration.effects.allHealth) {
-            queen.health = Math.min(100, queen.health + celebration.effects.allHealth);
-        }
+        if (celebration.effects.allMood) queen.mood = Math.min(100, queen.mood + celebration.effects.allMood);
+        if (celebration.effects.allHealth) queen.health = Math.min(100, queen.health + celebration.effects.allHealth);
     }
-    
     if (celebration.effects.allMood) msg += `😊 روحیه همه +${celebration.effects.allMood}\n`;
     if (celebration.effects.allHealth) msg += `❤️ سلامت همه +${celebration.effects.allHealth}\n`;
-    if (celebration.effects.fertility) msg += `🤰 شانس بارداری +${celebration.effects.fertility}٪\n`;
     msg += `\n👑 -${celebration.cost} طلا`;
-    
     return { success: true, message: msg };
 }
 
 function addDiaryEntry(player, queenId, entry) {
     initHarem(player);
-    
     const queen = player.harem.queens.find(q => q.id === queenId);
     if (!queen) return { success: false, message: '❌ ملکه پیدا نشد!' };
-    
-    queen.diary.push({
-        date: Date.now(),
-        entry: entry
-    });
-    
+    queen.diary.push({ date: Date.now(), entry });
     return { success: true, message: '📔 یادداشت اضافه شد.' };
 }
 
 function getRandomDiaryEntry(player) {
     initHarem(player);
-    
     if (player.harem.queens.length === 0) return null;
-    
     const queen = player.harem.queens[Math.floor(Math.random() * player.harem.queens.length)];
-    
     const entries = [
         "امروز پادشاه بهم سر زد... 😊",
         "۳ روزه نیومده پیشم... 😢",
@@ -686,18 +522,14 @@ function getRandomDiaryEntry(player) {
         "فلانی رو از چشمم می‌ندازم... 🐍",
         "امروز حالم خوب نیست... 🤒"
     ];
-    
     const entry = entries[Math.floor(Math.random() * entries.length)];
     queen.diary.push({ date: Date.now(), entry });
-    
     return { queen, entry };
 }
 
 function getRandomRumor(player) {
     initHarem(player);
-    
     if (player.harem.queens.length < 2) return null;
-    
     const rumors = [
         "شنیدم ملکه جدید اصلاً نجیب نیست...",
         "می‌گن پادشاه دیشب با کی بوده...",
@@ -708,17 +540,15 @@ function getRandomRumor(player) {
         "فلانی داره نقشه می‌کشه...",
         "شنیدم یکی از کنیزا حامله‌ست!"
     ];
-    
     const rumor = rumors[Math.floor(Math.random() * rumors.length)];
     player.harem.rumors.push({ date: Date.now(), rumor });
-    
     return rumor;
 }
 function formatHarem(player) {
     initHarem(player);
     
     if (player.harem.queens.length === 0) {
-        return '👸 *حرمسرای امپراطوری*\n\n❌ هیچ ملکه‌ای توی حرمسرا نیست!\n💡 اول با addhouse NPC رو ببر خونه، بعد با addqueen بیارش حرمسرا.';
+        return '👸 *حرمسرای امپراطوری*\n\n❌ هیچ ملکه‌ای توی حرمسرا نیست!\n💡 اول با addhouse دعوتش کن به خونه، بعد با addqueen بیارش حرمسرا.';
     }
     
     let msg = '👸 *حرمسرای امپراطوری*\n\n';
@@ -733,8 +563,7 @@ function formatHarem(player) {
         const upbringingData = queen.upbringing ? childUpbringing[queen.upbringing] : null;
         
         msg += `${i+1}. ${queen.emoji} *${queen.name}*\n`;
-        msg += `   ${rankData?.emoji || ''} ${rankData?.name || 'کنیز'} | `;
-        msg += `${roomData?.emoji || '🛏️'} ${roomData?.name || 'اتاق مشترک'}\n`;
+        msg += `   ${rankData?.emoji || ''} ${rankData?.name || 'کنیز'} | ${roomData?.emoji || '🛏️'} ${roomData?.name || 'زیرزمین'}\n`;
         msg += `   💕 رابطه: ${queen.points} | 😊 روحیه: ${queen.mood}% | ❤️ سلامت: ${queen.health}%\n`;
         msg += `   📊 اعتبار: ${queen.reputation}\n`;
         
@@ -750,7 +579,6 @@ function formatHarem(player) {
         
         const bornChildren = queen.pregnancies.filter(p => p.born).length;
         if (bornChildren > 0) msg += `   👶 فرزندان: ${bornChildren} نفر\n`;
-        
         if (upbringingData) msg += `   📚 تربیت: ${upbringingData.emoji} ${upbringingData.name}\n`;
         
         msg += '\n';
@@ -764,13 +592,11 @@ function formatHarem(player) {
 
 function getHaremKeyboard(player) {
     const buttons = [];
-    
     if (player.harem && player.harem.queens) {
         for (let queen of player.harem.queens) {
             buttons.push([`👸 ${queen.emoji} ${queen.name}`]);
         }
     }
-    
     buttons.push(['🤰 بارداری جدید']);
     buttons.push(['💰 پرداخت حقوق']);
     buttons.push(['💆 رسیدگی به همه']);
@@ -781,7 +607,6 @@ function getHaremKeyboard(player) {
     buttons.push(['🐍 دسیسه‌های درباری']);
     buttons.push(['📔 دفتر خاطرات']);
     buttons.push(['🔙 برگشت']);
-    
     return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
 }
 
@@ -790,8 +615,8 @@ function getQueenKeyboard(player, queenId) {
     if (!queen) return null;
     
     const buttons = [];
-    
     const activePregnancy = queen.pregnancies.find(p => !p.born && Date.now() < p.dueDate);
+    
     if (activePregnancy) {
         buttons.push([`⚡ تسریع بارداری`]);
     } else {
@@ -892,7 +717,8 @@ function getPregnancyImage() {
 }
 
 module.exports = {
-    haremRanks, rooms, servants, dresses, jewelry, intrigues, childUpbringing, celebrations, pregnancyTimes, haremImages,
+    haremRanks, rooms, servants, dresses, jewelry, intrigues,
+    childUpbringing, celebrations, pregnancyTimes, haremImages,
     initHarem, addQueenToHarem, removeQueenFromHarem,
     startPregnancy, speedUpPregnancy, checkHaremBirths,
     queenCare, careAllQueens, paySalaries,
