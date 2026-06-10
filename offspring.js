@@ -1,6 +1,23 @@
 const config = require('./config');
 
-// اسم‌های باستانی برای فرزندان
+// عکس‌های فرزندان
+const childImages = {
+    warrior_boy: 'AgACAgQAAxkBAAEqca9qKX_a6hIKV4aP4GR7mJGeFCk26wACKA9rG9N3UVHWHTEQ01mNGwEAAwIAA3gAAzsE',
+    training_boy: 'AgACAgQAAxkBAAEqcbBqKX_a1uF1y1F5HeXLzH8JRlHL3wACKQ9rG9N3UVEms2PPGpklgQEAAwIAA3gAAzsE',
+    training_boy2: 'AgACAgQAAxkBAAEqcbFqKX_a7wTOP_0zKCmCMwU79DhZWgACKg9rG9N3UVFTbf5DVV0PdgEAAwIAA3gAAzsE',
+    baby_girl: 'AgACAgQAAxkBAAEqcbNqKX_aPouI3MVHtsL-KOTKr05RgwACLA9rG9N3UVEtSl-CPTnOMwEAAwIAA3gAAzsE',
+    breastfeeding: 'AgACAgQAAxkBAAEqcbJqKX_auYUEfkinCZ60Yld4IxX-6QACKw9rG9N3UVH-MTWpNIKb7AEAAwIAA3gAAzsE',
+    pregnant_queen: 'AgACAgQAAxkBAAEqcbZqKX_a4-_MtgzDxMBujjPA5ajaUQACLg9rG9N3UVHiWwABA5CaoVABAAMCAAN4AAM7BA',
+    baby_girl2: 'AgACAgQAAxkBAAEqcbVqKX_anxYsFafIuvDav0gfl2OTEAACLQ9rG9N3UVESJ8H4V23R3AEAAwIAA3gAAzsE',
+    fetus: 'AgACAgQAAxkBAAEqcbpqKX_aBguV2lXQDto9JUYtDj9IYgACMA9rG9N3UVE90e0hFo4W_wEAAwIAA3gAAzsE',
+    pregnant_queen2: 'AgACAgQAAxkBAAEqcbhqKX_a3_hckqFHx6laLWuFHTKhHQACLw9rG9N3UVEx5s_CVaUYHQEAAwIAA3gAAzsE',
+    pregnant_woman: 'AgACAgQAAxkBAAEqcbtqKX_aM-MBVbXASWtHss-IvIHahQACMQ9rG9N3UVFZhM7A2L3PPAEAAwIAA3gAAzsE',
+    warrior_girl: 'AgACAgQAAxkBAAEqccxqKX_0by2nHY9NXknSjer0ueKyzwACJQ9rG9N3UVGjPfigMFqwvwEAAwIAA3gAAzsE',
+    desert_girl: 'AgACAgQAAxkBAAEqcc5qKX_0GCoi8ggPl7GDe4_9yTurmgACJg9rG9N3UVE6bJA9qC6ptwEAAwIAA3gAAzsE',
+    studying: 'AgACAgQAAxkBAAEqcdBqKX_0u6OWK9_Fg0RhvQLd8gXqFAACJw9rG9N3UVHzW7dRAAGHirwBAAMCAAN4AAM7BA'
+};
+
+// اسم‌های باستانی
 const maleNames = ['کوروش', 'داریوش', 'خشایار', 'اردشیر', 'بهرام', 'شاپور', 'انوشیروان', 'قباد', 'هرمز', 'جمشید', 'فریدون', 'سام', 'نریمان', 'رستم', 'سهراب', 'اسفندیار', 'آرش', 'کاوه', 'بابک', 'مازیار'];
 const femaleNames = ['آتنا', 'آناهیتا', 'آرتمیس', 'رکسانا', 'پانته‌آ', 'هلن', 'کلئوپاترا', 'سمیرامیس', 'شهرزاد', 'پریسا', 'سارا', 'ماندانا', 'آتوسا', 'پروانه', 'شیرین', 'مریم', 'نگین', 'آوا', 'کتایون', 'گردآفرید'];
 
@@ -56,9 +73,8 @@ const evolutionPaths = {
 // سیستم بارداری
 const pregnancyData = {
     duration: 3,
-    chance: 0.20,
-    highRelationChance: 0.40,
-    cooldown: 1
+    chance: 1.0,
+    cooldown: 0
 };
 
 function initChildren(player) {
@@ -87,23 +103,18 @@ function getRandomClass() {
         if (r <= 0) return cls;
     }
     return 'warrior';
-}
-
-function checkPregnancy(player, npcId, isSpouse) {
+    
+}function checkPregnancy(player, npcId, isSpouse, position) {
     initChildren(player);
     
     if (player.children.length >= player.childSlots) return null;
     
     const now = Date.now();
-    if (player.lastPregnancyCheck && now - player.lastPregnancyCheck < pregnancyData.cooldown * 24 * 60 * 60 * 1000) {
-        return null;
-    }
     
-    const points = (player.prisonRelations && player.prisonRelations[npcId]) || 0;
-    const chance = 0.80; // ۸۰٪ شانس بارداری
+    // فقط از جلو (front) باعث بارداری میشه
+    const chance = position === 'front' ? 1.0 : 0;
     
     if (Math.random() < chance) {
-        player.lastPregnancyCheck = now;
         const pregnancy = {
             id: 'preg_' + Date.now(),
             npcId,
@@ -111,13 +122,13 @@ function checkPregnancy(player, npcId, isSpouse) {
             startedAt: now,
             dueDate: now + pregnancyData.duration * 24 * 60 * 60 * 1000,
             motherName: (config.images.npcs?.[npcId]?.name || config.images.enemies?.[npcId]?.name || npcId),
-            motherEmoji: (config.images.npcs?.[npcId]?.emoji || config.images.enemies?.[npcId]?.emoji || '👤')
+            motherEmoji: (config.images.npcs?.[npcId]?.emoji || config.images.enemies?.[npcId]?.emoji || '👤'),
+            position
         };
         player.pregnancies.push(pregnancy);
         return pregnancy;
     }
     
-    player.lastPregnancyCheck = now;
     return null;
 }
 
@@ -149,6 +160,7 @@ function checkBirths(player) {
                 age: 0,
                 ageStage: 'baby',
                 stageEmoji: '👶',
+                image: gender === 'male' ? childImages.training_boy : childImages.baby_girl,
                 level: 1,
                 evolutionLevel: 1,
                 evolutionName: 'نوزاد',
@@ -170,6 +182,7 @@ function checkBirths(player) {
             
             if (child.isLegendary) {
                 child.emoji = gender === 'male' ? '🌟👦' : '🌟👧';
+                child.image = gender === 'male' ? childImages.warrior_boy : childImages.warrior_girl;
                 child.power = 15;
                 child.attack *= 3;
                 child.defense *= 3;
@@ -208,21 +221,25 @@ function updateChildAges(player) {
                 child.ageStage = 'baby';
                 child.stageEmoji = '👶';
                 child.evolutionName = 'نوزاد';
+                child.image = child.gender === 'male' ? childImages.training_boy : childImages.baby_girl;
             } else if (daysOld < 6) {
                 child.ageStage = 'child';
                 child.stageEmoji = '🧒';
                 child.evolutionName = 'کودک';
                 child.power = 10;
+                child.image = childImages.studying;
             } else if (daysOld < 9) {
                 child.ageStage = 'teen';
                 child.stageEmoji = '🧑';
                 child.evolutionName = 'نوجوان';
                 child.power = 15;
+                child.image = child.gender === 'male' ? childImages.training_boy2 : childImages.warrior_girl;
             } else if (daysOld < 20) {
                 child.ageStage = 'adult';
                 child.stageEmoji = '👨';
                 child.evolutionName = 'جوان';
                 child.power = 25;
+                child.image = child.gender === 'male' ? childImages.warrior_boy : childImages.desert_girl;
             } else if (daysOld < 40) {
                 child.ageStage = 'mature';
                 child.stageEmoji = '👨‍🦳';
@@ -267,6 +284,7 @@ function feedChild(player, childId) {
     return {
         success: true,
         message: `🍼 ${child.emoji} *${child.name}* غذا خورد!\n✨ +۱۰ XP\n💕 وفاداری: ${child.loyalty}${evolutionResult ? '\n\n' + evolutionResult.message : ''}`,
+        image: child.image,
         evolution: evolutionResult
     };
 }
@@ -293,10 +311,10 @@ function trainChild(player, childId) {
     return {
         success: true,
         message: `📚 ${child.emoji} *${child.name}* آموزش دید!\n⚔️ +${Math.floor(Math.random() * 3) + 1} حمله\n🛡️ +${Math.floor(Math.random() * 2) + 1} دفاع\n✨ +۲۰ XP${evolutionResult ? '\n\n' + evolutionResult.message : ''}`,
+        image: childImages.training_boy,
         evolution: evolutionResult
     };
-}
-
+        }
 function checkEvolution(player, child) {
     if (!child || !child.isAlive) return null;
     
@@ -507,13 +525,12 @@ function childDies(player, childId, reason) {
         success: true,
         message: `💀 ${child.emoji} *${child.name}* فوت کرد...\n📝 دلیل: ${reason}\n🕊️ روحش در آرامش...`
     };
-}
-
+        }
 function formatChildren(player) {
     initChildren(player);
     
     if (!player.children || player.children.length === 0) {
-        return '👶 *فرزندان*\n\n❌ هیچ فرزندی نداری!\n💡 ازدواج کن و عیاشی کن تا بچه‌دار بشی.';
+        return '👶 *فرزندان*\n\n❌ هیچ فرزندی نداری!\n💡 ازدواج کن و از جلو عیاشی کن تا بچه‌دار بشی.';
     }
     
     let msg = '👶 *فرزندان امپراطوری*\n\n';
@@ -601,11 +618,135 @@ function getChildBattleBonus(player) {
     return adultChildren.reduce((sum, c) => sum + Math.floor(c.attack * 0.3), 0);
 }
 
+// ============ سیستم شخصیت فرزندان ============
+const childPersonalities = ['😇 مهربون', '😈 بی‌رحم', '👑 مغرور', '🐍 حیله‌گر', '🦁 شجاع', '🦊 زیرک', '😴 تنبل', '💕 عاشق‌پیشه'];
+
+function assignPersonality(child) {
+    if (!child.personality) {
+        child.personality = childPersonalities[Math.floor(Math.random() * childPersonalities.length)];
+    }
+    return child.personality;
+}
+
+function getRandomChildRequest(player) {
+    initChildren(player);
+    
+    const alive = player.children.filter(c => c.isAlive && c.ageStage !== 'baby');
+    if (alive.length === 0) return null;
+    
+    const child = alive[Math.floor(Math.random() * alive.length)];
+    assignPersonality(child);
+    
+    const requests = {
+        '😇 مهربون': [
+            { text: `👶 ${child.emoji} *${child.name}*: "پدر، می‌خوام به مردم گرسنه کمک کنم 🍞"`, cost: { food: 50 }, reward: { loyalty: 10, happiness: 5 } },
+            { text: `👶 ${child.emoji} *${child.name}*: "می‌خوام برایت یه هدیه بسازم 🎁"`, cost: { wood: 10, stone: 5 }, reward: { loyalty: 15 } }
+        ],
+        '😈 بی‌رحم': [
+            { text: `👶 ${child.emoji} *${child.name}*: "بذار دشمنانمون رو اعدام کنم 💀"`, cost: {}, reward: { loyalty: 5, military: 10 } },
+            { text: `👶 ${child.emoji} *${child.name}*: "می‌خوام با برادرم بجنگم ⚔️"`, cost: {}, reward: { power: 5 } }
+        ],
+        '👑 مغرور': [
+            { text: `👶 ${child.emoji} *${child.name}*: "من لایق تاج هستم! 👑"`, cost: { gold: 100 }, reward: { loyalty: 20 } },
+            { text: `👶 ${child.emoji} *${child.name}*: "یه اسب سفید می‌خوام 🐴"`, cost: { gold: 50, meat: 20 }, reward: { power: 10 } }
+        ],
+        '🐍 حیله‌گر': [
+            { text: `👶 ${child.emoji} *${child.name}*: "یه نقشه مخفی دارم... 🤫"`, cost: {}, reward: { intelligence: 10 } },
+            { text: `👶 ${child.emoji} *${child.name}*: "بذار جاسوسی کنم 🕵️"`, cost: { gold: 20 }, reward: { info: true } }
+        ],
+        '🦁 شجاع': [
+            { text: `👶 ${child.emoji} *${child.name}*: "بذار برم شکار اژدها! 🐉"`, cost: {}, reward: { xp: 50, risk: true } },
+            { text: `👶 ${child.emoji} *${child.name}*: "من آماده نبردم! ⚔️"`, cost: {}, reward: { attack: 5 } }
+        ],
+        '🦊 زیرک': [
+            { text: `👶 ${child.emoji} *${child.name}*: "یه معامله خوب بلدم 💰"`, cost: { gold: 30 }, reward: { gold: 80 } },
+            { text: `👶 ${child.emoji} *${child.name}*: "می‌تونم مالیات رو بیشتر کنم 📊"`, cost: {}, reward: { gold: 50, happiness: -5 } }
+        ],
+        '😴 تنبل': [
+            { text: `👶 ${child.emoji} *${child.name}*: "حوصله ندارم... 😴"`, cost: {}, reward: {} },
+            { text: `👶 ${child.emoji} *${child.name}*: "بذار امروز استراحت کنم 🛏️"`, cost: { energy: 10 }, reward: { loyalty: 5 } }
+        ],
+        '💕 عاشق‌پیشه': [
+            { text: `👶 ${child.emoji} *${child.name}*: "عاشق یه دختر شدم... 💕"`, cost: { ring: 1 }, reward: { loyalty: 20, happiness: 10 } },
+            { text: `👶 ${child.emoji} *${child.name}*: "می‌خوام ازدواج کنم! 💍"`, cost: { gold: 200 }, reward: { loyalty: 30 } }
+        ]
+    };
+    
+    const childRequests = requests[child.personality] || requests['😇 مهربون'];
+    const request = childRequests[Math.floor(Math.random() * childRequests.length)];
+    
+    return {
+        child,
+        request,
+        personality: child.personality
+    };
+}
+function getPregnancyImage() {
+    const images = [childImages.pregnant_queen, childImages.pregnant_queen2, childImages.pregnant_woman, childImages.fetus];
+    return images[Math.floor(Math.random() * images.length)];
+}
+
+function getBirthImage() {
+    const images = [childImages.baby_girl, childImages.baby_girl2, childImages.breastfeeding];
+    return images[Math.floor(Math.random() * images.length)];
+}
+
+function getChildImage(child) {
+    if (child.image) return child.image;
+    if (child.gender === 'male') return childImages.warrior_boy;
+    return childImages.baby_girl;
+}
+
+function handleChildRequest(player, childId, accepted) {
+    initChildren(player);
+    
+    const child = player.children.find(c => c.id === childId);
+    if (!child || !child.isAlive) return { success: false, message: '❌ فرزند پیدا نشد!' };
+    
+    if (accepted) {
+        // اعمال پاداش
+        if (child.personality === '😇 مهربون') {
+            child.loyalty = Math.min(100, child.loyalty + 15);
+            if (player.people && player.people.stats) {
+                player.people.stats.happiness = Math.min(100, (player.people.stats.happiness || 50) + 5);
+            }
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* خوشحال شد!\n💕 وفاداری +۱۵\n😊 خوشبختی مردم +۵` };
+        } else if (child.personality === '😈 بی‌رحم') {
+            child.power += 5;
+            child.loyalty = Math.min(100, child.loyalty + 5);
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* قوی‌تر شد!\n💪 قدرت +۵\n💕 وفاداری +۵` };
+        } else if (child.personality === '👑 مغرور') {
+            child.loyalty = Math.min(100, child.loyalty + 20);
+            child.power += 3;
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* راضی شد!\n💕 وفاداری +۲۰\n💪 قدرت +۳` };
+        } else if (child.personality === '🦁 شجاع') {
+            child.xp += 50;
+            child.attack += 5;
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* به نبرد رفت!\n✨ +۵۰ XP\n⚔️ +۵ حمله` };
+        } else if (child.personality === '🦊 زیرک') {
+            player.inventory.gold = (player.inventory.gold || 0) + 50;
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* معامله کرد!\n💰 +۵۰ طلا` };
+        } else if (child.personality === '💕 عاشق‌پیشه') {
+            child.loyalty = Math.min(100, child.loyalty + 25);
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* عاشق شده!\n💕 وفاداری +۲۵` };
+        } else {
+            child.loyalty = Math.min(100, child.loyalty + 10);
+            return { success: true, message: `✅ ${child.emoji} *${child.name}* خوشحال شد!\n💕 وفاداری +۱۰` };
+        }
+    } else {
+        child.loyalty = Math.max(0, child.loyalty - 15);
+        return { success: true, message: `❌ ${child.emoji} *${child.name}* ناراحت شد...\n💕 وفاداری -۱۵` };
+    }
+}
+
 module.exports = {
+    childImages,
     childClasses,
     evolutionPaths,
     maleNames,
     femaleNames,
+    childPersonalities,
+    pregnancyData,
     initChildren,
     getRandomName,
     getRandomGender,
@@ -623,5 +764,11 @@ module.exports = {
     childDies,
     formatChildren,
     getChildrenKeyboard,
-    getChildBattleBonus
+    getChildBattleBonus,
+    assignPersonality,
+    getRandomChildRequest,
+    handleChildRequest,
+    getPregnancyImage,
+    getBirthImage,
+    getChildImage
 };
