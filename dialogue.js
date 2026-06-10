@@ -139,38 +139,38 @@ const dialogues = {
     }
 };
     knight: {
-        day1: [
-            { text: "⚔️ ای غریبه! شمشیرت رو بکش! ببینم چی داری!", options: [{ text: "⚔️ می‌جنگم", action: "fight" }, { text: "🤝 دوست", action: "ally" }, { text: "🏃 فرار", action: "flee" }] },
-            { text: "⚔️ فقط یه بار شکست خوردم اونم تو بودی!", options: [{ text: "⚔️ دوباره", action: "fight" }, { text: "💋 بیا", action: "kiss" }] }
-        ],
-        day2: [
-            { text: "⚔️ دفعه قبل خوب جنگیدی... این دفعه آماده‌ترم", options: [{ text: "⚔️ بجنگ", action: "fight" }, { text: "💋 امتحان کن", action: "seduce" }] },
-            { text: "⚔️ چرا هر روز میای؟ می‌خوای تحقیرم کنی؟", options: [{ text: "🤝 نه", action: "ally" }, { text: "💋 می‌خوام ببینمت", action: "seduce" }] }
-        ],
-        day3: [
-            { text: "⚔️ شب‌ها به جنگیدن با تو فکر می‌کنم...", options: [{ text: "⚔️ بجنگیم", action: "fight" }, { text: "💋 منم به تو", action: "kiss" }] },
-            { text: "⚔️ زره‌ام رو درآوردم... سنگینه... خسته شدم", options: [{ text: "🖐️ بذار ببینم", action: "ally" }, { text: "💋 خوشتیپی", action: "seduce" }] }
-        ],
-        day4: [
-            { text: "⚔️ دستت قویه ولی ملایم... شاید آدم خوبی باشی", options: [{ text: "🖐️ لمس کن", action: "ally" }, { text: "💋 ببوس", action: "kiss" }] },
-            { text: "⚔️ می‌خوام یه نبرد دیگه... بدون اسلحه 😳", options: [{ text: "🔥 بیا", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] }
-        ],
-        day5: [
-            { text: "⚔️ تسلیم شدم... همه چیزم مال تو...", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] },
-            { text: "⚔️ زره‌ام بازه... دیگه دفاعی ندارم 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }] }
-        ],
-        day6: [
-            { text: "⚔️ فقط تو می‌تونی منو شکست بدی 💋", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
-            { text: "⚔️ من شوالیه‌ام... ولی برای تو فرق دارم 💋", options: [{ text: "💋 فرق داری", action: "kiss" }, { text: "🔥 آره", action: "seduce" }] }
-        ],
-        day7: [
-            { text: "⚔️ شوالیه تو شدم... تا ابد ⚔️💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
-            { text: "⚔️ هر شب منتظرتم... بدون زره 🔥", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 منتظر باش", action: "kiss" }] }
-        ],
-        harem: [
-            { text: "⚔️ شوهرم... امروز تمرین داریم؟ 😏", options: [{ text: "⚔️ شمشیر", action: "fight" }, { text: "🔥 سکس", action: "seduce" }, { text: "💋 هردو", action: "kiss" }] }
-        ]
-    },
+    day1: [
+        { text: "⚔️ ای غریبه! شمشیرت رو بکش! ببینم چی داری!", options: [{ text: "⚔️ می‌جنگم", action: "fight" }, { text: "🤝 دوست", action: "ally" }, { text: "🏃 فرار", action: "flee" }] },
+        { text: "⚔️ فقط یه بار شکست خوردم اونم تو بودی!", options: [{ text: "⚔️ دوباره", action: "fight" }, { text: "💋 بیا", action: "kiss" }, { text: "🏃 فرار", action: "flee" }] }
+    ],
+    day2: [
+        { text: "⚔️ دفعه قبل خوب جنگیدی... این دفعه آماده‌ترم", options: [{ text: "⚔️ بجنگ", action: "fight" }, { text: "💋 امتحان کن", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] },
+        { text: "⚔️ چرا هر روز میای؟ می‌خوای تحقیرم کنی؟", options: [{ text: "🤝 نه", action: "ally" }, { text: "💋 می‌خوام ببینمت", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] }
+    ],
+    day3: [
+        { text: "⚔️ شب‌ها به جنگیدن با تو فکر می‌کنم...", options: [{ text: "⚔️ بجنگیم", action: "fight" }, { text: "💋 منم به تو", action: "kiss" }, { text: "🏃 فرار", action: "flee" }] },
+        { text: "⚔️ زره‌ام رو درآوردم... سنگینه... خسته شدم", options: [{ text: "🖐️ بذار ببینم", action: "ally" }, { text: "💋 خوشتیپی", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] }
+    ],
+    day4: [
+        { text: "⚔️ دستت قویه ولی ملایم... شاید آدم خوبی باشی", options: [{ text: "🖐️ لمس کن", action: "ally" }, { text: "💋 ببوس", action: "kiss" }, { text: "🔙 بعداً", action: "flee" }] },
+        { text: "⚔️ می‌خوام یه نبرد دیگه... بدون اسلحه 😳", options: [{ text: "🔥 بیا", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }, { text: "🔙 بعداً", action: "flee" }] }
+    ],
+    day5: [
+        { text: "⚔️ تسلیم شدم... همه چیزم مال تو...", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }, { text: "🤝 دوست", action: "ally" }] },
+        { text: "⚔️ زره‌ام بازه... دیگه دفاعی ندارم 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "🔙 بعداً", action: "flee" }] }
+    ],
+    day6: [
+        { text: "⚔️ فقط تو می‌تونی منو شکست بدی 💋", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+        { text: "⚔️ من شوالیه‌ام... ولی برای تو فرق دارم 💋", options: [{ text: "💋 فرق داری", action: "kiss" }, { text: "🔥 آره", action: "seduce" }, { text: "🤝 باش", action: "ally" }] }
+    ],
+    day7: [
+        { text: "⚔️ شوالیه تو شدم... تا ابد ⚔️💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }, { text: "🔥 بیا", action: "seduce" }] },
+        { text: "⚔️ هر شب منتظرتم... بدون زره 🔥", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 منتظر باش", action: "kiss" }, { text: "🤝 باش", action: "ally" }] }
+    ],
+    harem: [
+        { text: "⚔️ شوهرم... امروز تمرین داریم؟ 😏", options: [{ text: "⚔️ شمشیر", action: "fight" }, { text: "🔥 سکس", action: "seduce" }, { text: "💋 هردو", action: "kiss" }] }
+    ]
+},
     werewolf: {
         day1: [
             { text: "🐺 غرررر! عقب برو کثافت! گازت می‌گیرم!", options: [{ text: "🗡️ حمله", action: "fight" }, { text: "💋 آروم باش", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] },
