@@ -1,6 +1,6 @@
 const config = require('./config');
 
-// ============ دختران مخفی‌گاه ============
+// ============ دختران مخفی‌گاه (فارسی) ============
 const secretGirls = [
     { 
         id: 'village_girl', name: 'دختر روستایی', emoji: '👩‍🌾', rarity: 'common',
@@ -101,80 +101,67 @@ const secretGirls = [
     }
 ];
 
-// ============ پسران مخفی‌گاه ============
+// ============ پسران مخفی‌گاه (فارسی) ============
 const secretBoys = [
     { 
         id: 'servant_boy', name: 'پسر خدمتکار', emoji: '🧒', rarity: 'common',
         description: 'پسر جوونی که توی قصر کار می‌کنه. شب‌ها میاد مخفی‌گاه.',
-        requirements: { level: 1 }, cost: 20, 
-        rewards: { xp: 10, gold: 5 }
+        requirements: { level: 1 }, cost: 20, rewards: { xp: 10, gold: 5 }
     },
     { 
         id: 'soldier', name: 'سرباز', emoji: '⚔️🧒', rarity: 'common',
         description: 'سرباز جوونی که بعد از جنگ به مخفی‌گاه پناه آورده.',
-        requirements: { level: 5, attack: 20 }, cost: 50, 
-        rewards: { xp: 20, attack: 3 }
+        requirements: { level: 5, attack: 20 }, cost: 50, rewards: { xp: 20, attack: 3 }
     },
     { 
         id: 'musician', name: 'نوازنده', emoji: '🎵🧒', rarity: 'rare',
         description: 'نوازنده دوره‌گرد که آهنگ‌های غمگین می‌زنه.',
-        requirements: { level: 10 }, cost: 30, 
-        rewards: { xp: 15, song: 1, mood: 10 }
+        requirements: { level: 10 }, cost: 30, rewards: { xp: 15, song: 1, mood: 10 }
     },
     { 
         id: 'teacher', name: 'معلم', emoji: '📚🧒', rarity: 'rare',
         description: 'معلم جوانی که از مدرسه اخراج شده. حالا توی مخفی‌گاه درس میده.',
-        requirements: { level: 15 }, cost: 40, 
-        rewards: { xp: 25, intelligence: 5 }
+        requirements: { level: 15 }, cost: 40, rewards: { xp: 25, intelligence: 5 }
     },
     { 
         id: 'young_knight', name: 'شوالیه جوان', emoji: '🛡️🧒', rarity: 'epic',
-        description: 'شوالیه‌ای که شرافتش رو از دست داده. به دنبال redemption.',
-        requirements: { level: 20, attack: 100 }, cost: 100, 
-        rewards: { xp: 50, defense: 10, gold: 50 }
+        description: 'شوالیه‌ای که شرافتش رو از دست داده. به دنبال بازگشت به اوج.',
+        requirements: { level: 20, attack: 100 }, cost: 100, rewards: { xp: 50, defense: 10, gold: 50 }
     },
     { 
         id: 'exiled_prince', name: 'شاهزاده تبعیدی', emoji: '🤴', rarity: 'legendary',
         description: 'شاهزاده‌ای از پادشاهی دور. مثل پرنسس آریانا، به دنبال متحد.',
-        requirements: { level: 25, gold: 500, score: 1000 }, cost: 500, 
-        rewards: { xp: 100, diamond: 5, gold: 300 }
+        requirements: { level: 25, gold: 500, score: 1000 }, cost: 500, rewards: { xp: 100, diamond: 5, gold: 300 }
     }
 ];
 
-// ============ فعالیت‌های مخفی‌گاه ============
+// ============ فعالیت‌های مخفی‌گاه (فارسی) ============
 const activities = {
-    gambling: { name: 'قمار', emoji: '🎲', cost: 50, reward: { gold: 100 }, riskChance: 0.5, description: '۵۰٪ شانس بردن ۱۰۰👑' },
-    drinking: { name: 'مِی‌خانه', emoji: '🍷', cost: 30, reward: { mood: 20 }, riskChance: 0.1, riskEffect: 'مسمومیت', description: '۱۰٪ شانس مسمومیت' },
+    gambling: { name: 'قمار', emoji: '🎲', cost: 50, reward: { gold: 100 }, riskChance: 0.5, riskEffect: 'باخت', description: '۵۰٪ شانس بردن ۱۰۰👑' },
+    drinking: { name: 'میخانه', emoji: '🍷', cost: 30, reward: { mood: 20 }, riskChance: 0.1, riskEffect: 'مسمومیت', description: '۱۰٪ شانس مسمومیت' },
     music: { name: 'موسیقی زنده', emoji: '🎵', cost: 20, reward: { mood: 15 }, riskChance: 0, description: 'گوش دادن به آواز' },
     fortune: { name: 'فال‌گیری', emoji: '🔮', cost: 50, reward: { wish: 1 }, riskChance: 0, description: 'دیدن ۱ رویداد آینده' },
     fighting: { name: 'مبارزه زیرزمینی', emoji: '🗡️', cost: 100, reward: { gold: 300, xp: 50 }, riskChance: 0.3, riskEffect: 'زخمی شدن', description: '۳۰٪ شانس آسیب' },
     opium: { name: 'تریاک', emoji: '💊', cost: 100, reward: { mood: 50 }, riskChance: 0.4, riskEffect: 'اعتیاد', description: '۴۰٪ شانس اعتیاد' }
 };
 
-// ============ اتاق‌ها ============
+// ============ اتاق‌های مخفی‌گاه (فارسی) ============
 const chamberRooms = {
-    normal: { name: 'اتاق معمولی', emoji: '🛏️', cost: 20, bonus: 1, riskOfExposure: 0.3 },
-    vip: { name: 'اتاق VIP', emoji: '🛏️✨', cost: 100, bonus: 2, riskOfExposure: 0.15 },
-    royal: { name: 'اتاق سلطنتی', emoji: '🛏️💫', cost: 500, bonus: 3, riskOfExposure: 0.05 },
-    secret: { name: 'اتاق مخفی', emoji: '🔒', cost: 1000, bonus: 3, riskOfExposure: 0 }
+    normal: { name: 'اتاق معمولی', emoji: '🛏️', cost: 20, bonus: 1, riskOfExposure: 0.3, description: 'خطر لو رفتن ۳۰٪' },
+    vip: { name: 'اتاق ویژه', emoji: '🛏️✨', cost: 100, bonus: 2, riskOfExposure: 0.15, description: 'خطر لو رفتن ۱۵٪' },
+    royal: { name: 'اتاق سلطنتی', emoji: '🛏️💫', cost: 500, bonus: 3, riskOfExposure: 0.05, description: 'خطر لو رفتن ۵٪' },
+    secret: { name: 'اتاق مخفی', emoji: '🔒', cost: 1000, bonus: 3, riskOfExposure: 0, description: 'کاملاً امن' }
 };
 
 // ============ توابع اصلی ============
 function initSecretChamber(player) {
     if (!player.secretChamber) {
         player.secretChamber = {
-            girls: [],
-            boys: [],
-            visitsToday: 0,
-            maxVisits: 5,
-            lastVisit: Date.now(),
-            totalVisits: 0,
-            loyaltyLevel: 1,
-            gold: 0,
-            reputation: 50,
-            guards: [],
-            activeAddiction: false,
-            addictionDays: 0
+            girls: [], boys: [],
+            visitsToday: 0, maxVisits: 5,
+            lastVisit: Date.now(), totalVisits: 0,
+            loyaltyLevel: 1, reputation: 50,
+            guards: [], activeAddiction: false, addictionDays: 0
         };
     }
     return player.secretChamber;
@@ -183,8 +170,7 @@ function initSecretChamber(player) {
 function resetDailyVisits(player) {
     initSecretChamber(player);
     const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
-    if (now - player.secretChamber.lastVisit > oneDay) {
+    if (now - player.secretChamber.lastVisit > 24 * 60 * 60 * 1000) {
         player.secretChamber.visitsToday = 0;
     }
 }
@@ -242,7 +228,6 @@ function visitGirl(player, girlId, roomType) {
     
     player.inventory.gold -= totalCost;
     
-    // پیدا کردن یا ایجاد رکورد رابطه
     let girlRecord = player.secretChamber.girls.find(g => g.id === girlId);
     if (!girlRecord) {
         girlRecord = { id: girlId, visits: 0, trust: 0, gifts: 0, lastVisit: Date.now() };
@@ -253,18 +238,15 @@ function visitGirl(player, girlId, roomType) {
     girlRecord.trust = Math.min(100, girlRecord.trust + 2);
     girlRecord.lastVisit = Date.now();
     
-    // محاسبه جایزه با بونوس اتاق
-    let rewardMsg = '';
     const bonus = room.bonus;
-    if (girl.rewards.xp) { const val = (girl.rewards.xp || 0) * bonus; player.xp = (player.xp || 0) + val; rewardMsg += `\n✨ +${val} XP`; }
-    if (girl.rewards.gold && girl.rewards.gold > 0) { const val = (girl.rewards.gold || 0) * bonus; player.inventory.gold = (player.inventory.gold || 0) + val; rewardMsg += `\n👑 +${val} طلا`; }
-    if (girl.rewards.diamond) { const val = (girl.rewards.diamond || 0) * bonus; player.inventory.diamond = (player.inventory.diamond || 0) + val; rewardMsg += `\n💎 +${val} الماس`; }
+    let rewardMsg = '';
+    if (girl.rewards.xp) { player.xp = (player.xp || 0) + girl.rewards.xp * bonus; rewardMsg += `\n✨ +${girl.rewards.xp * bonus} XP`; }
+    if (girl.rewards.gold && girl.rewards.gold > 0) { player.inventory.gold = (player.inventory.gold || 0) + girl.rewards.gold * bonus; rewardMsg += `\n👑 +${girl.rewards.gold * bonus} طلا`; }
+    if (girl.rewards.diamond) { player.inventory.diamond = (player.inventory.diamond || 0) + girl.rewards.diamond * bonus; rewardMsg += `\n💎 +${girl.rewards.diamond * bonus} الماس`; }
     if (girl.rewards.ring) { player.inventory.ring = (player.inventory.ring || 0) + girl.rewards.ring; rewardMsg += `\n💍 +${girl.rewards.ring} حلقه`; }
     if (girl.rewards.key) { player.inventory.key = (player.inventory.key || 0) + girl.rewards.key; rewardMsg += `\n🗝️ +${girl.rewards.key} کلید`; }
     if (girl.rewards.wish) { player.inventory.wish = (player.inventory.wish || 0) + girl.rewards.wish; rewardMsg += `\n🔮 +${girl.rewards.wish} آرزو`; }
-    if (girl.rewards.mood) { rewardMsg += `\n😊 روحیه +${girl.rewards.mood}`; }
     
-    // خطر لو رفتن
     const exposureRisk = room.riskOfExposure + (player.secretChamber.visitsToday * 0.05);
     let exposureMsg = '';
     let exposed = false;
@@ -272,8 +254,6 @@ function visitGirl(player, girlId, roomType) {
     if (Math.random() < exposureRisk) {
         exposed = true;
         exposureMsg = '\n\n⚠️ *خطر!* یکی از ملکه‌ها فهمید اینجایی!';
-        
-        // اثر روی ملکه‌ها
         if (player.harem && player.harem.queens) {
             const randomQueen = player.harem.queens[Math.floor(Math.random() * player.harem.queens.length)];
             if (randomQueen) {
@@ -286,11 +266,8 @@ function visitGirl(player, girlId, roomType) {
     player.secretChamber.visitsToday++;
     player.secretChamber.totalVisits++;
     player.secretChamber.lastVisit = Date.now();
-    
-    // آپدیت سطح وفاداری
     updateLoyaltyLevel(player);
     
-    // چک کردن ارتقا به ملکه
     let queenMsg = '';
     if (girl.canBecomeQueen && girlRecord.trust >= girl.trustNeeded && !girlRecord.becameQueen) {
         queenMsg = `\n\n👑 *${girl.name}* آماده رفتن به حرمسراست!\nبا دستور promotequeen ${girlId} بیارش.`;
@@ -351,10 +328,8 @@ function visitBoy(player, boyId, roomType) {
     
     const exposureRisk = room.riskOfExposure + (player.secretChamber.visitsToday * 0.05);
     let exposureMsg = '';
-    let exposed = false;
     
     if (Math.random() < exposureRisk) {
-        exposed = true;
         exposureMsg = '\n\n⚠️ *خطر!* یکی از ملکه‌ها فهمید اینجایی!';
         if (player.harem && player.harem.queens) {
             const randomQueen = player.harem.queens[Math.floor(Math.random() * player.harem.queens.length)];
@@ -374,8 +349,7 @@ function visitBoy(player, boyId, roomType) {
     
     return {
         success: true,
-        message: `🔞 *مخفی‌گاه*\n\n${boy.emoji} *${boy.name}* ${rarities[boy.rarity]}\n📝 ${boy.description}\n\n🎁 *پاداش:*${rewardMsg}\n👑 هزینه: ${totalCost} طلا${exposureMsg}\n\n📅 بازدید ${player.secretChamber.visitsToday}/${player.secretChamber.maxVisits}`,
-        exposed
+        message: `🔞 *مخفی‌گاه*\n\n${boy.emoji} *${boy.name}* ${rarities[boy.rarity]}\n📝 ${boy.description}\n\n🎁 *پاداش:*${rewardMsg}\n👑 هزینه: ${totalCost} طلا${exposureMsg}\n\n📅 بازدید ${player.secretChamber.visitsToday}/${player.secretChamber.maxVisits}`
     };
 }
 
@@ -395,11 +369,9 @@ function doActivity(player, activityType) {
     }
     
     player.inventory.gold -= activity.cost;
-    
     let resultMsg = `${activity.emoji} *${activity.name}*\n`;
     
     if (Math.random() < activity.riskChance) {
-        // باخت
         resultMsg += `\n❌ *${activity.riskEffect}!*\n`;
         if (activity.riskEffect === 'اعتیاد') {
             player.secretChamber.activeAddiction = true;
@@ -413,8 +385,7 @@ function doActivity(player, activityType) {
             resultMsg += '🤢 -۲۰❤️';
         }
     } else {
-        // برد
-        if (activity.reward.gold) { const val = activity.reward.gold || 0; player.inventory.gold = (player.inventory.gold || 0) + val; resultMsg += `\n💰 +${val}👑`; }
+        if (activity.reward.gold) { player.inventory.gold = (player.inventory.gold || 0) + activity.reward.gold; resultMsg += `\n💰 +${activity.reward.gold}👑`; }
         if (activity.reward.xp) { player.xp = (player.xp || 0) + activity.reward.xp; resultMsg += `\n✨ +${activity.reward.xp} XP`; }
         if (activity.reward.mood) { resultMsg += `\n😊 روحیه +${activity.reward.mood}`; }
         if (activity.reward.wish) { player.inventory.wish = (player.inventory.wish || 0) + activity.reward.wish; resultMsg += `\n🔮 +${activity.reward.wish} آرزو`; }
@@ -422,75 +393,44 @@ function doActivity(player, activityType) {
     
     player.secretChamber.visitsToday++;
     player.secretChamber.lastVisit = Date.now();
-    
     return { success: true, message: resultMsg };
 }
+
 function upgradeGirlToQueen(player, girlId) {
     initSecretChamber(player);
-    
     const girl = secretGirls.find(g => g.id === girlId);
     if (!girl) return { success: false, message: '❌ این دختر پیدا نشد!' };
-    
     if (!girl.canBecomeQueen) return { success: false, message: '❌ این دختر نمی‌تونه ملکه بشه!' };
     
     const girlRecord = player.secretChamber.girls.find(g => g.id === girlId);
     if (!girlRecord) return { success: false, message: '❌ هنوز باهاش رابطه نداشتی!' };
-    
-    if (girlRecord.trust < girl.trustNeeded) {
-        return { success: false, message: `❌ اعتماد کافی نیست!\n💕 نیاز: ${girl.trustNeeded}\n💕 فعلی: ${girlRecord.trust}` };
-    }
-    
+    if (girlRecord.trust < girl.trustNeeded) return { success: false, message: `❌ اعتماد کافی نیست!\n💕 نیاز: ${girl.trustNeeded}\n💕 فعلی: ${girlRecord.trust}` };
     if (girlRecord.becameQueen) return { success: false, message: '❌ این دختر قبلاً ملکه شده!' };
     
-    // هزینه آزادسازی
     const releaseCost = 1000;
-    if ((player.inventory?.gold || 0) < releaseCost) {
-        return { success: false, message: `❌ طلا کافی برای آزادسازی نداری!\n👑 نیاز: ${releaseCost}` };
-    }
-    
-    if (!player.harem || !player.harem.queens) {
-        return { success: false, message: '❌ اول باید حرمسرا داشته باشی!' };
-    }
+    if ((player.inventory?.gold || 0) < releaseCost) return { success: false, message: `❌ طلا کافی برای آزادسازی نداری!\n👑 نیاز: ${releaseCost}` };
+    if (!player.harem || !player.harem.queens) return { success: false, message: '❌ اول باید حرمسرا داشته باشی!' };
     
     player.inventory.gold -= releaseCost;
     
-    // اضافه کردن به حرمسرا
     const queenData = {
-        id: 'queen_' + Date.now(),
-        npcId: girlId,
-        name: girl.name,
-        emoji: girl.emoji,
-        rank: girl.queenRank || 'concubine',
-        points: girlRecord.trust,
-        joinedAt: Date.now(),
-        pregnancies: [],
-        children: [],
-        mood: 80,
-        health: 100,
-        reputation: 60,
-        lastCare: Date.now(),
-        isSpouse: false,
-        room: 'simple',
-        servants: [],
-        dress: null,
-        jewelry: [],
-        diary: [],
-        upbringing: null,
-        cameFromChamber: true
+        id: 'queen_' + Date.now(), npcId: girlId, name: girl.name, emoji: girl.emoji,
+        rank: girl.queenRank || 'concubine', points: girlRecord.trust,
+        joinedAt: Date.now(), pregnancies: [], children: [],
+        mood: 80, health: 100, reputation: 60, lastCare: Date.now(),
+        isSpouse: false, room: 'simple', servants: [], dress: null,
+        jewelry: [], diary: [], upbringing: null, cameFromChamber: true
     };
     
     player.harem.queens.push(queenData);
     girlRecord.becameQueen = true;
-    
-    // حذف از مخفی‌گاه
     player.secretChamber.girls = player.secretChamber.girls.filter(g => g.id !== girlId);
     
     return {
         success: true,
-        message: `👑 ${girl.emoji} *${girl.name}* از مخفی‌گاه به حرمسرا اومد!\n👸 رتبه: ${girl.queenRank}\n💕 اعتماد: ${girlRecord.trust}\n💰 هزینه آزادسازی: ${releaseCost}👑\n\n🎉 تبریک! یه ملکه جدید داری!`
+        message: `👑 ${girl.emoji} *${girl.name}* از مخفی‌گاه به حرمسرا اومد!\n👸 رتبه: ${girl.queenRank}\n💕 اعتماد: ${girlRecord.trust}\n💰 هزینه: ${releaseCost}👑\n\n🎉 یه ملکه جدید داری!`
     };
 }
-
 function giveGift(player, personId, isGirl) {
     initSecretChamber(player);
     
@@ -499,19 +439,13 @@ function giveGift(player, personId, isGirl) {
         player.secretChamber.boys.find(b => b.id === personId);
     
     if (!person) return { success: false, message: '❌ این شخص پیدا نشد!' };
-    
-    if ((player.inventory?.gold || 0) < 100) {
-        return { success: false, message: '❌ حداقل ۱۰۰👑 برای هدیه لازمه!' };
-    }
+    if ((player.inventory?.gold || 0) < 100) return { success: false, message: '❌ حداقل ۱۰۰👑 برای هدیه لازمه!' };
     
     player.inventory.gold -= 100;
     person.trust = Math.min(100, person.trust + 15);
     person.gifts = (person.gifts || 0) + 1;
     
-    return {
-        success: true,
-        message: `🎁 هدیه داده شد!\n💕 اعتماد +۱۵\n👑 -۱۰۰ طلا\n💕 اعتماد فعلی: ${person.trust}`
-    };
+    return { success: true, message: `🎁 هدیه داده شد!\n💕 اعتماد +۱۵\n👑 -۱۰۰ طلا\n💕 اعتماد فعلی: ${person.trust}` };
 }
 
 function hireGuard(player, guardType) {
@@ -525,35 +459,25 @@ function hireGuard(player, guardType) {
     
     const guard = guards[guardType];
     if (!guard) return { success: false, message: '❌ نگهبان نامعتبر!' };
-    
     if (player.secretChamber.guards.find(g => g.type === guardType)) {
         return { success: false, message: '❌ این نگهبان قبلاً استخدام شده!' };
     }
-    
-    if ((player.inventory?.gold || 0) < guard.cost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${guard.cost}` };
-    }
+    if ((player.inventory?.gold || 0) < guard.cost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${guard.cost}` };
     
     player.inventory.gold -= guard.cost;
     player.secretChamber.guards.push({ type: guardType, hiredAt: Date.now() });
     
-    return {
-        success: true,
-        message: `${guard.emoji} *${guard.name}* استخدام شد!\n📝 ${guard.effect}\n💰 حقوق ماهانه: ${guard.salary}👑`
-    };
+    return { success: true, message: `${guard.emoji} *${guard.name}* استخدام شد!\n📝 ${guard.effect}\n💰 حقوق ماهانه: ${guard.salary}👑` };
 }
 
 function updateLoyaltyLevel(player) {
     initSecretChamber(player);
-    
     const totalVisits = player.secretChamber.totalVisits;
     let level = 1;
-    
-    if (totalVisits >= 100) level = 5;      // سهام‌دار
-    else if (totalVisits >= 50) level = 4;  // VIP
-    else if (totalVisits >= 20) level = 3;  // مشتری دائم
-    else if (totalVisits >= 5) level = 2;   // مشتری
-    
+    if (totalVisits >= 100) level = 5;
+    else if (totalVisits >= 50) level = 4;
+    else if (totalVisits >= 20) level = 3;
+    else if (totalVisits >= 5) level = 2;
     player.secretChamber.loyaltyLevel = level;
     return level;
 }
@@ -566,11 +490,9 @@ function getLoyaltyDiscount(player) {
 
 function checkAddiction(player) {
     initSecretChamber(player);
-    
     if (!player.secretChamber.activeAddiction) return null;
     
     player.secretChamber.addictionDays--;
-    
     if (player.secretChamber.addictionDays <= 0) {
         player.secretChamber.activeAddiction = false;
         return { recovered: true, message: '🎉 از اعتیاد پاک شدی! دیگه سالمی.' };
@@ -579,53 +501,13 @@ function checkAddiction(player) {
     const cost = 50;
     if ((player.inventory?.gold || 0) < cost) {
         player.hp = Math.max(1, (player.hp || 100) - 20);
-        return { recovered: false, message: `💊 پول مواد نداری! -۲۰❤️\n📅 ${player.secretChamber.addictionDays} روز مونده تا پاک بشی.` };
+        return { recovered: false, message: `💊 پول مواد نداری! -۲۰❤️\n📅 ${player.secretChamber.addictionDays} روز مونده` };
     }
     
     player.inventory.gold -= cost;
-    return { recovered: false, message: `💊 مواد مصرف شد. -۵۰👑\n📅 ${player.secretChamber.addictionDays} روز مونده تا پاک بشی.` };
+    return { recovered: false, message: `💊 مواد مصرف شد. -۵۰👑\n📅 ${player.secretChamber.addictionDays} روز مونده` };
 }
 
-function getSpecialMission(player, girlId) {
-    const girl = secretGirls.find(g => g.id === girlId);
-    if (!girl || !girl.specialMissions) return null;
-    
-    const girlRecord = player.secretChamber?.girls?.find(g => g.id === girlId);
-    if (!girlRecord || girlRecord.trust < 50) return null;
-    
-    // انتخاب مأموریت انجام نشده
-    const availableMissions = girl.specialMissions.filter(m => !girlRecord.completedMissions?.includes(m.name));
-    if (availableMissions.length === 0) return null;
-    
-    return availableMissions[Math.floor(Math.random() * availableMissions.length)];
-}
-
-function completeSpecialMission(player, girlId, missionName) {
-    const girl = secretGirls.find(g => g.id === girlId);
-    if (!girl || !girl.specialMissions) return { success: false, message: '❌ مأموریت پیدا نشد!' };
-    
-    const mission = girl.specialMissions.find(m => m.name === missionName);
-    if (!mission) return { success: false, message: '❌ مأموریت نامعتبر!' };
-    
-    const girlRecord = player.secretChamber.girls.find(g => g.id === girlId);
-    if (!girlRecord) return { success: false, message: '❌ هنوز باهاش رابطه نداشتی!' };
-    
-    if (!girlRecord.completedMissions) girlRecord.completedMissions = [];
-    girlRecord.completedMissions.push(missionName);
-    
-    let rewardMsg = '';
-    if (mission.reward.gold) { player.inventory.gold = (player.inventory.gold || 0) + mission.reward.gold; rewardMsg += `\n👑 +${mission.reward.gold} طلا`; }
-    if (mission.reward.diamond) { player.inventory.diamond = (player.inventory.diamond || 0) + mission.reward.diamond; rewardMsg += `\n💎 +${mission.reward.diamond} الماس`; }
-    if (mission.reward.queen) {
-        const queenResult = upgradeGirlToQueen(player, girlId);
-        if (queenResult.success) rewardMsg += `\n👑 ${girl.name} ملکه شد!`;
-    }
-    
-    return {
-        success: true,
-        message: `✅ مأموریت *${mission.name}* کامل شد!\n📝 ${mission.description}${rewardMsg}`
-    };
-}
 function formatSecretChamber(player) {
     initSecretChamber(player);
     resetDailyVisits(player);
@@ -646,7 +528,8 @@ function formatSecretChamber(player) {
     if (player.secretChamber.guards.length > 0) {
         msg += `\n🛡️ *نگهبانان:* `;
         for (let g of player.secretChamber.guards) {
-            msg += `${g.type} `;
+            const guardNames = { doorman: 'دربان', watchman: 'دیده‌بان', bodyguard: 'محافظ' };
+            msg += `${guardNames[g.type] || g.type} `;
         }
         msg += '\n';
     }
@@ -695,11 +578,9 @@ function getSecretChamberKeyboard(player) {
     const girls = getAvailableGirls(player);
     const boys = getAvailableBoys(player);
     
-    // بخش دختران
     for (let girl of girls) {
         const record = player.secretChamber.girls.find(g => g.id === girl.id);
         const becameQueen = record ? record.becameQueen : false;
-        
         if (girl.canMeet && !becameQueen) {
             const canBeQueen = girl.canBecomeQueen && record && record.trust >= girl.trustNeeded;
             const prefix = canBeQueen ? '👑 ' : '👩 ';
@@ -707,7 +588,6 @@ function getSecretChamberKeyboard(player) {
         }
     }
     
-    // بخش پسران
     for (let boy of boys) {
         if (boy.canMeet) {
             buttons.push([`👦 ${boy.emoji} ${boy.name} (${boy.cost}👑)`]);
@@ -724,12 +604,12 @@ function getSecretChamberKeyboard(player) {
     return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
 }
 
-function getRoomKeyboard() {
+function getChamberRoomKeyboard() {
     return {
         reply_markup: {
             keyboard: [
                 ['🛏️ معمولی (۲۰👑) - خطر ۳۰٪'],
-                ['🛏️✨ VIP (۱۰۰👑) - خطر ۱۵٪'],
+                ['🛏️✨ ویژه (۱۰۰👑) - خطر ۱۵٪'],
                 ['🛏️💫 سلطنتی (۵۰۰👑) - خطر ۵٪'],
                 ['🔒 مخفی (۱۰۰۰👑) - امن'],
                 ['🔙 برگشت']
@@ -744,7 +624,7 @@ function getGuardKeyboard() {
             keyboard: [
                 ['🛡️ دربان (۵۰۰👑)'],
                 ['👀 دیده‌بان (۱۰۰۰👑)'],
-                ['🗡️ محافظ (۲۰۰۰👑)'],
+                ['🗡️ محافظ شخصی (۲۰۰۰👑)'],
                 ['🔙 برگشت']
             ], resize_keyboard: true
         }
@@ -754,7 +634,6 @@ function getGuardKeyboard() {
 function getGiftKeyboard(player) {
     initSecretChamber(player);
     const buttons = [];
-    
     for (let girl of player.secretChamber.girls) {
         const g = secretGirls.find(sg => sg.id === girl.id);
         if (g) buttons.push([`🎁 ${g.emoji} ${g.name}`]);
@@ -763,82 +642,17 @@ function getGiftKeyboard(player) {
         const b = secretBoys.find(sb => sb.id === boy.id);
         if (b) buttons.push([`🎁 ${b.emoji} ${b.name}`]);
     }
-    
     buttons.push(['🔙 برگشت']);
     return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
 }
 
-function getRandomChamberEvent(player) {
-    initSecretChamber(player);
-    
-    const events = [
-        { chance: 0.10, name: 'شب رایگان', emoji: '🎉', message: 'امشب همه چی رایگانه!', effect: 'free' },
-        { chance: 0.15, name: 'دختر جدید', emoji: '👯', message: 'یه دختر جدید به مخفی‌گاه اومده!', effect: 'newGirl' },
-        { chance: 0.08, name: 'یورش نگهبانان', emoji: '🚨', message: 'نگهبانان سلطنتی دارن میان! مخفی‌گاه ۲۴ ساعت تعطیله!', effect: 'raid' },
-        { chance: 0.05, name: 'بازدید سلطنتی', emoji: '👑', message: 'پادشاه شخصاً میاد مخفی‌گاه! همه چی ۵۰٪ تخفیف!', effect: 'royalVisit' },
-        { chance: 0.12, name: 'بخت‌آزمایی', emoji: '💰', message: 'شانس بردن ۱۰۰۰👑! می‌خوای شرکت کنی؟', effect: 'lottery' }
-    ];
-    
-    const r = Math.random();
-    let cumulative = 0;
-    for (let event of events) {
-        cumulative += event.chance;
-        if (r < cumulative) return event;
-    }
-    
-    return null;
-}
-
-function handleChamberEvent(player, event) {
-    initSecretChamber(player);
-    
-    switch (event.effect) {
-        case 'free':
-            player.secretChamber.maxVisits = 10;
-            return { success: true, message: '🎉 امشب می‌تونی ۱۰ بار بیای مخفی‌گاه!' };
-        case 'newGirl':
-            return { success: true, message: '👯 یه دختر جدید اضافه شد! برو ببین.' };
-        case 'raid':
-            player.secretChamber.visitsToday = player.secretChamber.maxVisits;
-            return { success: true, message: '🚨 مخفی‌گاه تعطیل شد! امروز نمی‌تونی بیای.' };
-        case 'royalVisit':
-            return { success: true, message: '👑 همه چی ۵۰٪ تخفیف برای امروز!' };
-        case 'lottery':
-            if (Math.random() < 0.3) {
-                player.inventory.gold = (player.inventory.gold || 0) + 1000;
-                return { success: true, message: '🎉 برنده شدی! +۱۰۰۰👑' };
-            }
-            return { success: false, message: '😢 باختی! یه وقت دیگه...' };
-        default:
-            return { success: false, message: '❌ رویداد نامعتبر!' };
-    }
-}
-
 module.exports = {
-    secretGirls,
-    secretBoys,
-    activities,
-    chamberRooms,
-    initSecretChamber,
-    resetDailyVisits,
-    getAvailableGirls,
-    getAvailableBoys,
-    visitGirl,
-    visitBoy,
-    doActivity,
-    upgradeGirlToQueen,
-    giveGift,
-    hireGuard,
-    updateLoyaltyLevel,
-    getLoyaltyDiscount,
-    checkAddiction,
-    getSpecialMission,
-    completeSpecialMission,
-    formatSecretChamber,
-    getSecretChamberKeyboard,
-    getRoomKeyboard,
-    getGuardKeyboard,
-    getGiftKeyboard,
-    getRandomChamberEvent,
-    handleChamberEvent
+    secretGirls, secretBoys, activities, chamberRooms,
+    initSecretChamber, resetDailyVisits,
+    getAvailableGirls, getAvailableBoys,
+    visitGirl, visitBoy, doActivity,
+    upgradeGirlToQueen, giveGift, hireGuard,
+    updateLoyaltyLevel, getLoyaltyDiscount, checkAddiction,
+    formatSecretChamber, getSecretChamberKeyboard,
+    getChamberRoomKeyboard, getGuardKeyboard, getGiftKeyboard
 };
