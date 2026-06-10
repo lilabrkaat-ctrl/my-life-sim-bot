@@ -51,7 +51,7 @@ function adminCommand(player, command, args) {
         case 'item': case 'give':
             const item = args[0];
             const amt = parseInt(args[1]) || 10;
-            const validItems = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key', 'diamond', 'finisher'];
+            const validItems = ['wood', 'stone', 'meat', 'water', 'skin', 'iron', 'gold', 'ring', 'tear', 'spell', 'song', 'blood', 'wish', 'key', 'diamond', 'finisher', 'condom'];
             if (validItems.includes(item)) {
                 player.inventory[item] = (player.inventory[item] || 0) + amt;
                 result = { success: true, message: `✅ ${amt} ${item} اضافه شد!` };
@@ -83,6 +83,32 @@ function adminCommand(player, command, args) {
             result = { success: true, message: `✅ ${l} سطح اضافه شد! سطح: ${player.level}` };
             break;
 
+        // ============ روز و زمان ============
+        case 'day': case 'setday':
+            const newDay = parseInt(args[0]) || 1;
+            if (!player.gameDay) player.gameDay = 1;
+            player.gameDay = Math.max(1, Math.min(7, newDay));
+            result = { success: true, message: `📅 روز بازی: ${player.gameDay}/۷` };
+            break;
+
+        case 'nextday': case 'nd':
+            if (!player.gameDay) player.gameDay = 1;
+            player.gameDay = player.gameDay >= 7 ? 1 : player.gameDay + 1;
+            result = { success: true, message: `📅 روز جدید: ${player.gameDay}/۷\n🔄 دیالوگ‌ها ریست شدن!` };
+            break;
+
+        case 'resetday': case 'rd':
+            player.gameDay = 1;
+            result = { success: true, message: '📅 روز بازی ریست شد (روز ۱)' };
+            break;
+
+        // ============ کاندوم ============
+        case 'condom': case 'cd':
+            const condomAmt = parseInt(args[0]) || 1;
+            player.inventory.condom = (player.inventory.condom || 0) + condomAmt;
+            result = { success: true, message: `🎈 ${condomAmt} کاندوم اضافه شد!` };
+            break;
+
         // ============ باز کردن ============
         case 'unlock': case 'unlockall':
             player.unlocked.locations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
@@ -98,7 +124,7 @@ function adminCommand(player, command, args) {
             player.attack = 999; player.defense = 999;
             player.xp = 99999; player.score = 99999;
             player.energy = 999; player.maxEnergy = 999;
-            player.inventory = { wood: 999, stone: 999, meat: 999, water: 999, skin: 999, iron: 999, gold: 99999, ring: 50, tear: 50, spell: 50, song: 50, blood: 50, wish: 50, key: 50, diamond: 50, finisher: 50 };
+            player.inventory = { wood: 999, stone: 999, meat: 999, water: 999, skin: 999, iron: 999, gold: 99999, ring: 50, tear: 50, spell: 50, song: 50, blood: 50, wish: 50, key: 50, diamond: 50, finisher: 50, condom: 50 };
             player.equipment = { weapon: 'شمشیر افسانه‌ای', armor: 'زره اژدها', house: 'قصر باشکوه' };
             player.unlocked.locations = ['village', 'forest', 'river', 'mountain', 'plain', 'cave', 'desert'];
             player.unlocked.enemies = ['wolf', 'snake', 'bandit', 'lion', 'bear', 'soldier', 'fairy', 'werewolf', 'skeleton', 'dragon', 'scorpion', 'crocodile', 'eagle', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
@@ -108,7 +134,8 @@ function adminCommand(player, command, args) {
             if (!player.pets) player.pets = [];
             if (!player.prison) player.prison = [];
             if (!player.prisonRelations) player.prisonRelations = {};
-            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐۱۰۰\n❤️۹۹۹۹\n⚔️۹۹۹\n🛡️۹۹۹\n👑۹۹۹۹۹\n⚡۹۹۹\n📦۴۰ صندوقچه` };
+            if (!player.gameDay) player.gameDay = 1;
+            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐۱۰۰\n❤️۹۹۹۹\n⚔️۹۹۹\n🛡️۹۹۹\n👑۹۹۹۹۹\n⚡۹۹۹\n🎈۵۰ کاندوم\n📦۴۰ صندوقچه` };
             break;
 
         case 'god': case 'godmode':
@@ -151,7 +178,7 @@ function adminCommand(player, command, args) {
             try { const { feedAllPets } = require('./pet'); result = feedAllPets(player); } 
             catch (e) { result = { success: false, message: '❌ سیستم حیوانات در دسترس نیست!' }; }
             break;
-// ============ صندوقچه ============
+            // ============ صندوقچه ============
 case 'box': case 'addbox':
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
     const boxType = args[0] || 'wooden';
@@ -248,6 +275,36 @@ case 'tournament': case 'tour':
     } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
     break;
 
+case 'pregnant': case 'makepregnant':
+    try {
+        const pregNpcId = args[0] || (player.house && player.house[0] ? player.house[0].npcId : null);
+        if (!pregNpcId) { result = { success: false, message: '❌ کسی توی خونه نیست!' }; break; }
+        const { checkPregnancy } = require('./offspring');
+        const pregResult = checkPregnancy(player, pregNpcId, player.marry === pregNpcId, 'front');
+        if (pregResult) {
+            result = { success: true, message: `🤰 ${pregResult.motherEmoji} *${pregResult.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...` };
+        } else {
+            result = { success: false, message: '❌ بارداری ناموفق! ظرفیت پره یا مشکل دیگه.' };
+        }
+    } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
+    break;
+
+case 'birth': case 'givebirth':
+    try {
+        const { checkBirths } = require('./offspring');
+        const births = checkBirths(player);
+        if (births.length > 0) {
+            let msg = '👶 *تولد!*\n\n';
+            for (let child of births) {
+                msg += `${child.emoji} *${child.name}* (${child.className}) به دنیا اومد!\n`;
+            }
+            result = { success: true, message: msg };
+        } else {
+            result = { success: false, message: '❌ هیچ بارداری آماده زایمان نیست!' };
+        }
+    } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
+    break;
+
 // ============ امپراطوری ============
 case 'empirelevel': case 'setempire':
     try {
@@ -287,73 +344,73 @@ case 'wonder': case 'addwonder':
         } else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
     } catch (e) { result = { success: false, message: '❌ سیستم امپراطوری در دسترس نیست!' }; }
     break;
+                    // ============ مردم ============
+        case 'population': case 'pop':
+            try {
+                const popAmt = parseInt(args[0]) || 100;
+                if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
+                for (let type in player.people.population) {
+                    player.people.population[type].count += Math.floor(popAmt / 7);
+                }
+                result = { success: true, message: `✅ +${popAmt} نفر به جمعیت اضافه شد!` };
+            } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
+            break;
 
-// ============ مردم ============
-case 'population': case 'pop':
-    try {
-        const popAmt = parseInt(args[0]) || 100;
-        if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
-        for (let type in player.people.population) {
-            player.people.population[type].count += Math.floor(popAmt / 7);
-        }
-        result = { success: true, message: `✅ +${popAmt} نفر به جمعیت اضافه شد!` };
-    } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
-    break;
+        case 'food': case 'addfood':
+            try {
+                const foodAmt = parseInt(args[0]) || 500;
+                if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
+                player.people.storage.food += foodAmt;
+                result = { success: true, message: `✅ +${foodAmt} 🍞 غذا اضافه شد!` };
+            } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
+            break;
 
-case 'food': case 'addfood':
-    try {
-        const foodAmt = parseInt(args[0]) || 500;
-        if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
-        player.people.storage.food += foodAmt;
-        result = { success: true, message: `✅ +${foodAmt} 🍞 غذا اضافه شد!` };
-    } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
-    break;
+        case 'water': case 'addwater':
+            try {
+                const waterAmt = parseInt(args[0]) || 200;
+                if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
+                player.people.storage.water += waterAmt;
+                result = { success: true, message: `✅ +${waterAmt} 💧 آب اضافه شد!` };
+            } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
+            break;
 
-case 'water': case 'addwater':
-    try {
-        const waterAmt = parseInt(args[0]) || 200;
-        if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
-        player.people.storage.water += waterAmt;
-        result = { success: true, message: `✅ +${waterAmt} 💧 آب اضافه شد!` };
-    } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
-    break;
+        case 'building': case 'addbuilding':
+            try {
+                const buildingKey = args[0];
+                if (!buildingKey) { result = { success: false, message: '❌ ساختمان: hospital, school, square, fountain, bath, theater, court, temple, granary, barracks' }; break; }
+                if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
+                if (!player.people.buildings) player.people.buildings = [];
+                const { buildings } = require('./people');
+                if (!buildings[buildingKey]) { result = { success: false, message: '❌ ساختمان نامعتبر!' }; break; }
+                if (!player.people.buildings.includes(buildingKey)) {
+                    player.people.buildings.push(buildingKey);
+                    result = { success: true, message: `✅ ${buildings[buildingKey].emoji} ${buildings[buildingKey].name} ساخته شد!` };
+                } else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
+            } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
+            break;
 
-case 'building': case 'addbuilding':
-    try {
-        const buildingKey = args[0];
-        if (!buildingKey) { result = { success: false, message: '❌ ساختمان: hospital, school, square, fountain, bath, theater, court, temple, granary, barracks' }; break; }
-        if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
-        if (!player.people.buildings) player.people.buildings = [];
-        const { buildings } = require('./people');
-        if (!buildings[buildingKey]) { result = { success: false, message: '❌ ساختمان نامعتبر!' }; break; }
-        if (!player.people.buildings.includes(buildingKey)) {
-            player.people.buildings.push(buildingKey);
-            result = { success: true, message: `✅ ${buildings[buildingKey].emoji} ${buildings[buildingKey].name} ساخته شد!` };
-        } else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
-    } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
-    break;
+        case 'stats': case 'setstats':
+            try {
+                const statVal = parseInt(args[0]) || 100;
+                if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
+                player.people.stats.happiness = statVal;
+                player.people.stats.hunger = statVal;
+                player.people.stats.safety = statVal;
+                player.people.stats.justice = statVal;
+                player.people.stats.faith = statVal;
+                result = { success: true, message: `✅ همه شاخص‌ها ${statVal}٪ شدن!` };
+            } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
+            break;
 
-case 'stats': case 'setstats':
-    try {
-        const statVal = parseInt(args[0]) || 100;
-        if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
-        player.people.stats.happiness = statVal;
-        player.people.stats.hunger = statVal;
-        player.people.stats.safety = statVal;
-        player.people.stats.justice = statVal;
-        player.people.stats.faith = statVal;
-        result = { success: true, message: `✅ همه شاخص‌ها ${statVal}٪ شدن!` };
-    } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
-    break;
+        // ============ بازار سیاه ============
+        case 'blackmarket': case 'bm':
+            try {
+                const { refreshBlackMarket, formatBlackMarket } = require('./blackMarket');
+                refreshBlackMarket(player);
+                result = { success: true, message: formatBlackMarket(player) };
+            } catch (e) { result = { success: false, message: '❌ بازار سیاه در دسترس نیست!' }; }
+            break;
 
-// ============ بازار سیاه ============
-case 'blackmarket': case 'bm':
-    try {
-        const { refreshBlackMarket, formatBlackMarket } = require('./blackMarket');
-        refreshBlackMarket(player);
-        result = { success: true, message: formatBlackMarket(player) };
-    } catch (e) { result = { success: false, message: '❌ بازار سیاه در دسترس نیست!' }; }
-    break;
         // ============ زندان ============
         case 'prison': case 'prisonall':
             if (!player.prison) player.prison = [];
@@ -448,7 +505,7 @@ case 'blackmarket': case 'bm':
             const giftAmt = parseInt(args[2]) || 1;
             const targetPlayer = allPlayers[targetId];
             if (!targetPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
-            const gMap = { 'طلا': 'gold', 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'حلقه': 'ring', 'اشک': 'tear', 'طلسم': 'spell', 'آواز': 'song', 'خون': 'blood', 'آرزو': 'wish', 'کلید': 'key', 'الماس': 'diamond', 'فنیشر': 'finisher' };
+            const gMap = { 'طلا': 'gold', 'چوب': 'wood', 'سنگ': 'stone', 'گوشت': 'meat', 'آب': 'water', 'پوست': 'skin', 'آهن': 'iron', 'حلقه': 'ring', 'اشک': 'tear', 'طلسم': 'spell', 'آواز': 'song', 'خون': 'blood', 'آرزو': 'wish', 'کلید': 'key', 'الماس': 'diamond', 'فنیشر': 'finisher', 'کاندوم': 'condom' };
             const engItem = gMap[giftItem] || giftItem;
             if (!validItems.includes(engItem)) { result = { success: false, message: '❌ آیتم نامعتبر!' }; break; }
             targetPlayer.inventory[engItem] = (targetPlayer.inventory[engItem] || 0) + giftAmt;
@@ -460,7 +517,7 @@ case 'blackmarket': case 'bm':
             const infoId = parseInt(args[0]) || player.chatId;
             const infoPlayer = allPlayers[infoId];
             if (!infoPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
-            result = { success: true, message: `👤 *${infoPlayer.name}*\n⭐ Lv.${infoPlayer.level}\n🏆 ${infoPlayer.score} امتیاز\n❤️ ${infoPlayer.hp}/${infoPlayer.maxHp}\n⚔️ ${infoPlayer.attack} 🛡️ ${infoPlayer.defense}\n👑 ${infoPlayer.inventory?.gold||0} طلا\n🏠 خونه: ${infoPlayer.house?.length||0}\n💍 همسر: ${infoPlayer.marry||'نداره'}\n🔒 زندان: ${infoPlayer.prison?.length||0}` };
+            result = { success: true, message: `👤 *${infoPlayer.name}*\n⭐ Lv.${infoPlayer.level}\n🏆 ${infoPlayer.score} امتیاز\n📅 روز ${infoPlayer.gameDay||1}/۷\n❤️ ${infoPlayer.hp}/${infoPlayer.maxHp}\n⚔️ ${infoPlayer.attack} 🛡️ ${infoPlayer.defense}\n👑 ${infoPlayer.inventory?.gold||0} طلا\n🎈 کاندوم: ${infoPlayer.inventory?.condom||0}\n🏠 خونه: ${infoPlayer.house?.length||0}\n💍 همسر: ${infoPlayer.marry||'نداره'}\n🔒 زندان: ${infoPlayer.prison?.length||0}` };
             break;
 
         case 'users': case 'count': case 'کاربران':
@@ -472,7 +529,7 @@ case 'blackmarket': case 'bm':
         case 'top': case 'top10': case 'برترین‌ها':
             const sorted = Object.entries(allPlayers).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)).slice(0, 10);
             let msg = '🏆 *۱۰ کاربر برتر:*\n\n';
-            sorted.forEach((p, i) => { msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز\n`; });
+            sorted.forEach((p, i) => { msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز | 📅 روز ${p[1].gameDay||1}\n`; });
             result = { success: true, message: msg };
             break;
 
@@ -482,7 +539,8 @@ case 'blackmarket': case 'bm':
             if (!ruPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
             ruPlayer.level = 1; ruPlayer.xp = 0; ruPlayer.hp = 100; ruPlayer.maxHp = 100;
             ruPlayer.attack = 5; ruPlayer.defense = 2; ruPlayer.score = 0; ruPlayer.energy = 0;
-            ruPlayer.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 };
+            ruPlayer.gameDay = 1;
+            ruPlayer.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0, condom: 0 };
             ruPlayer.equipment = { weapon: null, armor: null, house: null };
             ruPlayer.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
             ruPlayer.prison = []; ruPlayer.prisonRelations = {}; ruPlayer.seduced = {};
@@ -516,7 +574,8 @@ case 'blackmarket': case 'bm':
         case 'reset': case 'ریست': case 'ریست کن':
             player.level = 1; player.xp = 0; player.hp = 100; player.maxHp = 100;
             player.attack = 5; player.defense = 2; player.score = 0; player.energy = 0;
-            player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0 };
+            player.gameDay = 1;
+            player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0, condom: 0 };
             player.equipment = { weapon: null, armor: null, house: null };
             player.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
             player.prison = []; player.prisonRelations = {}; player.seduced = {};
@@ -528,11 +587,13 @@ case 'blackmarket': case 'bm':
         case 'help': case 'کمک':
             result = { success: true, message: `👑 *دستورات ادمین کامل*\n\n` +
                 `📊 *منابع:* gold, xp, score, heal, item, attack, defense, level, energy\n` +
+                `📅 *روز:* day [۱-۷], nextday, resetday\n` +
+                `🎈 *کاندوم:* condom [تعداد]\n` +
                 `🔓 *باز کردن:* unlock, max, god\n\n` +
                 `🐾 *حیوانات:* pet [نوع], removepet [id], petfood\n` +
                 `📦 *صندوقچه:* box [نوع] [تعداد], openbox [نوع], boxes\n` +
                 `📋 *ماموریت:* quest, completequest\n\n` +
-                `👶 *فرزندان:* child [کلاس] [جنسیت] [legendary], heir [id], killchild [id], tournament\n` +
+                `👶 *فرزندان:* child [کلاس] [جنسیت] [legendary], heir [id], killchild [id], tournament, pregnant, birth\n` +
                 `🏛️ *امپراطوری:* empirelevel [۱-۶], dynasty [اسم], income, wonder [اسم]\n\n` +
                 `👥 *مردم:* population [تعداد], food [مقدار], water [مقدار], building [اسم], stats [۰-۱۰۰]\n` +
                 `🕶️ *بازار سیاه:* blackmarket\n\n` +
