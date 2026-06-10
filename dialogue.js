@@ -1,6 +1,6 @@
 const config = require('./config');
 
-// ============ دیالوگ‌های مدرن، وحشی و سکسی - ۷ روزه ============
+// ============ دیالوگ‌های مدرن، وحشی و سکسی - با مقاومت تا روز ۳ ============
 const dialogues = {
     witch: {
         day1: [
@@ -105,8 +105,7 @@ const dialogues = {
             { text: "🧚 شوهرم... برات یه سورپرایز دارم! حدس بزن چی پوشیدم... هیچی! ✨", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 بگو", action: "kiss" }] },
             { text: "🧚 امروز توی باغ گلهای جادویی کاشتم... می‌دونی چیکار می‌کنن؟ آدمو بی‌اختیار سکسی می‌کنن 🌸", options: [{ text: "🌿 بو کنم", action: "ally" }, { text: "💋 چه جالب", action: "kiss" }] }
         ]
-    }
-};
+    },
     angel: {
         day1: [
             { text: "👼 نگران نباش مسافر... کمکت می‌کنم... ولی اگه دستت رو بذاری روی بالام می‌سوزی 😇", options: [{ text: "❤️ شفا", action: "heal" }, { text: "💋 ممنون", action: "seduce" }] },
@@ -140,7 +139,8 @@ const dialogues = {
             { text: "👼 شوهرم... برات دعا کردم امروز... دعا کردم امشب بیای پیشم 🙏", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 بیا بغلم", action: "kiss" }] },
             { text: "👼 خدا رو شکر که تو رو دارم... و کیرت رو 💕", options: [{ text: "💋 شکر", action: "kiss" }, { text: "🤝 همیشه", action: "ally" }] }
         ]
-    },
+    }
+};
     knight: {
         day1: [
             { text: "⚔️ ای غریبه! شمشیرت رو بکش! یا اون یکی شمشیرت رو 😏", options: [{ text: "⚔️ می‌جنگم", action: "fight" }, { text: "🤝 دوست", action: "ally" }, { text: "🏃 فرار", action: "flee" }] },
@@ -215,7 +215,7 @@ const dialogues = {
         ],
         day2: [
             { text: "👰 تو هم مثل بقیه‌ای؟ می‌خوای منو بکنی و بری؟", options: [{ text: "🤝 نه", action: "ally" }, { text: "💋 می‌مونم", action: "seduce" }] },
-            { text: "👰 چرا اینقدر بهم توجه می‌کنی؟ مگه کیرت woobly شده؟", options: [{ text: "💋 لیاقت داری", action: "kiss" }, { text: "🤝 داری", action: "ally" }] }
+            { text: "👰 چرا اینقدر بهم توجه می‌کنی؟ مگه کیرت گم شده؟", options: [{ text: "💋 لیاقت داری", action: "kiss" }, { text: "🤝 داری", action: "ally" }] }
         ],
         day3: [
             { text: "👰 دیشب خواب دیدم با یه غریبه ازدواج کردم... بعدش سکس وحشی... شاید تو بودی 🫣", options: [{ text: "💋 من بودم", action: "kiss" }, { text: "💍 ازدواج", action: "propose" }] },
@@ -241,8 +241,7 @@ const dialogues = {
             { text: "👰 شوهرم... امروز سالگرد آشناییمونه... بیا جشن بگیریم 💍", options: [{ text: "💍 مبارکه", action: "gift" }, { text: "🔥 جشن", action: "seduce" }] },
             { text: "👰 برات یه لباس جدید دوختم... ولی زیرش هیچی نیست 👗", options: [{ text: "👗 بپوش", action: "ally" }, { text: "🔥 نشون بده", action: "seduce" }] }
         ]
-    }
-};
+    },
     mermaid: {
         day1: [
             { text: "🧜‍♀️ سلام مسافر... آواز منو شنیدی؟ یا فقط سینه‌هام رو دیدی؟ 😏", options: [{ text: "🎵 گوش کن", action: "listen" }, { text: "💋 هردو", action: "seduce" }, { text: "🏃 برو", action: "flee" }] },
@@ -276,7 +275,8 @@ const dialogues = {
             { text: "🧜‍♀️ شوهرم... برات یه مروارید سیاه پیدا کردم... می‌دونی از کجا؟ 🦪", options: [{ text: "💎 کجا؟", action: "gift" }, { text: "💋 بگو", action: "kiss" }] },
             { text: "🧜‍♀️ دلم برای دریا تنگ شده... می‌خوام توی آب بکنیم 💙", options: [{ text: "🌊 بریم", action: "ally" }, { text: "💋 بیا", action: "kiss" }] }
         ]
-    },
+    }
+};
     skeleton: {
         day1: [
             { text: "💀 گوشت داری کثافت؟! گرسنمه! یا گوشت یا کیر رو می‌خورم", options: [{ text: "🍖 بده", action: "gift" }, { text: "🗡️ بجنگ", action: "fight" }, { text: "💋 عشق", action: "seduce" }] },
@@ -377,12 +377,11 @@ const dialogues = {
             { text: "👩‍🎤 شوهرم... برات یه آهنگ جدید نوشتم... آهنگ سکس 🎵", options: [{ text: "🎵 بخون", action: "listen" }, { text: "🔥 سکس", action: "seduce" }] },
             { text: "👩‍🎤 امشب کنسرت خصوصی داریم... فقط برای تو 🎤", options: [{ text: "🎤 بیا", action: "ally" }, { text: "💋 منتظرم", action: "kiss" }] }
         ]
-    }
-};
+    },
     genie: {
         day1: [
             { text: "🧝‍♀️ آزادم کردی! ۳ تا آرزو می‌تونی بکنی... اگه آرزوی سکس کنی ۴ تا میشه 😈", options: [{ text: "💎 ثروت", action: "wealth" }, { text: "⚔️ قدرت", action: "power" }, { text: "💋 عشق", action: "seduce" }] },
-            { text: "🧝‍♀️ من جن صحرام... هر آرزویی بکنی برآورده میشه... حتی آرزوی یه سکس سه‌نفره با دوتا جن", options: [{ text: "💋 عشق", action: "seduce" }, { text: "💰 پول", action: "wealth" }] }
+            { text: "🧝‍♀️ من جن صحرام... هر آرزویی بکنی برآورده میشه... حتی سکس با دوتا جن", options: [{ text: "💋 عشق", action: "seduce" }, { text: "💰 پول", action: "wealth" }] }
         ],
         day2: [
             { text: "🧝‍♀️ آرزوی دومت چیه؟ اگه بازم سکس بگی نمی‌گم نه", options: [{ text: "⚔️ قدرت", action: "power" }, { text: "💋 سکس", action: "seduce" }] },
@@ -428,7 +427,7 @@ const dialogues = {
         ],
         day4: [
             { text: "🧙‍♀️ طلسم عشق جواب داد... الان دیوونه‌تم... یا شایدم دیوونه کیرت 🫣", options: [{ text: "💋 دیوونه شو", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] },
-            { text: "🧙‍♀️ استادم اگه بفهمه عاشق شدم... چی میشه؟ می‌ندازتم بیرون؟", options: [{ text: "🤝 نمی‌فهمه", action: "ally" }, { text: "💋 مهم نیست", action: "kiss" }] }
+            { text: "🧙‍♀️ استادم اگه بفهمه عاشق شدم... می‌ندازتم بیرون؟", options: [{ text: "🤝 نمی‌فهمه", action: "ally" }, { text: "💋 مهم نیست", action: "kiss" }] }
         ],
         day5: [
             { text: "🧙‍♀️ دیگه شاگرد نیستم... کون تو هستم 💋", options: [{ text: "💋 کون من", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] },
@@ -459,7 +458,6 @@ const houseDialogues = {
     'orgy': ["🔥 امروز چه شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم راه برم...", "🔥 فوق‌العاده بود... بازم می‌خوام..."]
 };
 
-// ============ marryDialogues ============
 const marryDialogues = {
     'propose_accept': "💍 آره! هزار بار آره! مال تو شدم!",
     'propose_reject': "💍 نه... هنوز آماده نیستم... شاید بعداً",
@@ -467,7 +465,10 @@ const marryDialogues = {
     'divorce_text': "💔 تموم شد... رفتیم..."
 };
 
-// ============ npcConfig ============
+const prisonDialogues = {
+    witch: { wild: ["🧙‍♀️: گمشو بیرون کصکش!"], untrusted: ["🧙‍♀️: بازم اومدی؟!"], familiar: ["🧙‍♀️: دستت رو بده..."], intimate: ["🧙‍♀️: بیا نزدیک‌تر..."], tamed: ["🧙‍♀️: مال تو شدم... 💋"] }
+};
+
 const npcConfig = {
     witch: { image: 'witch', emoji: '🧙‍♀️', startPoints: 15 },
     vampire: { image: null, emoji: '🧛‍♀️', startPoints: 15 },
@@ -485,22 +486,7 @@ const npcConfig = {
     ghost_sexy: { image: 'ghost_sexy', emoji: '👻', startPoints: 25 },
     wizard: { image: 'wizard', emoji: '🧙‍♂️', startPoints: 15 },
     jester: { image: 'jester', emoji: '🎭', startPoints: 30 },
-    prince: { image: 'prince', emoji: '🤴', startPoints: 15 },
-    sage: { image: 'sage', emoji: '🧙', startPoints: 40 },
-    farmer: { image: 'farmer', emoji: '🧑‍🌾', startPoints: 35 },
-    blacksmith: { image: 'blacksmith', emoji: '⚒️', startPoints: 30 },
-    merchant: { image: 'merchant', emoji: '🧑‍🌾', startPoints: 35 }
-};
-
-// ============ prisonDialogues (مدرن) ============
-const prisonDialogues = {
-    witch: {
-        wild: ["🧙‍♀️: گمشو بیرون کصکش!", "🧙‍♀️: نزدیک شی طلسمت می‌کنم!"],
-        untrusted: ["🧙‍♀️: بازم اومدی؟!", "🧙‍♀️: دیشب معجون مرگ درست کردم..."],
-        familiar: ["🧙‍♀️: دستت رو بده...", "🧙‍♀️: شاید آزادت نکنم..."],
-        intimate: ["🧙‍♀️: بیا نزدیک‌تر...", "🧙‍♀️: دستام میلرزه..."],
-        tamed: ["🧙‍♀️: تو منو رام کردی... 💋", "🧙‍♀️: مال تو شدم... 💋"]
-    }
+    prince: { image: 'prince', emoji: '🤴', startPoints: 15 }
 };
 
 // ============ توابع ============
@@ -529,8 +515,7 @@ function getHaremDialogue(npcId) {
 
 function getPrisonDialogue(npcId, relationLevel) {
     if (!npcId) return { text: "🤐 ...", level: "untrusted" };
-    const npcDialogues = prisonDialogues[npcId];
-    if (!npcDialogues) return { text: "🤐 حرفی برای گفتن نداره...", level: relationLevel || "untrusted" };
+    const npcDialogues = prisonDialogues[npcId] || prisonDialogues.witch;
     const level = relationLevel || "untrusted";
     const levelDialogues = npcDialogues[level] || npcDialogues.untrusted || ["🤐 ..."];
     const text = levelDialogues[Math.floor(Math.random() * levelDialogues.length)];
@@ -562,7 +547,7 @@ function handleAction(player, npcId, action) {
     let result = { message: '', battleStart: false };
     switch (action) {
         case 'fight': result.battleStart = true; result.message = `⚔️ ${npc.emoji} برای نبرد آماده میشه!`; break;
-        case 'seduce': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 15); player.xp = (player.xp || 0) + 15; if (!player.seduced) player.seduced = {}; player.seduced[npcId] = (player.seduced[npcId] || 0) + 1; result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +۱۵ | ✨ +۱۵`; break;
+        case 'seduce': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 15); player.xp = (player.xp || 0) + 15; result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +۱۵ | ✨ +۱۵`; break;
         case 'flee': result.message = `🏃 فرار کردی...`; break;
         case 'heal': player.hp = player.maxHp || 100; result.message = `❤️ ${npc.emoji} شفات داد!`; break;
         case 'gift': player.inventory.gold = (player.inventory.gold || 0) + 20; result.message = `🎁 ${npc.emoji} ۲۰👑 داد!`; break;
