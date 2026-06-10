@@ -91,8 +91,7 @@ const dialogues = {
             { text: "🧚 باشه قبول... عاشق شدم... 💋😜", options: [{ text: "💋 منم عاشقتم", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
             { text: "🧚 هر آرزویی بکنی برآورده میشه... 🫣🔥", options: [{ text: "🔥 آرزوی عشق", action: "seduce" }, { text: "💰 آرزوی ثروت", action: "wealth" }] }
         ]
-    }
-};
+    },
     angel: {
         day1: [
             { text: "👼 نگران نباش مسافر... کمکت می‌کنم...", options: [{ text: "❤️ شفا", action: "heal" }, { text: "💋 ممنون", action: "seduce" }] },
@@ -182,8 +181,8 @@ const dialogues = {
             { text: "🧛‍♀️ اگه بمیری... خودم زنده‌ات می‌کنم... 💀💋", options: [{ text: "💋 نمی‌میرم", action: "kiss" }, { text: "👰 ازدواج خون‌آشامی", action: "propose" }] },
             { text: "🧛‍♀️ تا ابد مال تو... 🧛‍♀️💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ]
-        
-    }    werewolf: {
+    },
+    werewolf: {
         day1: [
             { text: "🐺 غرررر! عقب برو کثافت! گازت می‌گیرم!", options: [{ text: "🗡️ حمله", action: "fight" }, { text: "💋 آروم باش", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] },
             { text: "🐺 ماه کامله... و من توی قفس...", options: [{ text: "🔓 آزادت کنم", action: "free" }, { text: "💋 می‌خوام کمکت کنم", action: "seduce" }] }
@@ -212,7 +211,8 @@ const dialogues = {
             { text: "🐺 فقط تو می‌تونی آرومم کنی... فقط تو... 🐺💋", options: [{ text: "💋 آروم باش", action: "kiss" }, { text: "👰 همدم همیشگی", action: "propose" }] },
             { text: "🐺 تا ابد گرگ تو می‌مونم... 🐺🔥", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ]
-    },
+    }
+};
     bride: {
         day1: [
             { text: "👰 من بدشانس‌ترین عروس دنیام... همه بهم خیانت کردن... 💔", options: [{ text: "🤝 کمک", action: "help" }, { text: "💋 من خیانت نمی‌کنم", action: "seduce" }] },
@@ -272,7 +272,8 @@ const dialogues = {
             { text: "🧜‍♀️ تا ابد مال تو... توی دریا یا خشکی... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👶 بچه پری", action: "seduce" }] },
             { text: "🧜‍♀️ هر شب برات آواز می‌خونم... 🎵💋", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 ببوس", action: "kiss" }] }
         ]
-            skeleton: {
+    },
+    skeleton: {
         day1: [
             { text: "💀 گوشت داری کثافت؟! گرسنمه!", options: [{ text: "🍖 بده", action: "gift" }, { text: "🗡️ بجنگ", action: "fight" }, { text: "💋 عشق", action: "seduce" }] },
             { text: "💀 من زنده نیستم... ولی تو رو می‌کشم که بشی مثل خودم!", options: [{ text: "🗡️ بجنگ", action: "fight" }, { text: "💋 نمی‌میرم", action: "seduce" }] }
@@ -361,7 +362,8 @@ const dialogues = {
             { text: "👩‍🎤 تا ابد برات می‌خونم... عشق من... 🎵💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
             { text: "👩‍🎤 آواز آخر... آواز عشق ابدی... 🎵💍", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 ببوس", action: "kiss" }] }
         ]
-            genie: {
+    },
+    genie: {
         day1: [
             { text: "🧝‍♀️ آزادم کردی! ۳ تا آرزو می‌تونی بکنی...", options: [{ text: "💎 ثروت", action: "wealth" }, { text: "⚔️ قدرت", action: "power" }, { text: "💋 عشق", action: "seduce" }] },
             { text: "🧝‍♀️ من جن صحرام... هر آرزویی بکنی برآورده میشه...", options: [{ text: "💋 عشق", action: "seduce" }, { text: "💰 پول", action: "wealth" }] }
@@ -425,12 +427,12 @@ const dialogues = {
 
 // ============ houseDialogues ============
 const houseDialogues = {
-    'invite_accept': ["🏠 با خوشحالی اومد خونه‌ات! منتظرته... 💋", "🏠 بالاخره یه جای امن...", "🏠 خونه‌ات قشنگه... می‌خوام اینجا بمونم..."],
+    'invite_accept': ["🏠 با خوشحالی اومد خونه‌ات!", "🏠 بالاخره یه جای امن...", "🏠 خونه‌ات قشنگه..."],
     'invite_reject': ["😒 نه... شاید بعداً...", "😒 هنوز مطمئن نیستم...", "😒 نه! نمیام خونه‌ت!"],
     'kick_angry': ["😡 منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 پشیمون میشی از این کارت...", "😤 باشه... ولی برمی‌گردم!"],
     'touch': ["🖐️ دستت گرمه... ادامه بده...", "🖐️ بیشتر لمس کن...", "🖐️ خوشم میاد..."],
     'kiss': ["💋 ммm... لبات...", "💋 دوباره ببوس...", "💋 معتاد بوسه‌ات شدم..."],
-    'orgy': ["🔥 امروز چه شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم راه برم...", "🔥 فوق‌العاده بود... بازم می‌خوام..."]
+    'orgy': ["🔥 شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم...", "🔥 فوق‌العاده بود..."]
 };
 
 // ============ marryDialogues ============
@@ -441,7 +443,7 @@ const marryDialogues = {
     'divorce_text': "💔 تموم شد... رفتیم..."
 };
 
-// ============ prisonDialogues (همون قبلیا) ============
+// ============ prisonDialogues ============
 const prisonDialogues = {
     witch: {
         wild: ["🧙‍♀️: گمشو بیرون جنده پست فطرت!", "🧙‍♀️: نزدیک شی عصام رو فرو می‌کنم توی حلقومت!"],
@@ -481,15 +483,15 @@ const npcConfig = {
 function getDialogue(npcId, encounterCount) {
     if (!npcId) return null;
     const npcDialogues = dialogues[npcId];
-    if (!npcDialogues || npcDialogues.length === 0) return null;
+    if (!npcDialogues) return null;
     
-    // گرفتن روز بر اساس تعداد برخورد (۱-۷)
     const day = Math.min(7, Math.max(1, (encounterCount || 0) + 1));
     const dayKey = 'day' + day;
     
     const dayDialogues = npcDialogues[dayKey] || npcDialogues.day1;
-    const index = (encounterCount || 0) % dayDialogues.length;
+    if (!dayDialogues || dayDialogues.length === 0) return null;
     
+    const index = (encounterCount || 0) % dayDialogues.length;
     return dayDialogues[index] || dayDialogues[0];
 }
 
@@ -499,6 +501,7 @@ function getPrisonDialogue(npcId, relationLevel) {
     if (!npcDialogues) return { text: "🤐 حرفی برای گفتن نداره...", level: relationLevel || "untrusted" };
     const level = relationLevel || "untrusted";
     const levelDialogues = npcDialogues[level] || npcDialogues.untrusted || ["🤐 ..."];
+    if (!levelDialogues || levelDialogues.length === 0) return { text: "🤐 ...", level: level };
     const text = levelDialogues[Math.floor(Math.random() * levelDialogues.length)];
     return { text: text || "🤐 ...", level: level };
 }
@@ -530,13 +533,7 @@ function handleAction(player, npcId, action) {
 
     switch (action) {
         case 'fight': result.battleStart = true; result.message = `⚔️ ${npc.emoji} برای نبرد آماده میشه!`; break;
-        case 'seduce':
-            player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 15);
-            player.xp = (player.xp || 0) + 15;
-            if (!player.seduced) player.seduced = {};
-            player.seduced[npcId] = (player.seduced[npcId] || 0) + 1;
-            result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +۱۵ | ✨ +۱۵`;
-            break;
+        case 'seduce': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 15); player.xp = (player.xp || 0) + 15; if (!player.seduced) player.seduced = {}; player.seduced[npcId] = (player.seduced[npcId] || 0) + 1; result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +۱۵ | ✨ +۱۵`; break;
         case 'flee': result.message = `🏃 فرار کردی...`; break;
         case 'heal': player.hp = player.maxHp || 100; result.message = `❤️ ${npc.emoji} شفات داد!`; break;
         case 'gift': player.inventory.gold = (player.inventory.gold || 0) + 20; result.message = `🎁 ${npc.emoji} ۲۰👑 داد!`; break;
@@ -562,9 +559,4 @@ function handleAction(player, npcId, action) {
 module.exports = { 
     dialogues, prisonDialogues, houseDialogues, marryDialogues, npcConfig, 
     getDialogue, getPrisonDialogue, getHouseDialogue, getMarryDialogue, getNpcConfig, handleAction 
-};
-    }
-};
-    }
-};
 };
