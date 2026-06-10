@@ -20,7 +20,7 @@ function adminCommand(player, command, args) {
         case 'gold': case 'g':
             const g = parseInt(args[0]) || 100;
             player.inventory.gold = (player.inventory.gold || 0) + g;
-            result = { success: true, message: `✅ ${g}👑 طلا اضافه شد! موجودی: ${player.inventory.gold}` };
+            result = { success: true, message: `✅ ${g}👑 طلا اضافه شد!` };
             break;
 
         case 'xp': case 'exp':
@@ -33,8 +33,7 @@ function adminCommand(player, command, args) {
         case 'score': case 'sc':
             const s = parseInt(args[0]) || 100;
             require('./player').addScore(player, s);
-            require('./player').checkUnlocks(player);
-            result = { success: true, message: `✅ ${s}🏆 امتیاز اضافه شد! امتیاز: ${player.score}` };
+            result = { success: true, message: `✅ ${s}🏆 امتیاز اضافه شد!` };
             break;
 
         case 'heal': case 'hp':
@@ -45,7 +44,7 @@ function adminCommand(player, command, args) {
         case 'energy': case 'en':
             const en = parseInt(args[0]) || 50;
             player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + en);
-            result = { success: true, message: `✅ ${en}⚡ انرژی اضافه شد! انرژی: ${player.energy}/${player.maxEnergy}` };
+            result = { success: true, message: `✅ ${en}⚡ انرژی اضافه شد!` };
             break;
 
         case 'item': case 'give':
@@ -56,20 +55,20 @@ function adminCommand(player, command, args) {
                 player.inventory[item] = (player.inventory[item] || 0) + amt;
                 result = { success: true, message: `✅ ${amt} ${item} اضافه شد!` };
             } else {
-                result = { success: false, message: `❌ آیتم نامعتبر! موارد: ${validItems.join(', ')}` };
+                result = { success: false, message: `❌ آیتم نامعتبر!` };
             }
             break;
 
         case 'attack': case 'atk':
             const a = parseInt(args[0]) || 10;
             player.attack = (player.attack || 5) + a;
-            result = { success: true, message: `✅ ${a}⚔️ حمله اضافه شد! حمله: ${player.attack}` };
+            result = { success: true, message: `✅ ${a}⚔️ حمله اضافه شد!` };
             break;
 
         case 'defense': case 'def':
             const d = parseInt(args[0]) || 10;
             player.defense = (player.defense || 2) + d;
-            result = { success: true, message: `✅ ${d}🛡️ دفاع اضافه شد! دفاع: ${player.defense}` };
+            result = { success: true, message: `✅ ${d}🛡️ دفاع اضافه شد!` };
             break;
 
         case 'level': case 'lvl':
@@ -94,7 +93,7 @@ function adminCommand(player, command, args) {
         case 'nextday': case 'nd':
             if (!player.gameDay) player.gameDay = 1;
             player.gameDay = player.gameDay >= 7 ? 1 : player.gameDay + 1;
-            result = { success: true, message: `📅 روز جدید: ${player.gameDay}/۷\n🔄 دیالوگ‌ها ریست شدن!` };
+            result = { success: true, message: `📅 روز جدید: ${player.gameDay}/۷` };
             break;
 
         case 'resetday': case 'rd':
@@ -135,7 +134,7 @@ function adminCommand(player, command, args) {
             if (!player.prison) player.prison = [];
             if (!player.prisonRelations) player.prisonRelations = {};
             if (!player.gameDay) player.gameDay = 1;
-            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐۱۰۰\n❤️۹۹۹۹\n⚔️۹۹۹\n🛡️۹۹۹\n👑۹۹۹۹۹\n⚡۹۹۹\n🎈۵۰ کاندوم\n📦۴۰ صندوقچه` };
+            result = { success: true, message: `👑 *همه چیز مکس شد!*\n⭐۱۰۰ | ❤️۹۹۹۹ | ⚔️۹۹۹ | 🛡️۹۹۹\n👑۹۹۹۹۹ | ⚡۹۹۹ | 🎈۵۰ | 📦۴۰` };
             break;
 
         case 'god': case 'godmode':
@@ -149,41 +148,30 @@ function adminCommand(player, command, args) {
         case 'pet': case 'addpet':
             try {
                 const petType = args[0];
-                if (!petType) { result = { success: false, message: '❌ نوع حیوون:\nwolf_cub, wolf_alpha, wolf_spirit\ndragon_egg, dragon_fire, dragon_ancient' }; break; }
+                if (!petType) { result = { success: false, message: '❌ نوع: wolf_cub, wolf_spirit, dragon_egg, dragon_ancient' }; break; }
                 const { petTypes, addPet } = require('./pet');
                 const petData = petTypes[petType];
-                if (!petData) { result = { success: false, message: '❌ نوع حیوون نامعتبر!' }; break; }
-                const newPet = {
-                    id: 'admin_' + Date.now(),
-                    type: petType, name: petData.name, emoji: petData.emoji,
-                    level: 1, xp: 0, xpNeeded: 20,
-                    attackBonus: petData.attackBonus, defenseBonus: petData.defenseBonus, hpBonus: petData.hpBonus,
-                    rarity: petData.rarity, foodCost: petData.foodCost || 3,
-                    foundAt: Date.now()
-                };
+                if (!petData) { result = { success: false, message: '❌ نوع نامعتبر!' }; break; }
+                const newPet = { id: 'admin_' + Date.now(), type: petType, name: petData.name, emoji: petData.emoji, level: 1, xp: 0, xpNeeded: 20, attackBonus: petData.attackBonus, defenseBonus: petData.defenseBonus, hpBonus: petData.hpBonus, rarity: petData.rarity, foodCost: petData.foodCost || 3, foundAt: Date.now() };
                 result = addPet(player, newPet);
             } catch (e) { result = { success: false, message: '❌ سیستم حیوانات در دسترس نیست!' }; }
             break;
 
         case 'removepet': case 'delpet':
-            try {
-                const petId = args[0];
-                if (!petId) { result = { success: false, message: '❌ آیدی حیوون رو بگو!' }; break; }
-                const { releasePet } = require('./pet');
-                result = releasePet(player, petId);
-            } catch (e) { result = { success: false, message: '❌ سیستم حیوانات در دسترس نیست!' }; }
+            try { const { releasePet } = require('./pet'); result = releasePet(player, args[0]); } 
+            catch (e) { result = { success: false, message: '❌ سیستم حیوانات در دسترس نیست!' }; }
             break;
 
         case 'petfood': case 'feedpet':
             try { const { feedAllPets } = require('./pet'); result = feedAllPets(player); } 
             catch (e) { result = { success: false, message: '❌ سیستم حیوانات در دسترس نیست!' }; }
             break;
-            // ============ صندوقچه ============
+// ============ صندوقچه ============
 case 'box': case 'addbox':
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
     const boxType = args[0] || 'wooden';
     const validBoxes = ['wooden', 'silver', 'golden', 'legendary'];
-    if (!validBoxes.includes(boxType)) { result = { success: false, message: `❌ نوع نامعتبر!\n📋 ${validBoxes.join(', ')}` }; break; }
+    if (!validBoxes.includes(boxType)) { result = { success: false, message: '❌ نوع: wooden, silver, golden, legendary' }; break; }
     const boxAmt = parseInt(args[1]) || 1;
     player.lootBoxes[boxType] += boxAmt;
     result = { success: true, message: `✅ ${boxAmt} صندوق ${boxType} اضافه شد!` };
@@ -191,16 +179,15 @@ case 'box': case 'addbox':
 
 case 'openbox': case 'unbox':
     try {
-        const obType = args[0] || 'wooden';
         if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
         const { openLootBox } = require('./lootbox');
-        result = openLootBox(player, obType);
+        result = openLootBox(player, args[0] || 'wooden');
     } catch (e) { result = { success: false, message: '❌ سیستم صندوقچه در دسترس نیست!' }; }
     break;
 
 case 'boxes': case 'myboxes':
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
-    result = { success: true, message: `📦 *صندوقچه‌ها:*\n📦 چوبی: ${player.lootBoxes.wooden||0}\n📦⚪ نقره‌ای: ${player.lootBoxes.silver||0}\n📦🟡 طلایی: ${player.lootBoxes.golden||0}\n📦🟣 افسانه‌ای: ${player.lootBoxes.legendary||0}` };
+    result = { success: true, message: `📦 چوبی: ${player.lootBoxes.wooden||0}\n📦⚪ نقره: ${player.lootBoxes.silver||0}\n📦🟡 طلا: ${player.lootBoxes.golden||0}\n📦🟣 افسانه: ${player.lootBoxes.legendary||0}` };
     break;
 
 // ============ ماموریت ============
@@ -229,21 +216,17 @@ case 'child': case 'addchild':
         const cls = childClasses[childClass];
         if (!cls) { result = { success: false, message: '❌ کلاس: warrior, mage, guardian, hunter, sage, prince' }; break; }
         const newChild = {
-            id: 'admin_child_' + Date.now(),
-            name: getRandomName(childGender),
-            gender: childGender,
+            id: 'admin_child_' + Date.now(), name: getRandomName(childGender), gender: childGender,
             emoji: childLegendary ? '🌟👦' : (childGender === 'male' ? '👦' : '👧'),
             class: childClass, classEmoji: cls.emoji, className: cls.name,
             motherId: 'admin', motherName: 'الهه', motherEmoji: '✨',
             isSpouse: false, bornAt: Date.now(), age: 10, ageStage: 'adult', stageEmoji: '👨',
             level: childLegendary ? 5 : 3, evolutionLevel: childLegendary ? 5 : 3,
-            evolutionName: childLegendary ? 'اسطوره' : 'قهرمان',
-            xp: 999, xpNeeded: 1000,
+            evolutionName: childLegendary ? 'اسطوره' : 'قهرمان', xp: 999, xpNeeded: 1000,
             attack: childLegendary ? 200 : 80, defense: childLegendary ? 150 : 60,
             hp: childLegendary ? 500 : 200, power: childLegendary ? 200 : 80,
             loyalty: 100, isLegendary: childLegendary, isHeir: false, isAlive: true,
-            missions: [], lastMission: 0, skills: [],
-            inventory: { food: 0, toys: 0, books: 0 }
+            missions: [], lastMission: 0, skills: [], inventory: { food: 0, toys: 0, books: 0 }
         };
         player.children.push(newChild);
         result = { success: true, message: `✅ ${newChild.emoji} *${newChild.name}* (${cls.name}) متولد شد!${childLegendary ? ' 🌟' : ''}` };
@@ -251,28 +234,18 @@ case 'child': case 'addchild':
     break;
 
 case 'heir': case 'setheir':
-    try {
-        const heirId = args[0];
-        if (!heirId) { result = { success: false, message: '❌ آیدی فرزند رو بگو!' }; break; }
-        const { assignHeir } = require('./offspring');
-        result = assignHeir(player, heirId);
-    } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
+    try { const { assignHeir } = require('./offspring'); result = assignHeir(player, args[0]); } 
+    catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
     break;
 
 case 'killchild': case 'deadchild':
-    try {
-        const deadId = args[0];
-        if (!deadId) { result = { success: false, message: '❌ آیدی فرزند رو بگو!' }; break; }
-        const { childDies } = require('./offspring');
-        result = childDies(player, deadId, 'فرمان ادمین');
-    } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
+    try { const { childDies } = require('./offspring'); result = childDies(player, args[0], 'فرمان ادمین'); } 
+    catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
     break;
 
 case 'tournament': case 'tour':
-    try {
-        const { holdTournament } = require('./offspring');
-        result = holdTournament(player);
-    } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
+    try { const { holdTournament } = require('./offspring'); result = holdTournament(player); } 
+    catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
     break;
 
 case 'pregnant': case 'makepregnant':
@@ -281,11 +254,8 @@ case 'pregnant': case 'makepregnant':
         if (!pregNpcId) { result = { success: false, message: '❌ کسی توی خونه نیست!' }; break; }
         const { checkPregnancy } = require('./offspring');
         const pregResult = checkPregnancy(player, pregNpcId, player.marry === pregNpcId, 'front');
-        if (pregResult) {
-            result = { success: true, message: `🤰 ${pregResult.motherEmoji} *${pregResult.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...` };
-        } else {
-            result = { success: false, message: '❌ بارداری ناموفق! ظرفیت پره یا مشکل دیگه.' };
-        }
+        if (pregResult) { result = { success: true, message: `🤰 ${pregResult.motherEmoji} *${pregResult.motherName}* باردار شد!\n⏰ ۳ روز تا تولد...` }; }
+        else { result = { success: false, message: '❌ بارداری ناموفق!' }; }
     } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
     break;
 
@@ -295,14 +265,53 @@ case 'birth': case 'givebirth':
         const births = checkBirths(player);
         if (births.length > 0) {
             let msg = '👶 *تولد!*\n\n';
-            for (let child of births) {
-                msg += `${child.emoji} *${child.name}* (${child.className}) به دنیا اومد!\n`;
-            }
+            for (let child of births) { msg += `${child.emoji} *${child.name}* (${child.className}) به دنیا اومد!\n`; }
             result = { success: true, message: msg };
-        } else {
-            result = { success: false, message: '❌ هیچ بارداری آماده زایمان نیست!' };
-        }
+        } else { result = { success: false, message: '❌ هیچ بارداری آماده زایمان نیست!' }; }
     } catch (e) { result = { success: false, message: '❌ سیستم فرزندان در دسترس نیست!' }; }
+    break;
+
+// ============ حرمسرا ============
+case 'addqueen': case 'aq':
+    try {
+        const queenNpcId = args[0];
+        if (!queenNpcId) { result = { success: false, message: '❌ اسم NPC رو بگو! مثال: addqueen vampire' }; break; }
+        const { addQueenToHarem } = require('./queenHarem');
+        result = addQueenToHarem(player, queenNpcId);
+    } catch (e) { result = { success: false, message: '❌ سیستم حرمسرا در دسترس نیست!' }; }
+    break;
+
+case 'removequeen': case 'rq':
+    try {
+        const queenId = args[0];
+        if (!queenId) { result = { success: false, message: '❌ آیدی ملکه رو بگو!' }; break; }
+        const { removeQueenFromHarem } = require('./queenHarem');
+        result = removeQueenFromHarem(player, queenId);
+    } catch (e) { result = { success: false, message: '❌ سیستم حرمسرا در دسترس نیست!' }; }
+    break;
+
+case 'queencare': case 'qc':
+    try {
+        const { careAllQueens } = require('./queenHarem');
+        result = careAllQueens(player);
+    } catch (e) { result = { success: false, message: '❌ سیستم حرمسرا در دسترس نیست!' }; }
+    break;
+
+case 'queensalary': case 'qs':
+    try {
+        const { paySalaries } = require('./queenHarem');
+        result = paySalaries(player);
+    } catch (e) { result = { success: false, message: '❌ سیستم حرمسرا در دسترس نیست!' }; }
+    break;
+
+// ============ مخفی‌گاه ============
+case 'promotequeen': case 'pq':
+    try {
+        const girlId = args[0];
+        if (!girlId) { result = { success: false, message: '❌ آیدی دختر رو بگو! (village_girl, dancer, rich_widow, ...)' }; break; }
+        const { upgradeGirlToQueen } = require('./secretChamber');
+        result = upgradeGirlToQueen(player, girlId);
+    } catch (e) { result = { success: false, message: '❌ سیستم مخفی‌گاه در دسترس نیست!' }; }
     break;
 
 // ============ امپراطوری ============
@@ -325,10 +334,8 @@ case 'dynasty': case 'setdynasty':
     break;
 
 case 'income': case 'collectincome':
-    try {
-        const { collectEmpireIncome } = require('./empire');
-        result = collectEmpireIncome(player);
-    } catch (e) { result = { success: false, message: '❌ سیستم امپراطوری در دسترس نیست!' }; }
+    try { const { collectEmpireIncome } = require('./empire'); result = collectEmpireIncome(player); } 
+    catch (e) { result = { success: false, message: '❌ سیستم امپراطوری در دسترس نیست!' }; }
     break;
 
 case 'wonder': case 'addwonder':
@@ -338,20 +345,16 @@ case 'wonder': case 'addwonder':
         if (!player.empire) player.empire = { level: 5, wonders: [] };
         const { wonders } = require('./empire');
         if (!wonders[wonderKey]) { result = { success: false, message: '❌ عجایب نامعتبر!' }; break; }
-        if (!player.empire.wonders.includes(wonderKey)) {
-            player.empire.wonders.push(wonderKey);
-            result = { success: true, message: `✅ ${wonders[wonderKey].emoji} ${wonders[wonderKey].name} ساخته شد!` };
-        } else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
+        if (!player.empire.wonders.includes(wonderKey)) { player.empire.wonders.push(wonderKey); result = { success: true, message: `✅ ${wonders[wonderKey].emoji} ${wonders[wonderKey].name} ساخته شد!` }; }
+        else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
     } catch (e) { result = { success: false, message: '❌ سیستم امپراطوری در دسترس نیست!' }; }
     break;
-                    // ============ مردم ============
+        // ============ مردم ============
         case 'population': case 'pop':
             try {
                 const popAmt = parseInt(args[0]) || 100;
                 if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
-                for (let type in player.people.population) {
-                    player.people.population[type].count += Math.floor(popAmt / 7);
-                }
+                for (let type in player.people.population) { player.people.population[type].count += Math.floor(popAmt / 7); }
                 result = { success: true, message: `✅ +${popAmt} نفر به جمعیت اضافه شد!` };
             } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
             break;
@@ -377,15 +380,13 @@ case 'wonder': case 'addwonder':
         case 'building': case 'addbuilding':
             try {
                 const buildingKey = args[0];
-                if (!buildingKey) { result = { success: false, message: '❌ ساختمان: hospital, school, square, fountain, bath, theater, court, temple, granary, barracks' }; break; }
+                if (!buildingKey) { result = { success: false, message: '❌ hospital, school, square, fountain, bath, theater, court, temple, granary, barracks' }; break; }
                 if (!player.people) { const { initPeople } = require('./people'); initPeople(player); }
                 if (!player.people.buildings) player.people.buildings = [];
                 const { buildings } = require('./people');
                 if (!buildings[buildingKey]) { result = { success: false, message: '❌ ساختمان نامعتبر!' }; break; }
-                if (!player.people.buildings.includes(buildingKey)) {
-                    player.people.buildings.push(buildingKey);
-                    result = { success: true, message: `✅ ${buildings[buildingKey].emoji} ${buildings[buildingKey].name} ساخته شد!` };
-                } else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
+                if (!player.people.buildings.includes(buildingKey)) { player.people.buildings.push(buildingKey); result = { success: true, message: `✅ ${buildings[buildingKey].emoji} ${buildings[buildingKey].name} ساخته شد!` }; }
+                else { result = { success: false, message: '❌ قبلاً ساخته شده!' }; }
             } catch (e) { result = { success: false, message: '❌ سیستم مردم در دسترس نیست!' }; }
             break;
 
@@ -517,19 +518,19 @@ case 'wonder': case 'addwonder':
             const infoId = parseInt(args[0]) || player.chatId;
             const infoPlayer = allPlayers[infoId];
             if (!infoPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
-            result = { success: true, message: `👤 *${infoPlayer.name}*\n⭐ Lv.${infoPlayer.level}\n🏆 ${infoPlayer.score} امتیاز\n📅 روز ${infoPlayer.gameDay||1}/۷\n❤️ ${infoPlayer.hp}/${infoPlayer.maxHp}\n⚔️ ${infoPlayer.attack} 🛡️ ${infoPlayer.defense}\n👑 ${infoPlayer.inventory?.gold||0} طلا\n🎈 کاندوم: ${infoPlayer.inventory?.condom||0}\n🏠 خونه: ${infoPlayer.house?.length||0}\n💍 همسر: ${infoPlayer.marry||'نداره'}\n🔒 زندان: ${infoPlayer.prison?.length||0}` };
+            result = { success: true, message: `👤 *${infoPlayer.name}*\n⭐ Lv.${infoPlayer.level}\n🏆 ${infoPlayer.score} امتیاز\n📅 روز ${infoPlayer.gameDay||1}/۷\n❤️ ${infoPlayer.hp}/${infoPlayer.maxHp}\n⚔️ ${infoPlayer.attack} 🛡️ ${infoPlayer.defense}\n👑 ${infoPlayer.inventory?.gold||0} طلا\n🎈 کاندوم: ${infoPlayer.inventory?.condom||0}\n🏠 خونه: ${infoPlayer.house?.length||0}\n💍 همسر: ${infoPlayer.marry||'نداره'}\n🔒 زندان: ${infoPlayer.prison?.length||0}\n👸 حرمسرا: ${infoPlayer.harem?.queens?.length||0}\n👶 فرزندان: ${infoPlayer.children?.filter(c => c.isAlive).length||0}` };
             break;
 
         case 'users': case 'count': case 'کاربران':
             const count = Object.keys(allPlayers).length;
             const active = Object.values(allPlayers).filter(p => p.score > 0).length;
-            result = { success: true, message: `👥 *آمار:*\n📊 کل: ${count}\n🎮 فعال: ${active}` };
+            result = { success: true, message: `👥 کل: ${count}\n🎮 فعال: ${active}` };
             break;
 
         case 'top': case 'top10': case 'برترین‌ها':
             const sorted = Object.entries(allPlayers).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)).slice(0, 10);
             let msg = '🏆 *۱۰ کاربر برتر:*\n\n';
-            sorted.forEach((p, i) => { msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز | 📅 روز ${p[1].gameDay||1}\n`; });
+            sorted.forEach((p, i) => { msg += `${i+1}. ${p[1].name}: ${p[1].score} امتیاز\n`; });
             result = { success: true, message: msg };
             break;
 
@@ -538,8 +539,7 @@ case 'wonder': case 'addwonder':
             const ruPlayer = allPlayers[ruId];
             if (!ruPlayer) { result = { success: false, message: '❌ کاربر پیدا نشد!' }; break; }
             ruPlayer.level = 1; ruPlayer.xp = 0; ruPlayer.hp = 100; ruPlayer.maxHp = 100;
-            ruPlayer.attack = 5; ruPlayer.defense = 2; ruPlayer.score = 0; ruPlayer.energy = 0;
-            ruPlayer.gameDay = 1;
+            ruPlayer.attack = 5; ruPlayer.defense = 2; ruPlayer.score = 0; ruPlayer.energy = 0; ruPlayer.gameDay = 1;
             ruPlayer.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0, condom: 0 };
             ruPlayer.equipment = { weapon: null, armor: null, house: null };
             ruPlayer.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
@@ -549,17 +549,8 @@ case 'wonder': case 'addwonder':
             result = { success: true, message: `🔄 *${ruPlayer.name}* ریست شد!` };
             break;
 
-        case 'ban':
-            const banId = parseInt(args[0]);
-            bannedUsers[banId] = true;
-            result = { success: true, message: `🚫 کاربر ${banId} مسدود شد!` };
-            break;
-
-        case 'unban':
-            const unbanId = parseInt(args[0]);
-            delete bannedUsers[unbanId];
-            result = { success: true, message: `✅ کاربر ${unbanId} آزاد شد!` };
-            break;
+        case 'ban': const banId = parseInt(args[0]); bannedUsers[banId] = true; result = { success: true, message: `🚫 کاربر ${banId} مسدود شد!` }; break;
+        case 'unban': const unbanId = parseInt(args[0]); delete bannedUsers[unbanId]; result = { success: true, message: `✅ کاربر ${unbanId} آزاد شد!` }; break;
 
         case 'announce': case 'ann':
             const announceMsg = args.join(' ');
@@ -573,8 +564,7 @@ case 'wonder': case 'addwonder':
 
         case 'reset': case 'ریست': case 'ریست کن':
             player.level = 1; player.xp = 0; player.hp = 100; player.maxHp = 100;
-            player.attack = 5; player.defense = 2; player.score = 0; player.energy = 0;
-            player.gameDay = 1;
+            player.attack = 5; player.defense = 2; player.score = 0; player.energy = 0; player.gameDay = 1;
             player.inventory = { wood: 0, stone: 0, meat: 0, water: 0, skin: 0, iron: 0, gold: 10, ring: 0, tear: 0, spell: 0, song: 0, blood: 0, wish: 0, key: 0, diamond: 0, finisher: 0, condom: 0 };
             player.equipment = { weapon: null, armor: null, house: null };
             player.unlocked = { locations: ['village'], enemies: ['wolf', 'snake', 'bandit'], npcs: [], recipes: [] };
@@ -585,24 +575,25 @@ case 'wonder': case 'addwonder':
             break;
 
         case 'help': case 'کمک':
-            result = { success: true, message: `👑 *دستورات ادمین کامل*\n\n` +
+            result = { success: true, message: `👑 *دستورات ادمین*\n\n` +
                 `📊 *منابع:* gold, xp, score, heal, item, attack, defense, level, energy\n` +
-                `📅 *روز:* day [۱-۷], nextday, resetday\n` +
-                `🎈 *کاندوم:* condom [تعداد]\n` +
+                `📅 *روز:* day, nextday, resetday | 🎈 *کاندوم:* condom\n` +
                 `🔓 *باز کردن:* unlock, max, god\n\n` +
-                `🐾 *حیوانات:* pet [نوع], removepet [id], petfood\n` +
-                `📦 *صندوقچه:* box [نوع] [تعداد], openbox [نوع], boxes\n` +
+                `🐾 *حیوانات:* pet, removepet, petfood\n` +
+                `📦 *صندوقچه:* box, openbox, boxes\n` +
                 `📋 *ماموریت:* quest, completequest\n\n` +
-                `👶 *فرزندان:* child [کلاس] [جنسیت] [legendary], heir [id], killchild [id], tournament, pregnant, birth\n` +
-                `🏛️ *امپراطوری:* empirelevel [۱-۶], dynasty [اسم], income, wonder [اسم]\n\n` +
-                `👥 *مردم:* population [تعداد], food [مقدار], water [مقدار], building [اسم], stats [۰-۱۰۰]\n` +
+                `👶 *فرزندان:* child, heir, killchild, tournament, pregnant, birth\n` +
+                `👸 *حرمسرا:* addqueen, removequeen, queencare, queensalary\n` +
+                `🔞 *مخفی‌گاه:* promotequeen\n` +
+                `🏛️ *امپراطوری:* empirelevel, dynasty, income, wonder\n\n` +
+                `👥 *مردم:* population, food, water, building, stats\n` +
                 `🕶️ *بازار سیاه:* blackmarket\n\n` +
-                `🔒 *زندان:* prison, addnpc [اسم], removenpc [اسم]\n` +
-                `🏠 *خونه:* addhouse [اسم], removehouse [اسم], setrelation [اسم] [عدد], marrynow [اسم]\n\n` +
-                `🎁 *هدیه:* gift [id] [آیتم] [مقدار], اهدای\n` +
+                `🔒 *زندان:* prison, addnpc, removenpc\n` +
+                `🏠 *خونه:* addhouse, removehouse, setrelation, marrynow\n\n` +
+                `🎁 *هدیه:* gift, اهدای\n` +
                 `📊 *اطلاعات:* info, users, top\n` +
                 `🔄 *مدیریت:* resetuser, ban, unban, reset\n` +
-                `📢 *اعلان:* announce\n💾 *ذخیره:* save` };
+                `📢 *اعلان:* announce | 💾 *ذخیره:* save` };
             break;
     }
 
