@@ -1,6 +1,5 @@
 const config = require('./config');
 
-// ============ دیالوگ‌های ۷ روزه وحشی و سکسی ============
 const dialogues = {
     witch: {
         day1: [
@@ -211,28 +210,27 @@ const dialogues = {
             { text: "🐺 فقط تو می‌تونی آرومم کنی... فقط تو... 🐺💋", options: [{ text: "💋 آروم باش", action: "kiss" }, { text: "👰 همدم همیشگی", action: "propose" }] },
             { text: "🐺 تا ابد گرگ تو می‌مونم... 🐺🔥", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ]
-    }
-};
+    },
     bride: {
         day1: [
-            { text: "👰 من بدشانس‌ترین عروس دنیام... همه بهم خیانت کردن... 💔", options: [{ text: "🤝 کمک", action: "help" }, { text: "💋 من خیانت نمی‌کنم", action: "seduce" }] },
-            { text: "👰 از عروسی فرار کردم... نمی‌خوام با اون ازدواج کنم...", options: [{ text: "💍 با من ازدواج کن", action: "propose" }, { text: "🤝 کمک", action: "help" }] }
+            { text: "👰 من بدشانس‌ترین عروس دنیام...", options: [{ text: "🤝 کمک", action: "help" }, { text: "💋 من خیانت نمی‌کنم", action: "seduce" }] },
+            { text: "👰 از عروسی فرار کردم...", options: [{ text: "💍 با من ازدواج کن", action: "propose" }, { text: "🤝 کمک", action: "help" }] }
         ],
         day2: [
-            { text: "👰 تو هم مثل بقیه‌ای؟... می‌خوای منو برگردونی؟", options: [{ text: "🤝 نه", action: "ally" }, { text: "💋 می‌خوام پیشم بمونی", action: "seduce" }] },
-            { text: "👰 چرا اینقدر بهم توجه می‌کنی؟... من لیاقت ندارم...", options: [{ text: "💋 لیاقت داری", action: "kiss" }, { text: "🤝 داری", action: "ally" }] }
+            { text: "👰 تو هم مثل بقیه‌ای؟", options: [{ text: "🤝 نه", action: "ally" }, { text: "💋 پیشم بمون", action: "seduce" }] },
+            { text: "👰 چرا اینقدر بهم توجه می‌کنی؟", options: [{ text: "💋 لیاقت داری", action: "kiss" }, { text: "🤝 داری", action: "ally" }] }
         ],
         day3: [
-            { text: "👰 دیشب خواب دیدم... با یه غریبه ازدواج کردم... شاید تو بودی...", options: [{ text: "💋 من بودم", action: "kiss" }, { text: "💍 ازدواج", action: "propose" }] },
-            { text: "👰 من از عشق فرار کردم... ولی انگار عشق دنبالمه...", options: [{ text: "💋 عشق منم", action: "seduce" }, { text: "🤝 آروم باش", action: "ally" }] }
+            { text: "👰 دیشب خواب دیدم با یه غریبه ازدواج کردم...", options: [{ text: "💋 من بودم", action: "kiss" }, { text: "💍 ازدواج", action: "propose" }] },
+            { text: "👰 من از عشق فرار کردم... ولی عشق دنبالمه...", options: [{ text: "💋 عشق منم", action: "seduce" }, { text: "🤝 آروم باش", action: "ally" }] }
         ],
         day4: [
             { text: "👰 دستت رو بده... ببینم حلقه داری؟ 💍", options: [{ text: "💍 دارم", action: "propose" }, { text: "🤝 ندارم", action: "ally" }] },
-            { text: "👰 اگه تو داماد بودی... من فرار نمی‌کردم...", options: [{ text: "💋 نمی‌کردی", action: "kiss" }, { text: "💍 دامادم", action: "propose" }] }
+            { text: "👰 اگه تو داماد بودی... فرار نمی‌کردم...", options: [{ text: "💋 نمی‌کردی", action: "kiss" }, { text: "💍 دامادم", action: "propose" }] }
         ],
         day5: [
             { text: "👰 من حاضرم دوباره عروسی کنم... با تو... 💋", options: [{ text: "💍 عروسی", action: "propose" }, { text: "💋 ببوس", action: "kiss" }] },
-            { text: "👰 لباس عروسم هنوز تنمه... می‌خوای درش بیاری؟ 🫣", options: [{ text: "🔥 درمیارم", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] }
+            { text: "👰 لباس عروسم هنوز تنمه... درش بیاری؟ 🫣", options: [{ text: "🔥 درمیارم", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] }
         ],
         day6: [
             { text: "👰 این دفعه... مطمئنم که فرار نمی‌کنم...", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
@@ -240,7 +238,7 @@ const dialogues = {
         ],
         day7: [
             { text: "👰 هر شب با لباس عروسم منتظرتم... 🫣🔥", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 منتظر باش", action: "kiss" }] },
-            { text: "👰 بهترین تصمیم زندگیم... فرار نکردن از تو بود 💋", options: [{ text: "💋 بهترینی", action: "kiss" }, { text: "👶 بچه‌دار شیم", action: "seduce" }] }
+            { text: "👰 بهترین تصمیم زندگیم... فرار نکردن از تو 💋", options: [{ text: "💋 بهترینی", action: "kiss" }, { text: "👶 بچه‌دار شیم", action: "seduce" }] }
         ]
     },
     mermaid: {
@@ -253,189 +251,187 @@ const dialogues = {
             { text: "🧜‍♀️ تو تنها انسانی که از من نمی‌ترسه...", options: [{ text: "💋 نمی‌ترسم", action: "seduce" }, { text: "🤝 دوستم", action: "ally" }] }
         ],
         day3: [
-            { text: "🧜‍♀️ می‌خوای بیای زیر آب؟... جایی که هیچ‌کس نمی‌تونه ببینتمون... 🫣", options: [{ text: "🔥 بیا", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] },
-            { text: "🧜‍♀️ آواز من جادو داره... می‌تونی عاشقم بشی...", options: [{ text: "💋 شدم", action: "kiss" }, { text: "🎵 بخون", action: "listen" }] }
+            { text: "🧜‍♀️ می‌خوای بیای زیر آب؟... 🫣", options: [{ text: "🔥 بیا", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] },
+            { text: "🧜‍♀️ آواز من جادو داره...", options: [{ text: "💋 شدم", action: "kiss" }, { text: "🎵 بخون", action: "listen" }] }
         ],
         day4: [
-            { text: "🧜‍♀️ پری‌های دریایی عاشق نمی‌شن... ولی من... 🫣", options: [{ text: "💋 عاشق شدی", action: "kiss" }, { text: "🤝 چی؟", action: "listen" }] },
-            { text: "🧜‍♀️ دلم می‌خواد پا داشته باشم... تا بتونم کنارت راه برم...", options: [{ text: "💋 کنارمی", action: "kiss" }, { text: "🔮 آرزو کن", action: "wish" }] }
+            { text: "🧜‍♀️ پری‌های دریایی عاشق نمی‌شن... 🫣", options: [{ text: "💋 عاشق شدی", action: "kiss" }, { text: "🤝 چی؟", action: "listen" }] },
+            { text: "🧜‍♀️ دلم می‌خواد پا داشته باشم...", options: [{ text: "💋 کنارمی", action: "kiss" }, { text: "🔮 آرزو کن", action: "wish" }] }
         ],
         day5: [
-            { text: "🧜‍♀️ تو متفاوتی... مثل بقیه انسان‌ها نیستی...", options: [{ text: "💋 عاشقتم", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] },
-            { text: "🧜‍♀️ می‌خوام تا ابد با تو بمونم... توی دریا... 💋", options: [{ text: "💋 بمون", action: "kiss" }, { text: "👰 ازدواج دریایی", action: "propose" }] }
+            { text: "🧜‍♀️ تو متفاوتی... مثل بقیه نیستی...", options: [{ text: "💋 عاشقتم", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] },
+            { text: "🧜‍♀️ می‌خوام تا ابد با تو بمونم... 💋", options: [{ text: "💋 بمون", action: "kiss" }, { text: "👰 ازدواج دریایی", action: "propose" }] }
         ],
         day6: [
-            { text: "🧜‍♀️ امروز می‌خوام مال تو باشم... کاملاً... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+            { text: "🧜‍♀️ امروز می‌خوام مال تو باشم... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
             { text: "🧜‍♀️ هیچ‌کس نمی‌دونه زیر آب چه خبره... 😈", options: [{ text: "🔥 بکنم", action: "seduce" }, { text: "💋 ببوس", action: "kiss" }] }
         ],
         day7: [
-            { text: "🧜‍♀️ تا ابد مال تو... توی دریا یا خشکی... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👶 بچه پری", action: "seduce" }] },
+            { text: "🧜‍♀️ تا ابد مال تو... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👶 بچه پری", action: "seduce" }] },
             { text: "🧜‍♀️ هر شب برات آواز می‌خونم... 🎵💋", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 ببوس", action: "kiss" }] }
         ]
     },
     skeleton: {
         day1: [
             { text: "💀 گوشت داری کثافت؟! گرسنمه!", options: [{ text: "🍖 بده", action: "gift" }, { text: "🗡️ بجنگ", action: "fight" }, { text: "💋 عشق", action: "seduce" }] },
-            { text: "💀 من زنده نیستم... ولی تو رو می‌کشم که بشی مثل خودم!", options: [{ text: "🗡️ بجنگ", action: "fight" }, { text: "💋 نمی‌میرم", action: "seduce" }] }
+            { text: "💀 من زنده نیستم... ولی تو رو می‌کشم!", options: [{ text: "🗡️ بجنگ", action: "fight" }, { text: "💋 نمی‌میرم", action: "seduce" }] }
         ],
         day2: [
-            { text: "💀 دیشب خواب دیدم گوشت دارم... گوشت تو رو... 🫣", options: [{ text: "👂 جدی؟", action: "listen" }, { text: "💋 می‌خوای؟", action: "seduce" }] },
+            { text: "💀 دیشب خواب دیدم گوشت دارم... 🫣", options: [{ text: "👂 جدی؟", action: "listen" }, { text: "💋 می‌خوای؟", action: "seduce" }] },
             { text: "💀 استخونام... وقتی نزدیکمی... صدا می‌دن...", options: [{ text: "🖐️ لمس کن", action: "ally" }, { text: "💋 صدا می‌دن", action: "kiss" }] }
         ],
         day3: [
             { text: "💀 قلب ندارم... ولی یه چیزی توی سینه‌م می‌تپه...", options: [{ text: "💋 عشقه", action: "kiss" }, { text: "🤝 چیه؟", action: "listen" }] },
-            { text: "💀 شاید... شاید این دفعه نکشمت... شاید...", options: [{ text: "🤝 ممنون", action: "ally" }, { text: "💋 دوستم داری", action: "seduce" }] }
+            { text: "💀 شاید این دفعه نکشمت... شاید...", options: [{ text: "🤝 ممنون", action: "ally" }, { text: "💋 دوستم داری", action: "seduce" }] }
         ],
         day4: [
-            { text: "💀 دستت رو بذار روی استخونام... قبل اینکه بشکنن...", options: [{ text: "🖐️ می‌ذارم", action: "ally" }, { text: "💋 نمی‌شکنن", action: "kiss" }] },
-            { text: "💀 من زنده نیستم... ولی وقتی تو هستی... حس می‌کنم زنده‌ام...", options: [{ text: "💋 زنده‌ای", action: "kiss" }, { text: "🔥 حس کن", action: "seduce" }] }
+            { text: "💀 دستت رو بذار روی استخونام...", options: [{ text: "🖐️ می‌ذارم", action: "ally" }, { text: "💋 نمی‌شکنن", action: "kiss" }] },
+            { text: "💀 وقتی تو هستی... حس می‌کنم زنده‌ام...", options: [{ text: "💋 زنده‌ای", action: "kiss" }, { text: "🔥 حس کن", action: "seduce" }] }
         ],
         day5: [
-            { text: "💀 عاشق یه زنده شدم! کی فکرش رو می‌کرد؟! 💀💋", options: [{ text: "💋 منم عاشقتم", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] },
-            { text: "💀 گوشت می‌خوام... ولی فقط گوشت تو رو... 🫣😂💋", options: [{ text: "🔥 بخور", action: "seduce" }, { text: "💋 ببوس", action: "kiss" }] }
+            { text: "💀 عاشق یه زنده شدم! 💀💋", options: [{ text: "💋 منم عاشقتم", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] },
+            { text: "💀 گوشت می‌خوام... ولی فقط گوشت تو... 🫣💋", options: [{ text: "🔥 بخور", action: "seduce" }, { text: "💋 ببوس", action: "kiss" }] }
         ],
         day6: [
-            { text: "💀 هر شب برات می‌رقصم... استخونام به هم می‌خورن... 💃🦴", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
-            { text: "💀 امروز می‌خوام زنده باشم... واسه تو... 🫣", options: [{ text: "💋 زنده‌ای", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
+            { text: "💀 هر شب برات می‌رقصم... 💃🦴", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+            { text: "💀 امروز می‌خوام زنده باشم... 🫣", options: [{ text: "💋 زنده‌ای", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
         ],
         day7: [
-            { text: "💀 تا ابد اسکلت عاشق تو می‌مونم... 💀💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج استخونی", action: "propose" }] },
-            { text: "💀 استخونام مال تو... گوشتم مال تو... همه چیزم... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
+            { text: "💀 تا ابد اسکلت عاشق تو... 💀💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج استخونی", action: "propose" }] },
+            { text: "💀 استخونام مال تو... همه چیزم... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ]
     },
     bandit_female: {
         day1: [
-            { text: "🦹‍♀️ پولتو بده جنده! یا می‌کنمت با خنجرم!", options: [{ text: "💰 بده", action: "trade" }, { text: "💋 عشق", action: "seduce" }, { text: "🗡️ حمله", action: "fight" }] },
-            { text: "🦹‍♀️ من راهزنم کثافت! از هیچی نمی‌ترسم!", options: [{ text: "🗡️ بجنگ", action: "fight" }, { text: "💋 از من می‌ترسی", action: "seduce" }] }
+            { text: "🦹‍♀️ پولتو بده! یا می‌کنمت با خنجرم!", options: [{ text: "💰 بده", action: "trade" }, { text: "💋 عشق", action: "seduce" }, { text: "🗡️ حمله", action: "fight" }] },
+            { text: "🦹‍♀️ من راهزنم! از هیچی نمی‌ترسم!", options: [{ text: "🗡️ بجنگ", action: "fight" }, { text: "💋 از من می‌ترسی", action: "seduce" }] }
         ],
         day2: [
-            { text: "🦹‍♀️ هر روز میای اینجا... دلت می‌خوای منو ببینی؟", options: [{ text: "💋 می‌خوام", action: "seduce" }, { text: "💰 پول می‌خوام", action: "trade" }] },
+            { text: "🦹‍♀️ هر روز میای... دلت می‌خوای منو ببینی؟", options: [{ text: "💋 می‌خوام", action: "seduce" }, { text: "💰 پول", action: "trade" }] },
             { text: "🦹‍♀️ من دزدم... ولی دلم رو نمی‌تونم بدزدم...", options: [{ text: "💋 دزدیدم", action: "kiss" }, { text: "🤝 نمی‌خوام", action: "ally" }] }
         ],
         day3: [
-            { text: "🦹‍♀️ شاید... شاید تو بتونی منو عوض کنی...", options: [{ text: "🤝 عوض می‌کنم", action: "ally" }, { text: "💋 عوض شو", action: "seduce" }] },
-            { text: "🦹‍♀️ من تا حالا فقط پول می‌دزدیدم... ولی تو قلبم رو دزدیدی...", options: [{ text: "💋 قلبم مال تو", action: "kiss" }, { text: "🤝 جبران کن", action: "ally" }] }
+            { text: "🦹‍♀️ شاید تو بتونی منو عوض کنی...", options: [{ text: "🤝 عوض می‌کنم", action: "ally" }, { text: "💋 عوض شو", action: "seduce" }] },
+            { text: "🦹‍♀️ تو قلبم رو دزدیدی...", options: [{ text: "💋 قلبم مال تو", action: "kiss" }, { text: "🤝 جبران کن", action: "ally" }] }
         ],
         day4: [
-            { text: "🦹‍♀️ اگه آزادم کنی... قول می‌دم دیگه دزدی نکنم...", options: [{ text: "🔓 آزاد", action: "free" }, { text: "💋 فقط منو بدزد", action: "seduce" }] },
+            { text: "🦹‍♀️ اگه آزادم کنی... دیگه دزدی نمی‌کنم...", options: [{ text: "🔓 آزاد", action: "free" }, { text: "💋 فقط منو بدزد", action: "seduce" }] },
             { text: "🦹‍♀️ من راهزنم... ولی برای تو... تسلیمم... 💋", options: [{ text: "💋 تسلیم شو", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
         ],
         day5: [
-            { text: "🦹‍♀️ تمام گنج‌هایی که دزدیدم... به پای تو نمی‌رسن...", options: [{ text: "💋 عاشقمی", action: "kiss" }, { text: "💰 گنجات کو", action: "trade" }] },
-            { text: "🦹‍♀️ بیا... این دفعه منو تو بدزد... و هرکاری می‌خوای بکن 🫣", options: [{ text: "🔥 می‌دزدم", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] }
+            { text: "🦹‍♀️ تمام گنج‌هایی که دزدیدم...", options: [{ text: "💋 عاشقمی", action: "kiss" }, { text: "💰 گنجات کو", action: "trade" }] },
+            { text: "🦹‍♀️ بیا... این دفعه منو تو بدزد... 🫣", options: [{ text: "🔥 می‌دزدم", action: "seduce" }, { text: "💋 اول ببوس", action: "kiss" }] }
         ],
         day6: [
-            { text: "🦹‍♀️ من دیگه دزد نیستم... عاشق تو شدم... 💋", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
-            { text: "🦹‍♀️ هر شب برات از گنجام می‌گم... ولی بهترین گنج تویی...", options: [{ text: "💋 بهترینی", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
+            { text: "🦹‍♀️ من دیگه دزد نیستم... 💋", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+            { text: "🦹‍♀️ بهترین گنج تویی...", options: [{ text: "💋 بهترینی", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
         ],
         day7: [
-            { text: "🦹‍♀️ مال تو شدم... برای همیشه... 🦹‍♀️💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
-            { text: "🦹‍♀️ دیگه دزدی نمی‌کنم... فقط عشق تو رو می‌دزدم 💋", options: [{ text: "💋 بدزد", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
+            { text: "🦹‍♀️ مال تو شدم... برای همیشه... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
+            { text: "🦹‍♀️ فقط عشق تو رو می‌دزدم 💋", options: [{ text: "💋 بدزد", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ]
     },
     singer: {
         day1: [
-            { text: "👩‍🎤 می‌خوای برات آواز بخونم؟ آوازای من جادو داره...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 عشق", action: "seduce" }] },
-            { text: "👩‍🎤 صدای من می‌تونه قلب تو رو تسخیر کنه...", options: [{ text: "🎵 تسخیر کن", action: "listen" }, { text: "💋 تسخیر شدم", action: "seduce" }] }
+            { text: "👩‍🎤 می‌خوای برات آواز بخونم؟ 🎵", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 عشق", action: "seduce" }] },
+            { text: "👩‍🎤 صدای من قلبت رو تسخیر می‌کنه...", options: [{ text: "🎵 تسخیر کن", action: "listen" }, { text: "💋 تسخیر شدم", action: "seduce" }] }
         ],
         day2: [
-            { text: "👩‍🎤 دیشب برات یه آهنگ عاشقونه نوشتم...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 برام؟", action: "kiss" }] },
-            { text: "👩‍🎤 وقتی می‌خونم... انگار همه دنیا مال منه...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 مال منی", action: "seduce" }] }
+            { text: "👩‍🎤 دیشب برات آهنگ عاشقونه نوشتم...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 برام؟", action: "kiss" }] },
+            { text: "👩‍🎤 وقتی می‌خونم... دنیا مال منه...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 مال منی", action: "seduce" }] }
         ],
         day3: [
-            { text: "👩‍🎤 می‌خوای باهات بیام توی خونه؟... برات خصوصی بخونم... 🫣", options: [{ text: "🏠 بیا", action: "ally" }, { text: "💋 خصوصی", action: "seduce" }] },
-            { text: "👩‍🎤 آوازهای من می‌تونن عاشقت کنن...", options: [{ text: "💋 شدم", action: "kiss" }, { text: "🎵 بخون", action: "listen" }] }
+            { text: "👩‍🎤 می‌خوای برات خصوصی بخونم؟ 🫣", options: [{ text: "🏠 بیا", action: "ally" }, { text: "💋 خصوصی", action: "seduce" }] },
+            { text: "👩‍🎤 آوازهای من عاشقت می‌کنن...", options: [{ text: "💋 شدم", action: "kiss" }, { text: "🎵 بخون", action: "listen" }] }
         ],
         day4: [
-            { text: "👩‍🎤 هیچ‌کس مثل تو آواز منو درک نکرده...", options: [{ text: "💋 درک می‌کنم", action: "kiss" }, { text: "🎵 ادامه بده", action: "listen" }] },
+            { text: "👩‍🎤 هیچ‌کس مثل تو درکم نکرده...", options: [{ text: "💋 درک می‌کنم", action: "kiss" }, { text: "🎵 ادامه بده", action: "listen" }] },
             { text: "👩‍🎤 دلم می‌خواد تا صبح برات بخونم...", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 تا صبح", action: "seduce" }] }
         ],
         day5: [
-            { text: "👩‍🎤 عاشقتم... می‌خوام اینو توی آوازم بگم... 🎵💋", options: [{ text: "💋 بگو", action: "kiss" }, { text: "🎵 بخون", action: "listen" }] },
-            { text: "👩‍🎤 صدای من فقط برای توئه... فقط تو...", options: [{ text: "💋 برای من", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
+            { text: "👩‍🎤 عاشقتم... می‌خوام توی آوازم بگم... 🎵💋", options: [{ text: "💋 بگو", action: "kiss" }, { text: "🎵 بخون", action: "listen" }] },
+            { text: "👩‍🎤 صدای من فقط برای توئه...", options: [{ text: "💋 برای من", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ],
         day6: [
-            { text: "👩‍🎤 امروز می‌خوام برات یه آواز خاص بخونم... توی تخت... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+            { text: "👩‍🎤 امروز برات آواز خاص می‌خونم... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
             { text: "👩‍🎤 موسیقی عشق... با ساز بدنمون... 🎵🔥", options: [{ text: "🔥 بزن", action: "seduce" }, { text: "💋 آروم", action: "kiss" }] }
         ],
         day7: [
-            { text: "👩‍🎤 تا ابد برات می‌خونم... عشق من... 🎵💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
+            { text: "👩‍🎤 تا ابد برات می‌خونم... 🎵💋", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
             { text: "👩‍🎤 آواز آخر... آواز عشق ابدی... 🎵💍", options: [{ text: "🎵 بخون", action: "listen" }, { text: "💋 ببوس", action: "kiss" }] }
         ]
     },
     genie: {
         day1: [
             { text: "🧝‍♀️ آزادم کردی! ۳ تا آرزو می‌تونی بکنی...", options: [{ text: "💎 ثروت", action: "wealth" }, { text: "⚔️ قدرت", action: "power" }, { text: "💋 عشق", action: "seduce" }] },
-            { text: "🧝‍♀️ من جن صحرام... هر آرزویی بکنی برآورده میشه...", options: [{ text: "💋 عشق", action: "seduce" }, { text: "💰 پول", action: "wealth" }] }
+            { text: "🧝‍♀️ من جن صحرام... هر آرزویی برآورده میشه...", options: [{ text: "💋 عشق", action: "seduce" }, { text: "💰 پول", action: "wealth" }] }
         ],
         day2: [
             { text: "🧝‍♀️ آرزوی دومت چیه؟", options: [{ text: "⚔️ قدرت", action: "power" }, { text: "💋 تو", action: "seduce" }] },
             { text: "🧝‍♀️ می‌دونی جن‌ها چقدر قدرتمندن؟", options: [{ text: "👂 بگو", action: "listen" }, { text: "💋 نشون بده", action: "seduce" }] }
         ],
         day3: [
-            { text: "🧝‍♀️ آرزوی سوم... می‌تونم خودم انتخاب کنم؟ 😈", options: [{ text: "💋 انتخاب کن", action: "seduce" }, { text: "🤝 باشه", action: "ally" }] },
-            { text: "🧝‍♀️ می‌تونم برات هر چیزی رو واقعی کنم... حتی عشق رو...", options: [{ text: "💋 عشق", action: "kiss" }, { text: "🔮 واقعی کن", action: "wish" }] }
+            { text: "🧝‍♀️ آرزوی سوم رو خودم انتخاب کنم؟ 😈", options: [{ text: "💋 انتخاب کن", action: "seduce" }, { text: "🤝 باشه", action: "ally" }] },
+            { text: "🧝‍♀️ می‌تونم عشق رو واقعی کنم...", options: [{ text: "💋 عشق", action: "kiss" }, { text: "🔮 واقعی کن", action: "wish" }] }
         ],
         day4: [
             { text: "🧝‍♀️ تا حالا عاشق نشدم... ولی تو...", options: [{ text: "💋 عاشق شو", action: "kiss" }, { text: "🤝 چرا؟", action: "listen" }] },
-            { text: "🧝‍♀️ می‌خوام تا ابد پیشت بمونم... نه به عنوان جن... به عنوان زن... 💋", options: [{ text: "💋 بمون", action: "kiss" }, { text: "🔥 زن من", action: "seduce" }] }
+            { text: "🧝‍♀️ می‌خوام پیشت بمونم... به عنوان زن... 💋", options: [{ text: "💋 بمون", action: "kiss" }, { text: "🔥 زن من", action: "seduce" }] }
         ],
         day5: [
             { text: "🧝‍♀️ قدرتم رو فدای عشقت می‌کنم...", options: [{ text: "💋 نمی‌خوام", action: "kiss" }, { text: "🤝 فدا نکن", action: "ally" }] },
-            { text: "🧝‍♀️ ۱۰۰۰ ساله زنده‌ام... ولی این ۳ روز با تو... بهترین عمرم بود 💋", options: [{ text: "💋 عاشقتم", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
+            { text: "🧝‍♀️ ۱۰۰۰ ساله زنده‌ام... این ۳ روز بهترین بود 💋", options: [{ text: "💋 عاشقتم", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] }
         ],
         day6: [
-            { text: "🧝‍♀️ امروز می‌خوام تمام جادوم رو برات استفاده کنم... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
-            { text: "🧝‍♀️ جادوی عشق... قوی‌ترین جادوی دنیاست... 🔮💋", options: [{ text: "💋 جادو کن", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
+            { text: "🧝‍♀️ امروز تمام جادوم رو برات... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+            { text: "🧝‍♀️ جادوی عشق قوی‌ترین جادوست... 🔮💋", options: [{ text: "💋 جادو کن", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] }
         ],
         day7: [
-            { text: "🧝‍♀️ تا ابد مال تو... جن یا انسان... فرقی نمی‌کنه 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
-            { text: "🧝‍♀️ آخرین آرزوم... می‌خوام تا ابد عاشقت بمونم... 💍", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👶 بچه جن", action: "seduce" }] }
+            { text: "🧝‍♀️ تا ابد مال تو... 💋", options: [{ text: "💋 مال منی", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
+            { text: "🧝‍♀️ آخرین آرزوم... عاشقت بمونم... 💍", options: [{ text: "💋 تا ابد", action: "kiss" }, { text: "👶 بچه جن", action: "seduce" }] }
         ]
     },
     young_witch: {
         day1: [
-            { text: "🧙‍♀️ هنوز خیلی چیزا یاد نگرفتم... می‌خوای کمکت کنم؟", options: [{ text: "🔮 طلسم", action: "potion" }, { text: "💋 عشق", action: "seduce" }, { text: "🏃 برو", action: "flee" }] },
+            { text: "🧙‍♀️ هنوز خیلی چیزا یاد نگرفتم...", options: [{ text: "🔮 طلسم", action: "potion" }, { text: "💋 عشق", action: "seduce" }, { text: "🏃 برو", action: "flee" }] },
             { text: "🧙‍♀️ من شاگرد جادوگرم... ولی ازش بهترم!", options: [{ text: "👂 بگو", action: "listen" }, { text: "💋 نشون بده", action: "seduce" }] }
         ],
         day2: [
-            { text: "🧙‍♀️ دیشب یه طلسم جدید یاد گرفتم... می‌خوای امتحانش کنم؟", options: [{ text: "🧪 امتحان کن", action: "potion" }, { text: "💋 روی من؟", action: "seduce" }] },
+            { text: "🧙‍♀️ دیشب یه طلسم جدید یاد گرفتم...", options: [{ text: "🧪 امتحان کن", action: "potion" }, { text: "💋 روی من؟", action: "seduce" }] },
             { text: "🧙‍♀️ استادم می‌گه جادوگرا نباید عاشق بشن...", options: [{ text: "💋 عاشق شو", action: "seduce" }, { text: "🤝 چرا؟", action: "listen" }] }
         ],
         day3: [
-            { text: "🧙‍♀️ می‌خوام طلسم عشق رو امتحان کنم... ولی می‌ترسم...", options: [{ text: "💋 نترس", action: "kiss" }, { text: "🧪 امتحان کن", action: "potion" }] },
+            { text: "🧙‍♀️ می‌خوام طلسم عشق رو امتحان کنم... 🫣", options: [{ text: "💋 نترس", action: "kiss" }, { text: "🧪 امتحان کن", action: "potion" }] },
             { text: "🧙‍♀️ تو می‌تونی اولین عشق من باشی...", options: [{ text: "💋 باشم", action: "kiss" }, { text: "🤝 افتخار", action: "ally" }] }
         ],
         day4: [
-            { text: "🧙‍♀️ طلسم عشق جواب داد... الان دیوونه‌تم... 🫣", options: [{ text: "💋 دیوونه شو", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] },
-            { text: "🧙‍♀️ استادم اگه بفهمه عاشق شدم... چی میشه؟", options: [{ text: "🤝 نمی‌فهمه", action: "ally" }, { text: "💋 مهم نیست", action: "kiss" }] }
+            { text: "🧙‍♀️ طلسم عشق جواب داد... 🫣", options: [{ text: "💋 دیوونه شو", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }] },
+            { text: "🧙‍♀️ استادم اگه بفهمه...", options: [{ text: "🤝 نمی‌فهمه", action: "ally" }, { text: "💋 مهم نیست", action: "kiss" }] }
         ],
         day5: [
             { text: "🧙‍♀️ دیگه شاگرد نیستم... زن تو هستم... 💋", options: [{ text: "💋 زن من", action: "kiss" }, { text: "🔥 بیا", action: "seduce" }] },
-            { text: "🧙‍♀️ برات یه معجون عشق درست کردم... می‌خوای بخوریم؟ 🧪💋", options: [{ text: "🧪 بخوریم", action: "potion" }, { text: "💋 اول ببوس", action: "kiss" }] }
+            { text: "🧙‍♀️ برات معجون عشق درست کردم... 🧪💋", options: [{ text: "🧪 بخوریم", action: "potion" }, { text: "💋 اول ببوس", action: "kiss" }] }
         ],
         day6: [
-            { text: "🧙‍♀️ امروز می‌خوام جادوی عشق رو کامل یادت بدم... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
-            { text: "🧙‍♀️ جادوی بدن... قوی‌تر از جادوی کتاباست... 🔥", options: [{ text: "🔥 جادو کن", action: "seduce" }, { text: "💋 آروم", action: "kiss" }] }
+            { text: "🧙‍♀️ امروز جادوی عشق رو یادت می‌دم... 🫣", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+            { text: "🧙‍♀️ جادوی بدن قوی‌تر از کتاباست... 🔥", options: [{ text: "🔥 جادو کن", action: "seduce" }, { text: "💋 آروم", action: "kiss" }] }
         ],
         day7: [
-            { text: "🧙‍♀️ تا ابد شاگرد عشق تو می‌مونم... 🧙‍♀️💋", options: [{ text: "💋 شاگردم", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
+            { text: "🧙‍♀️ تا ابد شاگرد عشق تو... 💋", options: [{ text: "💋 شاگردم", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }] },
             { text: "🧙‍♀️ استاد عشق... تویی... 💍🔥", options: [{ text: "💋 استادت", action: "kiss" }, { text: "👶 بچه جادوگر", action: "seduce" }] }
         ]
     }
 };
 
-// ============ houseDialogues ============
 const houseDialogues = {
     'invite_accept': ["🏠 با خوشحالی اومد خونه‌ات!", "🏠 بالاخره یه جای امن...", "🏠 خونه‌ات قشنگه..."],
     'invite_reject': ["😒 نه... شاید بعداً...", "😒 هنوز مطمئن نیستم...", "😒 نه! نمیام خونه‌ت!"],
-    'kick_angry': ["😡 منو بیرون می‌کنی؟! حالا دشمنت میشم!", "💀 پشیمون میشی از این کارت...", "😤 باشه... ولی برمی‌گردم!"],
-    'touch': ["🖐️ دستت گرمه... ادامه بده...", "🖐️ بیشتر لمس کن...", "🖐️ خوشم میاد..."],
+    'kick_angry': ["😡 منو بیرون می‌کنی؟!", "💀 پشیمون میشی...", "😤 باشه... برمی‌گردم!"],
+    'touch': ["🖐️ دستت گرمه...", "🖐️ بیشتر لمس کن...", "🖐️ خوشم میاد..."],
     'kiss': ["💋 ммm... لبات...", "💋 دوباره ببوس...", "💋 معتاد بوسه‌ات شدم..."],
     'orgy': ["🔥 شب وحشی‌ای بود...", "🔥 دیگه نمی‌تونم...", "🔥 فوق‌العاده بود..."]
 };
 
-// ============ marryDialogues ============
 const marryDialogues = {
     'propose_accept': "💍 آره! هزار بار آره! مال تو شدم!",
     'propose_reject': "💍 نه... هنوز آماده نیستم...",
@@ -443,18 +439,16 @@ const marryDialogues = {
     'divorce_text': "💔 تموم شد... رفتیم..."
 };
 
-// ============ prisonDialogues ============
 const prisonDialogues = {
     witch: {
-        wild: ["🧙‍♀️: گمشو بیرون جنده پست فطرت!", "🧙‍♀️: نزدیک شی عصام رو فرو می‌کنم توی حلقومت!"],
-        untrusted: ["🧙‍♀️: بازم اومدی جنده؟!", "🧙‍♀️: دیشب معجون مرگ درست کردم..."],
-        familiar: ["🧙‍♀️: دستت رو بده ببینم...", "🧙‍♀️: شاید آزادت نکنم..."],
-        intimate: ["🧙‍♀️: بیا نزدیک‌تر فاحشه...", "🧙‍♀️: دستام از شدت خشم میلرزه..."],
+        wild: ["🧙‍♀️: گمشو بیرون!", "🧙‍♀️: نزدیک شی عصام رو فرو می‌کنم!"],
+        untrusted: ["🧙‍♀️: بازم اومدی؟!", "🧙‍♀️: دیشب معجون مرگ درست کردم..."],
+        familiar: ["🧙‍♀️: دستت رو بده...", "🧙‍♀️: شاید آزادت نکنم..."],
+        intimate: ["🧙‍♀️: بیا نزدیک‌تر...", "🧙‍♀️: دستام میلرزه..."],
         tamed: ["🧙‍♀️: تو منو رام کردی... 💋", "🧙‍♀️: مال تو شدم... 💋"]
     }
 };
 
-// ============ npcConfig ============
 const npcConfig = {
     witch: { image: 'witch', emoji: '🧙‍♀️', startPoints: 15 },
     ghost_sexy: { image: 'ghost_sexy', emoji: '👻', startPoints: 25 },
@@ -479,29 +473,29 @@ const npcConfig = {
     bandit_female: { image: null, emoji: '🦹‍♀️', startPoints: 20 }
 };
 
-// ============ توابع ============
 function getDialogue(npcId, encounterCount) {
-    if (!npcId) return null;
-    const npcDialogues = dialogues[npcId];
-    if (!npcDialogues) return null;
-    
-    const day = Math.min(7, Math.max(1, (encounterCount || 0) + 1));
-    const dayKey = 'day' + day;
-    
-    const dayDialogues = npcDialogues[dayKey] || npcDialogues.day1;
-    if (!dayDialogues || dayDialogues.length === 0) return null;
-    
-    const index = (encounterCount || 0) % dayDialogues.length;
-    return dayDialogues[index] || dayDialogues[0];
+    try {
+        if (!npcId) return null;
+        const npcDialogues = dialogues[npcId];
+        if (!npcDialogues) return null;
+        const day = Math.min(7, Math.max(1, (encounterCount || 0) + 1));
+        const dayKey = 'day' + day;
+        const dayDialogues = npcDialogues[dayKey] || npcDialogues.day1;
+        if (!dayDialogues || dayDialogues.length === 0) return null;
+        const index = (encounterCount || 0) % dayDialogues.length;
+        return dayDialogues[index] || dayDialogues[0];
+    } catch (e) {
+        console.log('Dialogue error:', npcId, e.message);
+        return null;
+    }
 }
 
 function getPrisonDialogue(npcId, relationLevel) {
     if (!npcId) return { text: "🤐 ...", level: "untrusted" };
     const npcDialogues = prisonDialogues[npcId];
-    if (!npcDialogues) return { text: "🤐 حرفی برای گفتن نداره...", level: relationLevel || "untrusted" };
+    if (!npcDialogues) return { text: "🤐 ...", level: relationLevel || "untrusted" };
     const level = relationLevel || "untrusted";
     const levelDialogues = npcDialogues[level] || npcDialogues.untrusted || ["🤐 ..."];
-    if (!levelDialogues || levelDialogues.length === 0) return { text: "🤐 ...", level: level };
     const text = levelDialogues[Math.floor(Math.random() * levelDialogues.length)];
     return { text: text || "🤐 ...", level: level };
 }
@@ -509,9 +503,9 @@ function getPrisonDialogue(npcId, relationLevel) {
 function getHouseDialogue(type, subType) {
     if (!type) return "🤐 ...";
     const key = subType ? `${type}_${subType}` : type;
-    const dialogues = houseDialogues[key] || houseDialogues[type];
-    if (!dialogues || !Array.isArray(dialogues) || dialogues.length === 0) return "🤐 ...";
-    return dialogues[Math.floor(Math.random() * dialogues.length)];
+    const dialogs = houseDialogues[key] || houseDialogues[type];
+    if (!dialogs || !Array.isArray(dialogs) || dialogs.length === 0) return "🤐 ...";
+    return dialogs[Math.floor(Math.random() * dialogs.length)];
 }
 
 function getMarryDialogue(type, subType) {
@@ -528,9 +522,7 @@ function getNpcConfig(npcId) {
 function handleAction(player, npcId, action) {
     const npc = getNpcConfig(npcId);
     if (!npc) return { message: '❌ NPC پیدا نشد!', battleStart: false };
-
     let result = { message: '', battleStart: false };
-
     switch (action) {
         case 'fight': result.battleStart = true; result.message = `⚔️ ${npc.emoji} برای نبرد آماده میشه!`; break;
         case 'seduce': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 15); player.xp = (player.xp || 0) + 15; if (!player.seduced) player.seduced = {}; player.seduced[npcId] = (player.seduced[npcId] || 0) + 1; result.message = `💋 ${npc.emoji} تسلیم عشق تو شد!\n❤️ +۱۵ | ✨ +۱۵`; break;
@@ -538,21 +530,20 @@ function handleAction(player, npcId, action) {
         case 'heal': player.hp = player.maxHp || 100; result.message = `❤️ ${npc.emoji} شفات داد!`; break;
         case 'gift': player.inventory.gold = (player.inventory.gold || 0) + 20; result.message = `🎁 ${npc.emoji} ۲۰👑 داد!`; break;
         case 'kiss': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 15); result.message = `😘 ${npc.emoji} بوسیدت! +۱۵❤️`; break;
-        case 'wealth': player.inventory.gold = (player.inventory.gold || 0) + 30; result.message = `💰 ${npc.emoji} ۳۰👑 داد!`; break;
-        case 'power': player.attack = (player.attack || 5) + 5; result.message = `⚔️ ${npc.emoji} +۵⚔️`; break;
-        case 'ally': player.defense = (player.defense || 2) + 3; result.message = `🤝 ${npc.emoji} +۳🛡️`; break;
-        case 'trade': player.inventory.gold = (player.inventory.gold || 0) + 15; player.inventory.iron = (player.inventory.iron || 0) + 5; result.message = `🤝 +۱۵👑 +۵⛏️`; break;
-        case 'potion': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 40); player.attack = (player.attack || 5) + 2; result.message = `🧪 +۴۰❤️ +۲⚔️`; break;
+        case 'wealth': player.inventory.gold = (player.inventory.gold || 0) + 30; result.message = `💰 ۳۰👑`; break;
+        case 'power': player.attack = (player.attack || 5) + 5; result.message = `⚔️ +۵⚔️`; break;
+        case 'ally': player.defense = (player.defense || 2) + 3; result.message = `🤝 +۳🛡️`; break;
+        case 'trade': player.inventory.gold = (player.inventory.gold || 0) + 15; result.message = `🤝 +۱۵👑`; break;
+        case 'potion': player.hp = Math.min(player.maxHp || 100, (player.hp || 0) + 40); result.message = `🧪 +۴۰❤️`; break;
         case 'help': player.xp = (player.xp || 0) + 15; result.message = `🤝 +۱۵✨`; break;
         case 'listen': player.xp = (player.xp || 0) + 10; result.message = `👂 +۱۰✨`; break;
         case 'treasure': player.inventory.gold = (player.inventory.gold || 0) + 50; result.message = `💰 +۵۰👑`; break;
         case 'free': player.xp = (player.xp || 0) + 30; result.message = `🕊️ +۳۰✨`; break;
         case 'craft': result.message = `🔨 برو به بخش ساخت‌وساز!`; break;
-        case 'propose': player.inventory.ring = (player.inventory.ring || 0) + 1; result.message = `💍 ${npc.emoji} حلقه نامزدی رو گرفت!\n🎁 +۱ 💍`; break;
-        case 'wish': player.inventory.wish = (player.inventory.wish || 0) + 1; result.message = `🔮 ${npc.emoji} +۱ آرزو!`; break;
-        default: result.message = `🤔 ${npc.emoji} منتظر تصمیم توئه...`;
+        case 'propose': player.inventory.ring = (player.inventory.ring || 0) + 1; result.message = `💍 +۱ حلقه`; break;
+        case 'wish': player.inventory.wish = (player.inventory.wish || 0) + 1; result.message = `🔮 +۱ آرزو`; break;
+        default: result.message = `🤔 منتظر تصمیم توئه...`;
     }
-
     return result;
 }
 
