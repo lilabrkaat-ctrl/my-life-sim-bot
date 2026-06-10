@@ -72,39 +72,39 @@ const dialogues = {
     }
 };
     fairy: {
-        day1: [
-            { text: "🧚 سلام خوشتیپ! ۳ تا آرزو داری... راستی کیرت هم جزو آرزوهاست؟ 😜", options: [{ text: "💎 ثروت", action: "wealth" }, { text: "⚔️ قدرت", action: "power" }, { text: "💋 عشق", action: "seduce" }] },
-            { text: "🧚 هی قهرمان! پری‌ها چقدر شیطونن؟ 😈", options: [{ text: "💋 خیلی", action: "seduce" }, { text: "🤝 نمی‌دونم", action: "ally" }, { text: "🏃 فرار", action: "flee" }] }
-        ],
-        day2: [
-            { text: "🧚 آرزوی دومت چیه؟ پول؟ قدرت؟ یا یه سکس سه‌نفره؟ 👯", options: [{ text: "💎 پول", action: "wealth" }, { text: "❤️ سلامتی", action: "heal" }, { text: "💋 سکس", action: "seduce" }] },
-            { text: "🧚 دیشب توی گوشت آرزو خوندم... گفتم کاش این کونی بازم بیاد 💋", options: [{ text: "👂 چی گفتی؟", action: "listen" }, { text: "💋 عاشقمی؟", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] }
-        ],
-        day3: [
-            { text: "🧚 آرزوی سوم رو من انتخاب می‌کنم: سکس! 😜", options: [{ text: "💋 قبول", action: "seduce" }, { text: "🗡️ رد", action: "fight" }, { text: "🔙 بعداً", action: "flee" }] },
-            { text: "🧚 آرزوی اول: ثروت، دوم: قدرت، سوم: من! راستی کاندوم داری؟ 😜💋", options: [{ text: "💋 سومی", action: "seduce" }, { text: "💰 اولی", action: "wealth" }, { text: "🔙 نه", action: "flee" }] }
-        ],
-        day4: [
-            { text: "🧚 گرد جادویی دارم... هرچی بخوای میشه... حتی می‌تونم کیرت رو بزرگتر کنم 😏", options: [{ text: "💋 عشق", action: "seduce" }, { text: "⚔️ قدرت", action: "power" }, { text: "🔙 بعداً", action: "flee" }] },
-            { text: "🧚 می‌دونی پری‌ها چجوری می‌بوسن؟ با زبون جادویی ✨💋", options: [{ text: "💋 نشون بده", action: "kiss" }, { text: "🤝 بگو", action: "listen" }, { text: "🔙 بعداً", action: "flee" }] }
-        ],
-        day5: [
-            { text: "🧚 ۳ تا آرزو بکن... سومی رو من می‌گم: کیرت رو می‌خوام 🫣", options: [{ text: "💋 بگو", action: "seduce" }, { text: "🔮 خودم می‌گم", action: "wish" }, { text: "🎁 هدیه", action: "gift" }] },
-            { text: "🧚 دیشب توی خوابم بودی... داشتیم وحشیانه... بعد بیدار شدم 🫣💔", options: [{ text: "💋 امشب واقعی", action: "kiss" }, { text: "🤝 حیف شد", action: "listen" }, { text: "🔙 بعداً", action: "flee" }] }
-        ],
-        day6: [
-            { text: "🧚 پری‌ها عاشق نمیشن ولی من یه ذره شدم... یعنی کیرت جادو داره؟", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
-            { text: "🧚 جادوی من مال تو... همه چیزم... حتی بکارتم 💋✨", options: [{ text: "💋 ببوس", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }, { text: "🔙 بعداً", action: "flee" }] }
-        ],
-        day7: [
-            { text: "🧚 باشه قبول... عاشق شدم... حالا بکن منو یا برو 💋😜", options: [{ text: "💋 می‌کنم", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }, { text: "🔥 بکنم", action: "seduce" }] },
-            { text: "🧚 هر آرزویی بکنی برآورده میشه... ولی آرزوی من فقط کیر توئه 🫣🔥", options: [{ text: "🔥 آرزوی عشق", action: "seduce" }, { text: "💰 آرزوی ثروت", action: "wealth" }, { text: "👶 بچه‌دار شیم", action: "seduce" }] }
-        ],
-        harem: [
-            { text: "🧚 شوهرم... برات یه سورپرایز دارم! حدس بزن چی پوشیدم... هیچی! ✨", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 بگو", action: "kiss" }, { text: "🔙 بعداً", action: "flee" }] },
-            { text: "🧚 امروز توی باغ گلهای جادویی کاشتم... آدمو بی‌اختیار سکسی می‌کنن 🌸", options: [{ text: "🌿 بو کنم", action: "ally" }, { text: "💋 چه جالب", action: "kiss" }, { text: "🔥 امتحان کن", action: "seduce" }] }
-        ]
-    },
+    day1: [
+        { text: "🧚 سلام خوشتیپ! ۳ تا آرزو داری... راستی کیرت هم جزو آرزوهاست؟ 😜", options: [{ text: "💎 ثروت", action: "wealth" }, { text: "⚔️ قدرت", action: "power" }, { text: "💋 عشق", action: "seduce" }] },
+        { text: "🧚 هی قهرمان! پری‌ها چقدر شیطونن؟ 😈", options: [{ text: "💋 خیلی", action: "seduce" }, { text: "🤝 نمی‌دونم", action: "ally" }, { text: "🏃 فرار", action: "flee" }] }
+    ],
+    day2: [
+        { text: "🧚 آرزوی دومت چیه؟ پول؟ قدرت؟ یا یه سکس سه‌نفره؟ 👯", options: [{ text: "💎 پول", action: "wealth" }, { text: "❤️ سلامتی", action: "heal" }, { text: "💋 سکس", action: "seduce" }] },
+        { text: "🧚 دیشب توی گوشت آرزو خوندم... گفتم کاش این کونی بازم بیاد 💋", options: [{ text: "👂 چی گفتی؟", action: "listen" }, { text: "💋 عاشقمی؟", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] }
+    ],
+    day3: [
+        { text: "🧚 آرزوی سوم رو من انتخاب می‌کنم: سکس! 😜", options: [{ text: "💋 قبول", action: "seduce" }, { text: "🗡️ رد", action: "fight" }, { text: "🔙 بعداً", action: "flee" }] },
+        { text: "🧚 آرزوی اول: ثروت، دوم: قدرت، سوم: من! راستی کاندوم داری؟ 😜💋", options: [{ text: "💋 سومی", action: "seduce" }, { text: "💰 اولی", action: "wealth" }, { text: "🔙 نه", action: "flee" }] }
+    ],
+    day4: [
+        { text: "🧚 گرد جادویی دارم... هرچی بخوای میشه... حتی می‌تونم کیرت رو بزرگتر کنم 😏", options: [{ text: "💋 عشق", action: "seduce" }, { text: "⚔️ قدرت", action: "power" }, { text: "🔙 بعداً", action: "flee" }] },
+        { text: "🧚 می‌دونی پری‌ها چجوری می‌بوسن؟ با زبون جادویی ✨💋", options: [{ text: "💋 نشون بده", action: "kiss" }, { text: "🤝 بگو", action: "listen" }, { text: "🔙 بعداً", action: "flee" }] }
+    ],
+    day5: [
+        { text: "🧚 ۳ تا آرزو بکن... سومی رو من می‌گم: کیرت رو می‌خوام 🫣", options: [{ text: "💋 بگو", action: "seduce" }, { text: "🔮 خودم می‌گم", action: "wish" }, { text: "🎁 هدیه", action: "gift" }] },
+        { text: "🧚 دیشب توی خوابم بودی... داشتیم وحشیانه... بعد بیدار شدم 🫣💔", options: [{ text: "💋 امشب واقعی", action: "kiss" }, { text: "🤝 حیف شد", action: "listen" }, { text: "🔙 بعداً", action: "flee" }] }
+    ],
+    day6: [
+        { text: "🧚 پری‌ها عاشق نمیشن ولی من یه ذره شدم... یعنی کیرت جادو داره؟", options: [{ text: "🔥 از جلو", action: "seduce" }, { text: "🍑 از پشت", action: "seduce" }, { text: "👄 دهنی", action: "kiss" }] },
+        { text: "🧚 جادوی من مال تو... همه چیزم... حتی بکارتم 💋✨", options: [{ text: "💋 ببوس", action: "kiss" }, { text: "🔥 بکنم", action: "seduce" }, { text: "🔙 بعداً", action: "flee" }] }
+    ],
+    day7: [
+        { text: "🧚 باشه قبول... عاشق شدم... حالا بکن منو یا برو 💋😜", options: [{ text: "💋 می‌کنم", action: "kiss" }, { text: "👰 ازدواج", action: "propose" }, { text: "🔥 بکنم", action: "seduce" }] },
+        { text: "🧚 هر آرزویی بکنی برآورده میشه... ولی آرزوی من فقط کیر توئه 🫣🔥", options: [{ text: "🔥 آرزوی عشق", action: "seduce" }, { text: "💰 آرزوی ثروت", action: "wealth" }, { text: "👶 بچه‌دار شیم", action: "seduce" }] }
+    ],
+    harem: [
+        { text: "🧚 شوهرم... برات یه سورپرایز دارم! حدس بزن چی پوشیدم... هیچی! ✨", options: [{ text: "🔥 میام", action: "seduce" }, { text: "💋 بگو", action: "kiss" }, { text: "🔙 بعداً", action: "flee" }] },
+        { text: "🧚 امروز توی باغ گلهای جادویی کاشتم... آدمو بی‌اختیار سکسی می‌کنن 🌸", options: [{ text: "🌿 بو کنم", action: "ally" }, { text: "💋 چه جالب", action: "kiss" }, { text: "🔥 امتحان کن", action: "seduce" }] }
+    ]
+},
     angel: {
         day1: [
             { text: "👼 نگران نباش مسافر... کمکت می‌کنم...", options: [{ text: "❤️ شفا", action: "heal" }, { text: "💋 ممنون", action: "seduce" }, { text: "🏃 فرار", action: "flee" }] },
