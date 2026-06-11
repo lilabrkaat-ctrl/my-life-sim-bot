@@ -62,11 +62,11 @@ function startFight(player) {
     const time = getTimeOfDay();
 
     const enemy = {
-        key: k, 
-        name: isEnraged ? `😡 ${d.name || 'دشمن'}` : (d.name || 'دشمن'), 
+        key: k,
+        name: isEnraged ? `😡 ${d.name || 'دشمن'}` : (d.name || 'دشمن'),
         emoji: d.emoji || '👾', file_id: d.file_id || null,
-        hp: isEnraged ? Math.floor((d.hp || 20) * 2) : (d.hp || 20), 
-        maxHp: isEnraged ? Math.floor((d.hp || 20) * 2) : (d.hp || 20), 
+        hp: isEnraged ? Math.floor((d.hp || 20) * 2) : (d.hp || 20),
+        maxHp: isEnraged ? Math.floor((d.hp || 20) * 2) : (d.hp || 20),
         attack: isEnraged ? Math.floor((d.attack || 5) * 2) : (d.attack || 5),
         reward: isEnraged ? {
             xp: (d.reward?.xp || 10) * 2, gold: (d.reward?.gold || 0) * 2,
@@ -103,13 +103,13 @@ function startPvPFight(player1, player2) {
     activeBattles[player2.chatId] = enemy2;
     return { enemy1, enemy2 };
 }
+
 function playerAttack(player, enemy) {
     let log = '';
     const r = Math.random();
     let dmg;
     let animation = null;
 
-    // کمک حیوون خانگی (۲۰٪ شانس)
     let petHelp = null;
     if (player.pets && player.pets.length > 0) {
         petHelp = petBattleHelp(player);
@@ -148,12 +148,9 @@ function playerAttack(player, enemy) {
             log += `💀 ${enemy.name} کشته شد! +۵۰🏆`;
             player.score = (player.score || 0) + 50;
             require('./player').checkUnlocks(player);
-            
-            // آپدیت ماموریت
             updateQuestProgress(player, 'defeat', enemy.key);
             const questMsg = getQuestCompletionMessage(player);
             if (questMsg) log += `\n\n${questMsg}`;
-            
             delete activeBattles[player.chatId];
             delete activeBattles[enemy.opponentId];
             return { battleOver: true, playerWon: true, message: log, isPvP: true, animation: animations.levelup };
@@ -163,8 +160,6 @@ function playerAttack(player, enemy) {
         player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
         player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
-        
-        // انرژی بعد کشتن دشمن
         player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
         log += `\n⚡ +۵ انرژی`;
 
@@ -175,17 +170,13 @@ function playerAttack(player, enemy) {
             }
         }
 
-        // آپدیت ماموریت شکار
         updateQuestProgress(player, 'hunt', enemy.key);
-        
-        // آپدیت ماموریت شکست دشمن
         updateQuestProgress(player, 'defeat', enemy.key);
 
         const leveledUp = require('./player').checkLevelUp(player);
         if (leveledUp) { log += '⬆️ لول آپ! '; animation = animations.levelup; }
         require('./player').checkUnlocks(player);
 
-        // چک کردن تکمیل ماموریت
         const questMsg = getQuestCompletionMessage(player);
         if (questMsg) log += `\n\n${questMsg}`;
 
@@ -206,10 +197,10 @@ function playerAttack(player, enemy) {
 
     if (!enemy.isPlayer && enemy.hp < enemy.maxHp * 0.25) {
         const roll = Math.random();
-        if (roll < 0.55) { 
-            log += `🏃 ${enemy.name} فرار کرد!`; 
+        if (roll < 0.55) {
+            log += `🏃 ${enemy.name} فرار کرد!`;
             delete activeBattles[player.chatId];
-            return { battleOver: true, playerWon: false, message: log, animation: animations.escape, escaped: true, escapedNpc: enemy.key }; 
+            return { battleOver: true, playerWon: false, message: log, animation: animations.escape, escaped: true, escapedNpc: enemy.key };
         }
         else if (roll < 0.80) { enemy.status = 'trapped'; log += `🔒 ${enemy.name} محاصره شد!`; return { battleOver: false, message: log, animation: null }; }
     }
@@ -229,23 +220,21 @@ function useSpell(player, enemy) {
         player.xp += enemy.reward.xp || 10;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
         player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
-        
         player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
         log += `\n⚡ +۵ انرژی`;
-        
+
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
                 player.inventory[rw] += enemy.reward[rw] || 1;
                 log += `${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}\n`;
             }
         }
-        
-        // آپدیت ماموریت
+
         updateQuestProgress(player, 'hunt', enemy.key);
         updateQuestProgress(player, 'defeat', enemy.key);
         const questMsg = getQuestCompletionMessage(player);
         if (questMsg) log += `\n\n${questMsg}`;
-        
+
         const leveledUp = require('./player').checkLevelUp(player);
         if (leveledUp) log += '⬆️ لول آپ! ';
         require('./player').checkUnlocks(player);
@@ -268,23 +257,21 @@ function useFinisher(player, enemy) {
     player.xp += enemy.reward.xp || 10;
     player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
     player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
-    
     player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
     log += `\n⚡ +۵ انرژی`;
-    
+
     for (let rw in enemy.reward) {
         if (rw !== 'xp' && player.inventory[rw] !== undefined) {
             player.inventory[rw] += enemy.reward[rw] || 1;
             log += `\n${config.images.resources[rw]?.emoji || ''} +${enemy.reward[rw]}`;
         }
     }
-    
-    // آپدیت ماموریت
+
     updateQuestProgress(player, 'hunt', enemy.key);
     updateQuestProgress(player, 'defeat', enemy.key);
     const questMsg = getQuestCompletionMessage(player);
     if (questMsg) log += `\n\n${questMsg}`;
-    
+
     const leveledUp = require('./player').checkLevelUp(player);
     if (leveledUp) log += '\n⬆️ لول آپ! ';
     require('./player').checkUnlocks(player);
@@ -294,6 +281,7 @@ function useFinisher(player, enemy) {
     if (npcKeys.includes(enemy.key) && Math.random() < 0.4) return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation };
     return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation };
 }
+
 function enemyTurn(player, enemy, log, animation) {
     if (enemy.status === 'trapped') return { battleOver: false, message: log, animation: null };
     const dmg = Math.max(1, enemy.attack - Math.floor((player.defense || 2) / 3));
@@ -325,13 +313,13 @@ function playerEscape(player, enemy) {
         player.hp -= dmg;
         if (player.hp < 0) player.hp = 0;
         let msg = `🔒 محاصره شدی! ${enemy.name} ${dmg} زد!`;
-        if (player.hp <= 0) { 
-            player.hp = Math.floor(player.maxHp / 2); 
-            player.location = 'village'; 
-            player.score = Math.max(0, (player.score || 0) - 10); 
+        if (player.hp <= 0) {
+            player.hp = Math.floor(player.maxHp / 2);
+            player.location = 'village';
+            player.score = Math.max(0, (player.score || 0) - 10);
             delete activeBattles[player.chatId];
-            msg += '💀 مردی! به روستا برگشتی.'; 
-            return { battleOver: true, escaped: false, message: msg, animation: animations.damage }; 
+            msg += '💀 مردی! به روستا برگشتی.';
+            return { battleOver: true, escaped: false, message: msg, animation: animations.damage };
         }
         return { battleOver: false, escaped: false, message: msg, animation: animations.damage };
     }
@@ -356,24 +344,44 @@ function hpBar(c, m) {
 
 function formatBattle(p, e) {
     let msg = `⚔️ ${e.emoji} ${e.name}\n${hpBar(e.hp, e.maxHp)}\n👤 تو\n${hpBar(p.hp, p.maxHp)} | ⚔️${p.attack} 🛡️${p.defense}`;
-    
-    // نمایش حیوون‌ها
+
     if (p.pets && p.pets.length > 0) {
         msg += '\n🐾 ';
-        for (let pet of p.pets) {
-            msg += `${pet.emoji} `;
-        }
+        for (let pet of p.pets) msg += `${pet.emoji} `;
     }
-    
+
     return msg;
 }
 
+// =============================================
+// ⚔️ کیبورد شیشه‌ای نبرد
+// =============================================
 function getBattleKeyboard(player, enemy) {
-    const b = [['⚔️ 🗡️ حمله کن']];
-    if ((player.inventory?.spell || 0) > 0) b.push(['📜 طلسم']);
-    if ((player.inventory?.finisher || 0) > 0) b.push(['💀 فنیشر']);
-    if (!enemy?.trapped_player) b.push(['🏃 💨 فرار کن']);
-    return { reply_markup: { keyboard: b, resize_keyboard: true } };
+    const buttons = [];
+
+    // ردیف اول - حمله
+    buttons.push([{ text: '⚔️ 🗡️ حمله کن', callback_data: 'battle_attack' }]);
+
+    // ردیف دوم - طلسم و فنیشر
+    const row2 = [];
+    if ((player.inventory?.spell || 0) > 0) {
+        row2.push({ text: `📜 طلسم (${player.inventory.spell})`, callback_data: 'battle_spell' });
+    }
+    if ((player.inventory?.finisher || 0) > 0) {
+        row2.push({ text: `💀 فنیشر (${player.inventory.finisher})`, callback_data: 'battle_finisher' });
+    }
+    if (row2.length > 0) buttons.push(row2);
+
+    // ردیف سوم - فرار
+    if (!enemy?.trapped_player) {
+        buttons.push([{ text: '🏃 💨 فرار کن', callback_data: 'battle_escape' }]);
+    }
+
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
-module.exports = { activeBattles, startFight, startPvPFight, playerAttack, useSpell, useFinisher, playerEscape, formatBattle, getBattleKeyboard, animations };
+module.exports = {
+    activeBattles, startFight, startPvPFight,
+    playerAttack, useSpell, useFinisher, playerEscape,
+    formatBattle, getBattleKeyboard, animations
+};
