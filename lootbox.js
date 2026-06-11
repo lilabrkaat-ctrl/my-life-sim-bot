@@ -107,103 +107,61 @@ const lootBoxes = {
 
 function findLootBox(player) {
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
-    
     const r = Math.random();
-    
     if (r < 0.05) {
         const r2 = Math.random();
-        if (r2 < 0.60) {
-            player.lootBoxes.wooden++;
-            return { found: true, type: 'wooden', box: lootBoxes.wooden };
-        } else if (r2 < 0.85) {
-            player.lootBoxes.silver++;
-            return { found: true, type: 'silver', box: lootBoxes.silver };
-        } else if (r2 < 0.96) {
-            player.lootBoxes.golden++;
-            return { found: true, type: 'golden', box: lootBoxes.golden };
-        } else {
-            player.lootBoxes.legendary++;
-            return { found: true, type: 'legendary', box: lootBoxes.legendary };
-        }
+        if (r2 < 0.60) { player.lootBoxes.wooden++; return { found: true, type: 'wooden', box: lootBoxes.wooden }; }
+        else if (r2 < 0.85) { player.lootBoxes.silver++; return { found: true, type: 'silver', box: lootBoxes.silver }; }
+        else if (r2 < 0.96) { player.lootBoxes.golden++; return { found: true, type: 'golden', box: lootBoxes.golden }; }
+        else { player.lootBoxes.legendary++; return { found: true, type: 'legendary', box: lootBoxes.legendary }; }
     }
-    
     return { found: false };
 }
 
 function openLootBox(player, boxType) {
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
-    
     const box = lootBoxes[boxType];
     if (!box) return { success: false, message: '❌ صندوق نامعتبر!' };
-    
-    if ((player.lootBoxes[boxType] || 0) < 1) {
-        return { success: false, message: `❌ ${box.emoji} *${box.name}* نداری!` };
-    }
-    
-    if ((player.inventory?.key || 0) < box.keyCost) {
-        return { success: false, message: `❌ کلید کافی نداری!\n🗝️ نیاز: ${box.keyCost} | 🗝️ داری: ${player.inventory?.key || 0}` };
-    }
-    
-    if (boxType !== 'wooden' && (player.inventory?.gold || 0) < box.openCost) {
-        return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${box.openCost} | 👑 داری: ${player.inventory?.gold || 0}` };
-    }
-    
+    if ((player.lootBoxes[boxType] || 0) < 1) return { success: false, message: `❌ ${box.emoji} *${box.name}* نداری!` };
+    if ((player.inventory?.key || 0) < box.keyCost) return { success: false, message: `❌ کلید کافی نداری!\n🗝️ نیاز: ${box.keyCost} | 🗝️ داری: ${player.inventory?.key || 0}` };
+    if (boxType !== 'wooden' && (player.inventory?.gold || 0) < box.openCost) return { success: false, message: `❌ طلا کافی نداری!\n👑 نیاز: ${box.openCost} | 👑 داری: ${player.inventory?.gold || 0}` };
+
     player.lootBoxes[boxType]--;
     player.inventory.key -= box.keyCost;
     if (boxType !== 'wooden') player.inventory.gold -= box.openCost;
-    
+
     const rewards = [];
     let petFound = null;
-    
     const rewardCount = Math.floor(Math.random() * 4) + 3;
-    
+
     for (let i = 0; i < rewardCount; i++) {
         for (let reward of box.rewards) {
             if (Math.random() < reward.chance) {
                 if (reward.pet) {
                     const petRarity = reward.rarity;
                     const petChance = reward.chance;
-                    
                     if (Math.random() < petChance) {
                         const { petTypes } = require('./pet');
-                        
                         let availablePets;
-                        if (petRarity === 'common') {
-                            availablePets = ['wolf_cub'];
-                        } else if (petRarity === 'rare') {
-                            availablePets = ['wolf_cub', 'dragon_egg'];
-                        } else if (petRarity === 'epic') {
-                            availablePets = ['dragon_egg'];
-                        } else if (petRarity === 'legendary') {
-                            availablePets = ['dragon_egg'];
-                        } else {
-                            availablePets = ['wolf_cub'];
-                        }
-                        
+                        if (petRarity === 'common') availablePets = ['wolf_cub'];
+                        else if (petRarity === 'rare') availablePets = ['wolf_cub', 'dragon_egg'];
+                        else if (petRarity === 'epic') availablePets = ['dragon_egg'];
+                        else if (petRarity === 'legendary') availablePets = ['dragon_egg'];
+                        else availablePets = ['wolf_cub'];
+
                         const petType = availablePets[Math.floor(Math.random() * availablePets.length)];
                         const pet = petTypes[petType];
-                        
                         petFound = {
                             id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                            type: petType,
-                            name: pet.name,
-                            emoji: pet.emoji,
-                            image: pet.image,
-                            eggImage: pet.eggImage,
-                            level: 1,
-                            xp: 0,
-                            xpNeeded: 20,
-                            attackBonus: pet.attackBonus,
-                            defenseBonus: pet.defenseBonus,
-                            hpBonus: pet.hpBonus,
-                            rarity: pet.rarity,
-                            evolveLevel: pet.evolveLevel,
-                            evolveTo: pet.evolveTo,
-                            foodCost: pet.foodCost,
-                            evolveMessage: pet.evolveMessage,
+                            type: petType, name: pet.name, emoji: pet.emoji,
+                            image: pet.image, eggImage: pet.eggImage,
+                            level: 1, xp: 0, xpNeeded: 20,
+                            attackBonus: pet.attackBonus, defenseBonus: pet.defenseBonus,
+                            hpBonus: pet.hpBonus, rarity: pet.rarity,
+                            evolveLevel: pet.evolveLevel, evolveTo: pet.evolveTo,
+                            foodCost: pet.foodCost, evolveMessage: pet.evolveMessage,
                             foundAt: Date.now()
                         };
-                        
                         rewards.push({ type: 'pet', data: petFound });
                     }
                 } else {
@@ -211,7 +169,6 @@ function openLootBox(player, boxType) {
                     const itemData = config.images?.resources?.[reward.item];
                     const emoji = itemData?.emoji || '';
                     const name = itemData?.name || reward.item;
-                    
                     player.inventory[reward.item] = (player.inventory[reward.item] || 0) + amount;
                     rewards.push({ type: 'item', item: reward.item, amount, emoji, name });
                 }
@@ -219,21 +176,13 @@ function openLootBox(player, boxType) {
             }
         }
     }
-    
+
     let message = `${box.emoji} *${box.name}* باز شد!\n\n🎁 *جایزه‌ها:*\n`;
-    
     for (let reward of rewards) {
-        if (reward.type === 'item') {
-            message += `${reward.emoji} ${reward.name}: +${reward.amount}\n`;
-        } else if (reward.type === 'pet') {
-            message += `🐾 ${reward.data.emoji} *${reward.data.name}* (حیوون جدید!)\n`;
-        }
+        if (reward.type === 'item') message += `${reward.emoji} ${reward.name}: +${reward.amount}\n`;
+        else if (reward.type === 'pet') message += `🐾 ${reward.data.emoji} *${reward.data.name}* (حیوون جدید!)\n`;
     }
-    
-    if (rewards.length === 0) {
-        message += '😞 هیچی...\n';
-    }
-    
+    if (rewards.length === 0) message += '😞 هیچی...\n';
     message += `\n🗝️ -${box.keyCost} کلید`;
     if (boxType !== 'wooden') message += `\n👑 -${box.openCost} طلا`;
     message += `\n\n📦 صندوق‌های باقی‌مانده:\n`;
@@ -241,58 +190,35 @@ function openLootBox(player, boxType) {
     message += `📦 نقره‌ای: ${player.lootBoxes.silver || 0}\n`;
     message += `📦 طلایی: ${player.lootBoxes.golden || 0}\n`;
     message += `📦 افسانه‌ای: ${player.lootBoxes.legendary || 0}`;
-    
-    return { 
-        success: true, 
-        message,
-        image: box.image,
-        pet: petFound,
-        rewards: rewards.filter(r => r.type === 'item')
-    };
+
+    return { success: true, message, image: box.image, pet: petFound, rewards: rewards.filter(r => r.type === 'item') };
 }
 
 function formatLootBoxes(player) {
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
-    
     const total = (player.lootBoxes.wooden || 0) + (player.lootBoxes.silver || 0) + (player.lootBoxes.golden || 0) + (player.lootBoxes.legendary || 0);
-    
-    if (total === 0) {
-        return '📦 *صندوقچه‌های گنج*\n\n❌ هیچ صندوقی نداری!\n💡 موقع جمع‌آوری و سفر شانس پیدا کردن داری (۵٪)';
-    }
-    
+    if (total === 0) return '📦 *صندوقچه‌های گنج*\n\n❌ هیچ صندوقی نداری!\n💡 موقع جمع‌آوری و سفر شانس پیدا کردن داری (۵٪)';
     let msg = '📦 *صندوقچه‌های گنج*\n\n';
-    
-    if (player.lootBoxes.wooden > 0) msg += `📦 صندوق چوبی: ${player.lootBoxes.wooden} عدد (رایگان - ۱🗝️)\n`;
-    if (player.lootBoxes.silver > 0) msg += `📦⚪ صندوق نقره‌ای: ${player.lootBoxes.silver} عدد (۱۰👑 - ۲🗝️)\n`;
-    if (player.lootBoxes.golden > 0) msg += `📦🟡 صندوق طلایی: ${player.lootBoxes.golden} عدد (۵۰👑 - ۳🗝️)\n`;
-    if (player.lootBoxes.legendary > 0) msg += `📦🟣 صندوق افسانه‌ای: ${player.lootBoxes.legendary} عدد (۱۰۰👑 - ۵🗝️)\n`;
-    
-    msg += `\n🗝️ کلیدهای تو: ${player.inventory?.key || 0}\n`;
-    msg += `👑 طلای تو: ${player.inventory?.gold || 0}`;
-    
+    if (player.lootBoxes.wooden > 0) msg += `📦 صندوق چوبی: ${player.lootBoxes.wooden} عدد (۱🗝️)\n`;
+    if (player.lootBoxes.silver > 0) msg += `📦⚪ صندوق نقره‌ای: ${player.lootBoxes.silver} عدد (۲🗝️ + ۱۰👑)\n`;
+    if (player.lootBoxes.golden > 0) msg += `📦🟡 صندوق طلایی: ${player.lootBoxes.golden} عدد (۳🗝️ + ۵۰👑)\n`;
+    if (player.lootBoxes.legendary > 0) msg += `📦🟣 صندوق افسانه‌ای: ${player.lootBoxes.legendary} عدد (۵🗝️ + ۱۰۰👑)\n`;
+    msg += `\n🗝️ کلیدهای تو: ${player.inventory?.key || 0}\n👑 طلای تو: ${player.inventory?.gold || 0}`;
     return msg;
 }
 
+// =============================================
+// 📦 کیبورد شیشه‌ای
+// =============================================
 function getLootBoxKeyboard(player) {
     if (!player.lootBoxes) player.lootBoxes = { wooden: 0, silver: 0, golden: 0, legendary: 0 };
-    
     const buttons = [];
-    
-    if (player.lootBoxes.wooden > 0) buttons.push(['📦 باز کردن صندوق چوبی']);
-    if (player.lootBoxes.silver > 0) buttons.push(['📦⚪ باز کردن صندوق نقره‌ای']);
-    if (player.lootBoxes.golden > 0) buttons.push(['📦🟡 باز کردن صندوق طلایی']);
-    if (player.lootBoxes.legendary > 0) buttons.push(['📦🟣 باز کردن صندوق افسانه‌ای']);
-    
-    buttons.push(['🔙 برگشت']);
-    
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+    if (player.lootBoxes.wooden > 0) buttons.push([{ text: '📦 باز کردن صندوق چوبی (۱🗝️)', callback_data: 'lootbox_open_wooden' }]);
+    if (player.lootBoxes.silver > 0) buttons.push([{ text: '📦⚪ باز کردن صندوق نقره‌ای (۲🗝️ + ۱۰👑)', callback_data: 'lootbox_open_silver' }]);
+    if (player.lootBoxes.golden > 0) buttons.push([{ text: '📦🟡 باز کردن صندوق طلایی (۳🗝️ + ۵۰👑)', callback_data: 'lootbox_open_golden' }]);
+    if (player.lootBoxes.legendary > 0) buttons.push([{ text: '📦🟣 باز کردن صندوق افسانه‌ای (۵🗝️ + ۱۰۰👑)', callback_data: 'lootbox_open_legendary' }]);
+    buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
-module.exports = {
-    lootBoxes,
-    boxImages,
-    findLootBox,
-    openLootBox,
-    formatLootBoxes,
-    getLootBoxKeyboard
-};
+module.exports = { lootBoxes, boxImages, findLootBox, openLootBox, formatLootBoxes, getLootBoxKeyboard };
