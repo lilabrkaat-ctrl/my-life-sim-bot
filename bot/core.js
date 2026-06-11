@@ -39,8 +39,22 @@ const chamberState = {};
 const activeBattles = {};
 
 const positionImages = {
-    front: ['AgACAgQAAxkBAAEqchJqKYNBg0zmZiROMcoy2bB_M3tjwgACPA9rG9N3UVHZwwE7RKj3YQEAAwIAA3gAAzsE'],
-    back: ['AgACAgQAAxkBAAEqchZqKYNBnFb9YWyq8mErc6qZmxEM7QACQA9rG9N3UVEFrz_O5eTc3QEAAwIAA3gAAzsE']
+    front: [
+        'AgACAgQAAxkBAAEqchJqKYNBg0zmZiROMcoy2bB_M3tjwgACPA9rG9N3UVHZwwE7RKj3YQEAAwIAA3gAAzsE',
+        'AgACAgQAAxkBAAEqchRqKYNBnzYyp4TfO3yFCSQTjWVu_AACPg9rG9N3UVHORrlN-_zB3gEAAwIAA3gAAzsE',
+        'AgACAgQAAxkBAAEqchVqKYNBXoZesg275G3iu_wDjN4BGAACPw9rG9N3UVFG4eWVwi9M3wEAAwIAA3gAAzsE'
+    ],
+    back: [
+        'AgACAgQAAxkBAAEqchZqKYNBnFb9YWyq8mErc6qZmxEM7QACQA9rG9N3UVEFrz_O5eTc3QEAAwIAA3gAAzsE',
+        'AgACAgQAAxkBAAEqchdqKYNB01FBalAJPYpsBwfrqyUXNgACQg9rG9N3UVH9yMp8cY9xqgEAAwIAA3gAAzsE',
+        'AgACAgQAAxkBAAEqchhqKYNBvWdxTz5Xb4BVegmydls94AACQw9rG9N3UVGPyWGMVz6ImgEAAwIAA3gAAzsE'
+    ],
+    oral: [
+        'AgACAgQAAxkBAAEqfftqKqaxBLj8zmJFAAGGMOblB3TYKysAAqMNaxvTd1lRBk2GH8yUWEwBAAMCAAN4AAM7BA',
+        'AgACAgQAAxkBAAEqffxqKqaxGnpxsmE1Y2QrXJ9jnNOkOAACpA1rG9N3WVGgQCq8RRje-AEAAwIAA3gAAzsE',
+        'AgACAgQAAxkBAAEqff1qKqaxzWpMBU5o8D7ZhEr2JQiCBgACpQ1rG9N3WVENC8ddFu-v2wEAAwIAA3gAAzsE',
+        'AgACAgQAAxkBAAEqff5qKqaxiH-877mgbAZHzM-EHyYj4gACpg1rG9N3WVFRhyA268JFYwEAAwIAA3gAAzsE'
+    ]
 };
 
 function mainMenu() {
