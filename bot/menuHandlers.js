@@ -6,11 +6,11 @@ const { formatDailyQuests, getDailyQuestKeyboard, initDailyQuests } = require('.
 const { initPets } = require('../pet');
 const { initChildren, checkBirths, getBirthImage } = require('../offspring');
 const { formatSecretChamber, getSecretChamberKeyboard } = require('../secretChamber');
-const { showShopMenu } = require('../shop');
+const { showShopMenu, getShopKeyboard } = require('../shop');
 const { showCraftMenu, getCraftKeyboard } = require('../craft');
-const { formatPrison } = require('../prison');
-const { formatHouse } = require('../house');
-const { formatEmpire } = require('../empire');
+const { formatPrison, getPrisonKeyboard } = require('../prison');
+const { formatHouse, getHouseKeyboard } = require('../house');
+const { formatEmpire, getEmpireKeyboard } = require('../empire');
 
 function setupMenuHandlers() {
 
@@ -184,11 +184,20 @@ function setupMenuHandlers() {
                     const fr = require('../fight').startFight(p);
                     if (fr.success) {
                         activeBattles[chatId] = fr.enemy;
-                        return await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
+                        if (fr.animation) {
+                            return await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
+                        } else {
+                            return await bot.sendMessage(chatId, result.message + '\n' + fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
+                        }
                     }
                 }
                 
-                await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
+                if (result.travelImage) {
+                    await sendPhoto(chatId, result.travelImage, result.message, mainMenu());
+                } else {
+                    await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
+                }
+                
                 let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
                 if (p.unlockedMessage) p.unlockedMessage = null;
                 return bot.sendMessage(chatId, '🏛️ سفر تموم شد!' + extra, { parse_mode: 'Markdown', ...mainMenu() });
@@ -207,10 +216,14 @@ function setupMenuHandlers() {
         
         if (fr.success) {
             activeBattles[chatId] = fr.enemy;
+            
             if (fr.animation) {
                 await sendAnimation(chatId, fr.animation, fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
             } else {
-                await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
+                await bot.sendMessage(chatId, fr.message, { 
+                    parse_mode: 'Markdown', 
+                    ...require('../fight').getBattleKeyboard(p, fr.enemy) 
+                });
             }
         } else {
             await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...mainMenu() });
@@ -222,7 +235,12 @@ function setupMenuHandlers() {
         const chatId = msg.chat.id;
         const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-        await bot.sendMessage(chatId, showShopMenu(), { parse_mode: 'Markdown', ...mainMenu() });
+        
+        const { showShopMenu, getShopKeyboard } = require('../shop');
+        await bot.sendMessage(chatId, showShopMenu() + `\n\n👑 طلای تو: ${p.inventory?.gold || 0}`, { 
+            parse_mode: 'Markdown', 
+            ...getShopKeyboard() 
+        });
     });
 
     // ============ 🔨 ساخت‌وساز ============
@@ -238,7 +256,7 @@ function setupMenuHandlers() {
         const chatId = msg.chat.id;
         const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-        await bot.sendMessage(chatId, formatPrison(p), { parse_mode: 'Markdown', ...mainMenu() });
+        await bot.sendMessage(chatId, formatPrison(p), { parse_mode: 'Markdown', ...getPrisonKeyboard(p) });
     });
 
     // ============ 🏠 خونه ============
@@ -246,7 +264,7 @@ function setupMenuHandlers() {
         const chatId = msg.chat.id;
         const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-        await bot.sendMessage(chatId, formatHouse(p), { parse_mode: 'Markdown', ...mainMenu() });
+        await bot.sendMessage(chatId, formatHouse(p), { parse_mode: 'Markdown', ...getHouseKeyboard(p) });
     });
 
     // ============ 👑 امپراطوری ============
@@ -254,7 +272,7 @@ function setupMenuHandlers() {
         const chatId = msg.chat.id;
         const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-        await bot.sendMessage(chatId, formatEmpire(p), { parse_mode: 'Markdown', ...mainMenu() });
+        await bot.sendMessage(chatId, formatEmpire(p), { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
     });
 
     // ============ 🔞 مخفی‌گاه ============
