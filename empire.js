@@ -62,7 +62,7 @@ function assignRole(player, roleKey, childId) {
     const role = empireRoles[roleKey];
     if (!role) return { success: false, message: '❌ سمت نامعتبر!' };
     if (player.empire.level < role.minLevel) return { success: false, message: `❌ نیاز به سطح ${role.minLevel} امپراطوری` };
-    
+
     if (role.needsChild) {
         if (!childId) return { success: false, message: '❌ باید یه فرزند انتخاب کنی!' };
         const child = player.children.find(c => c.id === childId && c.isAlive);
@@ -70,12 +70,12 @@ function assignRole(player, roleKey, childId) {
         if (role.needsHeir && !child.isHeir) return { success: false, message: '❌ فقط ولیعهد!' };
         if (role.childClass && child.class !== role.childClass) return { success: false, message: `❌ فقط ${role.childClass}ها!` };
         if (role.childEvolution && child.evolutionLevel < role.childEvolution) return { success: false, message: `❌ نیاز به سطح ارتقا ${role.childEvolution}` };
-        
+
         player.empire.roles[roleKey] = { childId: child.id, childName: child.name, childEmoji: child.emoji, assignedAt: Date.now() };
         child.loyalty = Math.min(100, child.loyalty + 15);
-        return { success: true, message: `✅ ${child.emoji} *${child.name}* → ${role.emoji} *${role.name}*\n📝 ${role.description || ''}` };
+        return { success: true, message: `✅ ${child.emoji} *${child.name}* → ${role.emoji} *${role.name}*` };
     }
-    
+
     player.empire.roles[roleKey] = { assignedAt: Date.now() };
     return { success: true, message: `✅ ${role.emoji} *${role.name}* منصوب شد!` };
 }
@@ -91,43 +91,40 @@ function collectEmpireIncome(player) {
     initEmpire(player);
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
-    
+
     if (now - player.empire.lastCollection < oneDay) {
         const remaining = oneDay - (now - player.empire.lastCollection);
         const hoursLeft = Math.floor(remaining / (60 * 60 * 1000));
         const minutesLeft = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
         return { success: false, message: `⏰ ${hoursLeft}h ${minutesLeft}m تا درآمد بعدی` };
     }
-    
+
     const empireLvl = empireLevels[player.empire.level || 0];
     let totalGold = empireLvl.dailyGold;
-    
-    // بونوس خزانه‌دار
+
     let goldBonus = 0;
     for (let roleKey in player.empire.roles) {
         const role = empireRoles[roleKey];
         if (role && role.bonus && role.bonus.gold) goldBonus += role.bonus.gold;
     }
     totalGold = Math.floor(totalGold * (1 + goldBonus / 100));
-    
-    // بونوس عجایب
+
     for (let wonderKey of player.empire.wonders) {
         const wonder = wonders[wonderKey];
         if (wonder && wonder.bonus && wonder.bonus.gold) {
             totalGold = Math.floor(totalGold * (1 + wonder.bonus.gold / 100));
         }
     }
-    
+
     player.empire.treasury += totalGold;
     player.empire.totalGoldEarned += totalGold;
     player.inventory.gold = (player.inventory.gold || 0) + totalGold;
     player.empire.lastCollection = now;
-    
-    // منابع
+
     for (let res in empireLvl.dailyResources) {
         player.inventory[res] = (player.inventory[res] || 0) + empireLvl.dailyResources[res];
     }
-    
+
     let msg = `💰 *درآمد امپراطوری*\n\n👑 +${totalGold} طلا\n🏦 خزانه: ${player.empire.treasury} طلا`;
     return { success: true, message: msg };
 }
@@ -138,17 +135,17 @@ function buildWonder(player, wonderKey) {
     if (!wonder) return { success: false, message: '❌ عجایب نامعتبر!' };
     if (player.empire.wonders.includes(wonderKey)) return { success: false, message: '❌ قبلاً ساخته شده!' };
     if (player.empire.level < wonder.minLevel) return { success: false, message: `❌ نیاز به سطح ${wonder.minLevel} امپراطوری` };
-    
+
     for (let item in wonder.cost) {
         if ((player.inventory[item] || 0) < wonder.cost[item]) {
             return { success: false, message: `❌ ${item} کافی نداری!\nنیاز: ${wonder.cost[item]}\nداری: ${player.inventory[item] || 0}` };
         }
     }
-    
+
     for (let item in wonder.cost) { player.inventory[item] -= wonder.cost[item]; }
     player.empire.wonders.push(wonderKey);
     player.score = (player.score || 0) + 200;
-    
+
     return { success: true, message: `✅ ${wonder.emoji} *${wonder.name}* ساخته شد!\n📝 ${wonder.description}\n🏆 +۲۰۰ امتیاز` };
 }
 
@@ -163,13 +160,13 @@ function formatEmpire(player) {
     initEmpire(player);
     initChildren(player);
     const empireLvl = getEmpireLevel(player);
-    
+
     let msg = `${empireLvl.emoji} *${empireLvl.name}*\n`;
     if (player.empire.dynastyName) msg += `📜 سلسله ${player.empire.dynastyName}\n`;
     msg += `⭐ امتیاز: ${player.score || 0}\n`;
     msg += `🏦 خزانه: ${player.empire.treasury || 0} طلا\n`;
     msg += `💰 درآمد روزانه: ${empireLvl.dailyGold} طلا\n\n`;
-    
+
     msg += '👥 *سمت‌ها:*\n';
     for (let roleKey in empireRoles) {
         const role = empireRoles[roleKey];
@@ -178,7 +175,7 @@ function formatEmpire(player) {
             msg += `   ${role.emoji} ${role.name}: ${roleData ? (roleData.childEmoji || '✅') + ' ' + (roleData.childName || '') : '❌ خالی'}\n`;
         }
     }
-    
+
     msg += '\n🏛️ *عجایب:*\n';
     if (player.empire.wonders.length === 0) {
         msg += '   ❌ هیچی ساخته نشده\n';
@@ -188,34 +185,45 @@ function formatEmpire(player) {
             if (wonder) msg += `   ✅ ${wonder.emoji} ${wonder.name}\n`;
         }
     }
-    
+
     return msg;
 }
 
+// =============================================
+// 🎮 کیبورد شیشه‌ای (inline)
+// =============================================
 function getEmpireKeyboard(player) {
     initEmpire(player);
     const buttons = [];
-    
-    buttons.push(['💰 جمع‌آوری درآمد']);
-    
+
+    // ردیف اول - درآمد
+    buttons.push([{ text: '💰 جمع‌آوری درآمد', callback_data: 'empire_income' }]);
+
+    // سمت‌های خالی
     for (let roleKey in empireRoles) {
         const role = empireRoles[roleKey];
         if (player.empire.level >= role.minLevel && !player.empire.roles[roleKey]) {
-            buttons.push([`📋 انتصاب ${role.emoji} ${role.name}`]);
+            buttons.push([{ text: `📋 ${role.emoji} ${role.name}`, callback_data: `empire_assign_${roleKey}` }]);
         }
     }
-    
+
+    // عجایب نساخته
     for (let wonderKey in wonders) {
         const wonder = wonders[wonderKey];
         if (!player.empire.wonders.includes(wonderKey) && player.empire.level >= wonder.minLevel) {
-            buttons.push([`🏗️ ساخت ${wonder.emoji} ${wonder.name}`]);
+            buttons.push([{ text: `🏗️ ${wonder.emoji} ${wonder.name}`, callback_data: `empire_wonder_${wonderKey}` }]);
         }
     }
-    
-    buttons.push(['📝 تغییر نام سلسله']);
-    buttons.push(['🔙 برگشت']);
-    
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+
+    // ردیف‌های پایین
+    buttons.push([{ text: '📝 تغییر نام سلسله', callback_data: 'empire_dynasty' }]);
+    buttons.push([{ text: '👸 حرمسرا', callback_data: 'harem_menu' }]);
+    buttons.push([{ text: '🏛️ دربار', callback_data: 'court_menu' }]);
+    buttons.push([{ text: '👥 مردم', callback_data: 'people_menu' }]);
+    buttons.push([{ text: '👶 فرزندان', callback_data: 'children_menu' }]);
+    buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
+
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
 module.exports = {
