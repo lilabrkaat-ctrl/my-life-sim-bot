@@ -385,3 +385,106 @@ module.exports = {
     playerAttack, useSpell, useFinisher, playerEscape,
     formatBattle, getBattleKeyboard, animations
 };
+function enemyTurn(player, enemy, log, animation) {
+    if (enemy.status === 'trapped') return { battleOver: false, message: log, animation: null };
+    const dmg = Math.max(1, enemy.attack - Math.floor((player.defense || 2) / 3));
+    player.hp -= dmg;
+    if (player.hp < 0) player.hp = 0;
+    log += `💢 ${enemy.name} ${dmg} زد! | ${hpBar(player.hp, player.maxHp)}\n`;
+    if (player.hp <= 0) {
+        player.hp = Math.floor(player.maxHp / 2);
+        player.xp = Math.max(0, player.xp - 5);
+        player.inventory.gold = Math.max(0, player.inventory.gold - 5);
+        player.score = Math.max(0, (player.score || 0) - 10);
+        player.location = 'village';
+        delete activeBattles[player.chatId];
+        log += `💀 *مردی!* به روستا برگشتی.`;
+        return { battleOver: true, playerWon: false, message: log, animation: animations.damage };
+    }
+    return { battleOver: false, message: log, animation: animations.damage };
+}
+
+function playerEscape(player, enemy) {
+    const r = Math.random();
+    if (r < 0.65) {
+        delete activeBattles[player.chatId];
+        return { battleOver: true, escaped: true, message: '💨 فرار کردی!', animation: animations.escape };
+    }
+    else if (r < 0.90) {
+        enemy.status = 'trapped_player';
+        const dmg = Math.max(1, Math.floor(enemy.attack * 1.3));
+        player.hp -= dmg;
+        if (player.hp < 0) player.hp = 0;
+        let msg = `🔒 محاصره شدی! ${enemy.name} ${dmg} زد!`;
+        if (player.hp <= 0) {
+            player.hp = Math.floor(player.maxHp / 2);
+            player.location = 'village';
+            player.score = Math.max(0, (player.score || 0) - 10);
+            delete activeBattles[player.chatId];
+            msg += '💀 مردی! به روستا برگشتی.';
+            return { battleOver: true, escaped: false, message: msg, animation: animations.damage };
+        }
+        return { battleOver: false, escaped: false, message: msg, animation: animations.damage };
+    }
+    return { battleOver: false, escaped: false, message: '😬 نتونستی فرار کنی!', animation: null };
+}
+
+function hpBar(c, m) {
+    const p = Math.max(0, c / m);
+    const filled = Math.max(0, Math.floor(p * 10));
+    let bar = '';
+    for (let i = 0; i < 10; i++) {
+        if (i < filled) {
+            if (i < 6) bar += '🟩';
+            else if (i < 8) bar += '🟨';
+            else bar += '🟥';
+        } else {
+            bar += '⬛';
+        }
+    }
+    return `${bar} ${Math.floor(p * 100)}٪`;
+}
+
+function formatBattle(p, e) {
+    let msg = `⚔️ ${e.emoji} ${e.name}\n${hpBar(e.hp, e.maxHp)}\n👤 تو\n${hpBar(p.hp, p.maxHp)} | ⚔️${p.attack} 🛡️${p.defense}`;
+
+    if (p.pets && p.pets.length > 0) {
+        msg += '\n🐾 ';
+        for (let pet of p.pets) msg += `${pet.emoji} `;
+    }
+
+    return msg;
+}
+
+// =============================================
+// ⚔️ کیبورد شیشه‌ای نبرد
+// =============================================
+function getBattleKeyboard(player, enemy) {
+    const buttons = [];
+
+    // حمله
+    buttons.push([{ text: '⚔️ 🗡️ حمله کن', callback_data: 'battle_attack' }]);
+
+    // طلسم و فنیشر
+    const row2 = [];
+    if ((player.inventory?.spell || 0) > 0) {
+        row2.push({ text: `📜 طلسم (${player.inventory.spell})`, callback_data: 'battle_spell' });
+    }
+    if ((player.inventory?.finisher || 0) > 0) {
+        row2.push({ text: `💀 فنیشر (${player.inventory.finisher})`, callback_data: 'battle_finisher' });
+    }
+    if (row2.length > 0) buttons.push(row2);
+
+    // فرار
+    if (!enemy?.trapped_player) {
+        buttons.push([{ text: '🏃 💨 فرار کن', callback_data: 'battle_escape' }]);
+    }
+
+    return { reply_markup: { inline_keyboard: buttons } };
+}
+
+module.exports = {
+    activeBattles, startFight, startPvPFight,
+    playerAttack, useSpell, useFinisher, playerEscape,
+    formatBattle, getBattleKeyboard, animations
+};
