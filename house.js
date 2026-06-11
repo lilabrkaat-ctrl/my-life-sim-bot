@@ -39,11 +39,9 @@ function inviteToHouse(player, npcId) {
         if (!player.prisonActions) player.prisonActions = {};
         if (!player.prisonActions[npcId]) player.prisonActions[npcId] = { touch: 0, kiss: 0, orgy: 0 };
 
-        // اصلاح: با دو پارامتر
         const dialogue = getHouseDialogue('invite', 'accept');
         return { success: true, message: `${npc?.emoji || ''} ${dialogue}` };
     } else {
-        // اصلاح: با دو پارامتر
         const dialogue = getHouseDialogue('invite', 'reject');
         return { success: false, message: `${npc?.emoji || ''} ${dialogue}` };
     }
@@ -64,7 +62,6 @@ function kickFromHouse(player, npcId) {
         player.marry = null;
     }
 
-    // اصلاح: با کلید درست
     const dialogue = getHouseDialogue('kick', 'angry');
     return { 
         success: true, 
@@ -100,29 +97,66 @@ function formatHouse(player) {
     return msg;
 }
 
-function getHouseKeyboard(player, npcId) {
+// =============================================
+// 🏠 کیبورد شیشه‌ای خونه
+// =============================================
+function getHouseKeyboard(player) {
+    const buttons = [];
+
+    if (player.house && player.house.length > 0) {
+        for (let h of player.house) {
+            const points = getRelationPoints(player, h.npcId);
+            const relation = getRelationLevel(points);
+            const isSpouse = player.marry === h.npcId;
+            buttons.push([{ 
+                text: `${h.emoji} ${h.name} | ${relation.name}${isSpouse ? ' 💍' : ''}`, 
+                callback_data: `house_select_${h.npcId}` 
+            }]);
+        }
+    }
+
+    buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
+
+    return { reply_markup: { inline_keyboard: buttons } };
+}
+
+function getHouseMemberKeyboard(player, npcId) {
     const actions = getPrisonActions(player, npcId);
     const canKiss = actions.touch >= 3;
     const canOrgy = actions.touch >= 10 && actions.kiss >= 10;
-
-    const buttons = [];
-    buttons.push(['🖐️ لمس کن']);
-    if (canKiss) buttons.push(['💋 ببوس']);
-    if (canOrgy) buttons.push(['🔥 عیاشی']);
-
     const points = getRelationPoints(player, npcId);
     const relation = getRelationLevel(points);
+
+    const buttons = [];
+
+    // لمس
+    buttons.push([{ text: `🖐️ لمس کن (${actions.touch})`, callback_data: `house_touch_${npcId}` }]);
+
+    // بوسه
+    if (canKiss) {
+        buttons.push([{ text: `💋 ببوس (${actions.kiss})`, callback_data: `house_kiss_${npcId}` }]);
+    }
+
+    // عیاشی
+    if (canOrgy) {
+        buttons.push([{ text: `🔥 عیاشی (${actions.orgy})`, callback_data: `house_orgy_${npcId}` }]);
+    }
+
+    // خواستگاری
     if ((player.inventory?.ring || 0) > 0 && (relation.level === 'intimate' || relation.level === 'tamed') && !player.marry) {
-        buttons.push(['💍 خواستگاری']);
+        buttons.push([{ text: '💍 خواستگاری', callback_data: `house_propose_${npcId}` }]);
     }
 
+    // عروسی
     if (player.marry === npcId) {
-        buttons.push(['👰 عروسی']);
+        buttons.push([{ text: '👰 عروسی', callback_data: `house_marry_${npcId}` }]);
     }
 
-    buttons.push(['🚪 بیرون کن', '🔙 برگشت']);
+    // اخراج
+    buttons.push([{ text: '🚪 بیرون کن', callback_data: `house_kick_${npcId}` }]);
+    buttons.push([{ text: '🔙 برگشت به خونه', callback_data: 'house_back' }]);
 
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
 function touchInHouse(player, npcId) { return touchPrisoner(player, npcId); }
@@ -130,6 +164,7 @@ function kissInHouse(player, npcId) { return kissPrisoner(player, npcId); }
 function orgyInHouse(player, npcId) { return orgyPrisoner(player, npcId); }
 
 module.exports = {
-    initHouse, inviteToHouse, kickFromHouse, formatHouse, getHouseKeyboard,
+    initHouse, inviteToHouse, kickFromHouse, formatHouse,
+    getHouseKeyboard, getHouseMemberKeyboard,
     touchInHouse, kissInHouse, orgyInHouse
 };
