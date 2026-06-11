@@ -12,6 +12,26 @@ const { player } = require('./core');
 const { getShopState, processAmount } = require('../shop');
 const { cancelShop } = require('../shop');
 
+// ============ هندلر دکمه برگشت ============
+bot.onText(/^🔙 برگشت$/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+    
+    // پاک کردن state ها
+    const { adminState, chamberState, empireState, peopleState, courtState, haremState, shopState } = require('./core');
+    if (adminState[chatId]) delete adminState[chatId];
+    
+    // برگشت به منوی اصلی
+    const config = require('../config');
+    const { getTimeOfDay } = require('../player');
+    const time = getTimeOfDay();
+    p.timeOfDay = time;
+    const loc = config.images.locations[p.location] || config.images.locations.village;
+    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay||1}/۷ | 🏆 ${p.score||0} امتیاز`;
+    await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -48,7 +68,9 @@ bot.on('message', (msg) => {
         return;
     }
 
-    const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','🔙','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','👸','👩','👦','🎲','🍷','🗡️','💊','🛏️','🧹','⏰','💍','👗','🤰','💆','🍑','👄','🎈'];
+    // 🔙 برگشت رو از لیست prefixها حذف کردم
+    const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','👸','👩','👦','🎲','🍷','🗡️','💊','🛏️','🧹','⏰','💍','👗','🤰','💆','🍑','👄','🎈'];
+    
     for (let prefix of prefixes) { if (text.startsWith(prefix)) return; }
 
     const p = player.getPlayer(chatId);
