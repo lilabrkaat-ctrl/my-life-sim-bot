@@ -48,7 +48,7 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
-    // پاک کردن state ها
+    // پاک کردن همه state ها
     const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
     if (adminState[chatId]) delete adminState[chatId];
     if (chamberState[chatId]) delete chamberState[chatId];
@@ -102,7 +102,7 @@ bot.on('callback_query', async (query) => {
 });
 
 // =============================================
-// 👤 پیام‌های معمولی
+// 👤 پیام‌های معمولی (ادمین، shop، state ها)
 // =============================================
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -113,7 +113,6 @@ bot.on('message', async (msg) => {
     if (isAdmin(chatId)) {
         let p = player.getPlayer(chatId);
         
-        // اگه پلیر وجود نداره، یه دونه موقت بساز
         if (!p) {
             player.createPlayer(chatId, 'Admin 👑');
             p = player.getPlayer(chatId);
@@ -184,7 +183,7 @@ bot.on('message', async (msg) => {
             return;
         }
 
-        // حرمسرا - انتخاب ملکه
+        // حرمسرا - انتخاب ملکه برای بارداری
         if (haremState[chatId] && haremState[chatId].action === 'newPregnancy') {
             const queenName = text.trim();
             const queen = p.harem?.queens.find(q => q.name === queenName);
