@@ -1,4 +1,4 @@
-const { bot, player, config, mainMenu, locationMenu, sendPhoto, sendAnimation, activeDialogues } = require('./core');
+const { bot, player, config, mainMenu, locationMenu, sendPhoto, sendAnimation, activeBattles } = require('./core');
 const { getTimeOfDay } = require('../player');
 const { gather } = require('../gather');
 const { travel } = require('../travel');
@@ -15,7 +15,8 @@ const { formatHouse } = require('../house');
 const { formatEmpire } = require('../empire');
 
 function setupMenuHandlers() {
-    // هندلر کانال - پست‌های کانال رو به همه می‌فرسته
+    
+    // ============ کانال ============
     bot.on('channel_post', async (msg) => {
         if (msg.chat.id === -1003035245907) {
             const text = msg.text || msg.caption || '';
@@ -94,7 +95,7 @@ function setupMenuHandlers() {
         else await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ سفر ============
+    // ============ سفر - نقشه ============
     bot.onText(/^🗺️ سفر$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -124,7 +125,6 @@ function setupMenuHandlers() {
                 if (result.ambush) { 
                     const fr = require('../fight').startFight(p); 
                     if (fr.success) { 
-                        const { activeBattles } = require('./core'); 
                         activeBattles[chatId] = fr.enemy; 
                         return await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, require('../fight').getBattleKeyboard(p, fr.enemy)); 
                     } 
@@ -136,13 +136,13 @@ function setupMenuHandlers() {
         }
     });
 
-    // ============ نبرد ============
+    // ============ ⚔️ نبرد ============
     bot.onText(/^⚔️ نبرد$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-        const fr = require('../fight').startFight(p);
+        const { startFight } = require('../fight');
+        const fr = startFight(p);
         if (fr.success) {
-            const { activeBattles } = require('./core');
             activeBattles[chatId] = fr.enemy;
             if (fr.animation) await sendAnimation(chatId, fr.animation, fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
             else await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
@@ -151,42 +151,42 @@ function setupMenuHandlers() {
         }
     });
 
-    // ============ بازار ============
+    // ============ 🏪 بازار ============
     bot.onText(/^🏪 بازار$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, showShopMenu(), { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ ساخت‌وساز ============
+    // ============ 🔨 ساخت‌وساز ============
     bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
     });
 
-    // ============ زندان ============
+    // ============ 🏰 زندان ============
     bot.onText(/^🏰 زندان$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatPrison(p), { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ خونه ============
+    // ============ 🏠 خونه ============
     bot.onText(/^🏠 خونه$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatHouse(p), { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ امپراطوری ============
+    // ============ 👑 امپراطوری ============
     bot.onText(/^👑 امپراطوری$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatEmpire(p), { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ مخفی‌گاه ============
+    // ============ 🔞 مخفی‌گاه ============
     bot.onText(/^🔞 مخفی‌گاه$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
