@@ -1,12 +1,15 @@
 const config = require('./config');
 
+// =============================================
+// 🔨 نمایش منوی ساخت‌وساز
+// =============================================
 function showCraftMenu(player) {
     const energy = player.energy || 0;
     const maxEnergy = player.maxEnergy || 100;
-    
+
     let menu = `🔨 *کارگاه ساخت‌وساز*\n\n`;
     menu += `⚡ انرژی: ${'█'.repeat(Math.floor(energy/maxEnergy*10))}${'░'.repeat(10-Math.floor(energy/maxEnergy*10))} ${energy}/${maxEnergy}\n\n`;
-    
+
     menu += `⚒️ *ساخت معمولی:*\n`;
     for (let name in config.recipes) {
         const r = config.recipes[name];
@@ -21,7 +24,7 @@ function showCraftMenu(player) {
             menu += `${canCraft ? '✅' : '❌'} ${r.emoji} *${name}*: ${costs.join(' + ')}\n`;
         }
     }
-    
+
     menu += `\n✨ *ساخت با انرژی:*\n`;
     for (let name in config.recipes) {
         const r = config.recipes[name];
@@ -38,43 +41,59 @@ function showCraftMenu(player) {
             menu += `${canCraft ? '✅' : '❌'} ${r.emoji} *${name}*: ${costs.join(' + ')} + ${r.energy}⚡\n`;
         }
     }
-    
+
     return menu;
 }
 
+// =============================================
+// 🔨 کیبورد شیشه‌ای ساخت معمولی
+// =============================================
 function getCraftKeyboard(player) {
     const buttons = [];
-    
+
     for (let name in config.recipes) {
         const r = config.recipes[name];
         if (!r.energy) {
-            buttons.push([`🔨 ساخت ${name}`]);
+            const canCraft = Object.keys(r).filter(k => k !== 'effect' && k !== 'bonus' && k !== 'emoji').every(k => (player.inventory[k] || 0) >= (r[k] || 0));
+            buttons.push([{ 
+                text: `${canCraft ? '✅' : '❌'} 🔨 ${name}`, 
+                callback_data: `craft_${name}` 
+            }]);
         }
     }
-    
-    buttons.push(['⚡ ساخت انرژی‌دار']);
-    buttons.push(['🔙 برگشت']);
-    
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+
+    buttons.push([{ text: '⚡ ساخت انرژی‌دار', callback_data: 'craft_energy_menu' }]);
+    buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
+
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
+// =============================================
+// ⚡ کیبورد شیشه‌ای ساخت انرژی‌دار
+// =============================================
 function getEnergyCraftKeyboard(player) {
     const buttons = [];
     const energy = player.energy || 0;
-    
+
     for (let name in config.recipes) {
         const r = config.recipes[name];
         if (r.energy) {
-            const canCraft = energy >= r.energy;
-            buttons.push([`${canCraft ? '✅' : '❌'} ${r.emoji} ${name} (${r.energy}⚡)`]);
+            const canCraft = energy >= r.energy && Object.keys(r).filter(k => k !== 'effect' && k !== 'bonus' && k !== 'emoji' && k !== 'energy').every(k => (player.inventory[k] || 0) >= (r[k] || 0));
+            buttons.push([{ 
+                text: `${canCraft ? '✅' : '❌'} ${r.emoji} ${name} (${r.energy}⚡)`, 
+                callback_data: `craft_energy_${name}` 
+            }]);
         }
     }
-    
-    buttons.push(['🔙 برگشت']);
-    
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+
+    buttons.push([{ text: '🔙 برگشت به ساخت', callback_data: 'craft_back' }]);
+
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
+// =============================================
+// 🔨 ساخت آیتم
+// =============================================
 function craftItem(player, itemName) {
     const recipe = config.recipes[itemName];
     if (!recipe) return { success: false, message: '❌ این آیتم رو نمی‌شناسم!' };
@@ -146,4 +165,9 @@ function craftItem(player, itemName) {
     };
 }
 
-module.exports = { showCraftMenu, getCraftKeyboard, getEnergyCraftKeyboard, craftItem };
+module.exports = { 
+    showCraftMenu, 
+    getCraftKeyboard, 
+    getEnergyCraftKeyboard, 
+    craftItem 
+};
