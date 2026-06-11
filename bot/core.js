@@ -36,6 +36,7 @@ const peopleState = {};
 const courtState = {};
 const haremState = {};
 const chamberState = {};
+const activeBattles = {};
 
 const positionImages = {
     front: ['AgACAgQAAxkBAAEqchJqKYNBg0zmZiROMcoy2bB_M3tjwgACPA9rG9N3UVHZwwE7RKj3YQEAAwIAA3gAAzsE'],
@@ -79,6 +80,7 @@ module.exports = {
     isAdmin, isBanned, adminCommand,
     activeDialogues, activePrisoner, activeHouseNpc, activeHaremQueen,
     pvpSearching, adminState, wishState, empireState, peopleState, courtState, haremState, chamberState,
+    activeBattles,
     positionImages,
     mainMenu, locationMenu, sendAnimation, sendPhoto
 };
