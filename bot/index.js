@@ -6,7 +6,6 @@ const { bot } = require('./core');
 try { require('./menuHandlers').setupMenuHandlers(); } catch(e) { console.log('menuHandlers:', e.message); }
 try { require('./chamberHandlers').setupChamberHandlers(); } catch(e) { console.log('chamberHandlers:', e.message); }
 try { require('./empireHandlers').setupEmpireHandlers(); } catch(e) { console.log('empireHandlers:', e.message); }
-try { require('./empireOrgyHandlers').setupEmpireOrgyHandlers(); } catch(e) { console.log('empireOrgyHandlers:', e.message); }
 try { require('./shopHandlers').setupShopHandlers(); } catch(e) { console.log('shopHandlers:', e.message); }
 try { require('./fightHandlers').setupFightHandlers(); } catch(e) { console.log('fightHandlers:', e.message); }
 try { require('./craftHandlers').setupCraftHandlers(); } catch(e) { console.log('craftHandlers:', e.message); }
@@ -20,7 +19,7 @@ try { require('./courtHandlers').setupCourtHandlers(); } catch(e) { console.log(
 try { require('./peopleHandlers').setupPeopleHandlers(); } catch(e) { console.log('peopleHandlers:', e.message); }
 try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log('adminHandlers:', e.message); }
 
-console.log('✅ تمام هندلرها راه‌اندازی شدن!');
+console.log('✅ تمام ۱۵ هندلر راه‌اندازی شدن!');
 
 const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
