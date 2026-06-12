@@ -32,228 +32,101 @@ function setupAdminHandlers() {
         
         const { isAdmin, adminCommand } = require('../admin');
         if (!isAdmin(chatId)) return bot.answerCallbackQuery(query.id, { text: '❌ فقط ادمین!', show_alert: true });
+        
+        // فقط callbackهای admin رو هندل کن
+        if (!data || !data.startsWith('admin_')) return;
 
         try {
             const { adminState } = require('./core');
+            const del = () => bot.deleteMessage(chatId, msgId).catch(() => {});
 
             // ============ منابع پایه (نیاز به عدد) ============
-            if (data === 'admin_gold') {
-                adminState[chatId] = { step: 'amount', action: 'gold' };
-                await bot.sendMessage(chatId, '💰 *چقدر طلا اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
+            const askAmount = (action, emoji, text) => {
+                adminState[chatId] = { step: 'amount', action };
+                bot.sendMessage(chatId, `${emoji} *${text}*\nعدد رو تایپ کن:`, { parse_mode: 'Markdown' });
+            };
 
-            if (data === 'admin_xp') {
-                adminState[chatId] = { step: 'amount', action: 'xp' };
-                await bot.sendMessage(chatId, '✨ *چقدر XP اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
+            if (data === 'admin_gold') { askAmount('gold', '💰', 'چقدر طلا اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_xp') { askAmount('xp', '✨', 'چقدر XP اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_score') { askAmount('score', '🏆', 'چقدر امتیاز اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_energy') { askAmount('energy', '⚡', 'چقدر انرژی اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_attack') { askAmount('attack', '⚔️', 'چقدر حمله اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_defense') { askAmount('defense', '🛡️', 'چقدر دفاع اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_level') { askAmount('level', '⭐', 'چقدر سطح اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_day') { askAmount('day', '📅', 'روز چندم بشه؟ (۱ تا ۷)'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_condom') { askAmount('condom', '🎈', 'چندتا کاندوم اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_empirelevel') { askAmount('empirelevel', '🏛️', 'سطح امپراطوری چند باشه؟ (۰ تا ۶)'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_population') { askAmount('population', '👥', 'چند نفر اضافه بشن؟'); return bot.answerCallbackQuery(query.id); }
+            if (data === 'admin_food') { askAmount('food', '🍞', 'چقدر غذا اضافه بشه؟'); return bot.answerCallbackQuery(query.id); }
 
-            if (data === 'admin_score') {
-                adminState[chatId] = { step: 'amount', action: 'score' };
-                await bot.sendMessage(chatId, '🏆 *چقدر امتیاز اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_energy') {
-                adminState[chatId] = { step: 'amount', action: 'energy' };
-                await bot.sendMessage(chatId, '⚡ *چقدر انرژی اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_attack') {
-                adminState[chatId] = { step: 'amount', action: 'attack' };
-                await bot.sendMessage(chatId, '⚔️ *چقدر حمله اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_defense') {
-                adminState[chatId] = { step: 'amount', action: 'defense' };
-                await bot.sendMessage(chatId, '🛡️ *چقدر دفاع اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_level') {
-                adminState[chatId] = { step: 'amount', action: 'level' };
-                await bot.sendMessage(chatId, '⭐ *چقدر سطح اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_day') {
-                adminState[chatId] = { step: 'amount', action: 'day' };
-                await bot.sendMessage(chatId, '📅 *روز چندم بشه؟ (۱ تا ۷)*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_condom') {
-                adminState[chatId] = { step: 'amount', action: 'condom' };
-                await bot.sendMessage(chatId, '🎈 *چندتا کاندوم اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            // ============ عملیات فوری (بدون عدد) ============
-            if (data === 'admin_heal') {
-                const result = adminCommand(p, 'heal', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id, { text: 'شفا انجام شد!' });
-            }
-
-            if (data === 'admin_nextday') {
-                const result = adminCommand(p, 'nextday', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id, { text: 'روز بعد!' });
-            }
-
-            if (data === 'admin_unlock') {
-                const result = adminCommand(p, 'unlock', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id, { text: 'همه چیز باز شد!' });
-            }
-
-            if (data === 'admin_max') {
-                const result = adminCommand(p, 'max', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id, { text: 'مکس کامل شد! 🎉', show_alert: true });
-            }
-
-            if (data === 'admin_god') {
-                const result = adminCommand(p, 'god', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id, { text: 'گاد مود! 🔱', show_alert: true });
-            }
-
-            if (data === 'admin_quest') {
-                const result = adminCommand(p, 'quest', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_completequest') {
-                const result = adminCommand(p, 'completequest', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_save') {
-                const result = adminCommand(p, 'save', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_reset') {
-                const result = adminCommand(p, 'reset', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id, { text: 'ریست شد!', show_alert: true });
-            }
-
-            if (data === 'admin_help') {
-                const result = adminCommand(p, 'help', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_users') {
-                const result = adminCommand(p, 'users', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_top') {
-                const result = adminCommand(p, 'top', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_info') {
-                const result = adminCommand(p, 'info', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_income') {
-                const result = adminCommand(p, 'income', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_petfood') {
-                const result = adminCommand(p, 'petfood', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_queencare') {
-                const result = adminCommand(p, 'queencare', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_birth') {
-                const result = adminCommand(p, 'birth', []);
-                await bot.editMessageText(result.message, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            // ============ عملیات با پارامتر ============
+            // ============ عملیات با پارامتر متنی ============
             if (data === 'admin_item') {
                 adminState[chatId] = { step: 'item_name', action: 'item' };
-                await bot.sendMessage(chatId, '🎁 *چه آیتمی می‌خوای بدی؟*\n\n`wood, stone, meat, water, skin, iron, gold, ring, spell, key, diamond, finisher, condom`\n\nاسم آیتم رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '🎁 *چه آیتمی؟*\nwood, stone, meat, water, skin, iron, gold, ring, spell, key, diamond, finisher, condom\n\nاسم آیتم رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
             if (data === 'admin_pet') {
                 adminState[chatId] = { step: 'pet_type', action: 'pet' };
-                await bot.sendMessage(chatId, '🐾 *چه حیوونی می‌خوای؟*\n\n`wolf_cub, wolf_spirit, dragon_egg, dragon_ancient`\n\nنوع حیوون رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '🐾 *چه حیوونی؟*\nwolf_cub, wolf_spirit, dragon_egg, dragon_ancient\n\nنوع حیوون رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
             if (data === 'admin_box') {
                 adminState[chatId] = { step: 'box_type', action: 'box' };
-                await bot.sendMessage(chatId, '📦 *چه صندوقی می‌خوای؟*\n\n`wooden, silver, golden, legendary`\n\nنوع صندوق رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '📦 *چه صندوقی؟*\nwooden, silver, golden, legendary\n\nنوع صندوق رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
             if (data === 'admin_openbox') {
                 adminState[chatId] = { step: 'box_type', action: 'openbox' };
-                await bot.sendMessage(chatId, '📦 *کدوم صندوق رو باز کنم؟*\n\n`wooden, silver, golden, legendary`\n\nنوع صندوق رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '📦 *کدوم صندوق رو باز کنم؟*\nwooden, silver, golden, legendary\n\nنوع صندوق رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
             if (data === 'admin_child') {
                 adminState[chatId] = { step: 'child_class', action: 'child' };
-                await bot.sendMessage(chatId, '👶 *چه کلاسی می‌خوای؟*\n\n`warrior, mage, guardian, hunter, sage, prince`\n\nکلاس رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '👶 *چه کلاسی؟*\nwarrior, mage, guardian, hunter, sage, prince\n\nکلاس رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
             if (data === 'admin_pregnant') {
                 adminState[chatId] = { step: 'npc_name', action: 'pregnant' };
-                await bot.sendMessage(chatId, '🤰 *کی رو باردار کنم؟*\n\nاسم NPC توی خونه رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '🤰 *کی رو باردار کنم؟*\nاسم NPC توی خونه رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
             if (data === 'admin_addqueen') {
                 adminState[chatId] = { step: 'npc_name', action: 'addqueen' };
-                await bot.sendMessage(chatId, '👸 *کدوم NPC رو ملکه کنم؟*\n\nاسم NPC رو تایپ کن:', { parse_mode: 'Markdown' });
+                await bot.sendMessage(chatId, '👸 *کدوم NPC رو ملکه کنم؟*\nاسم NPC رو تایپ کن:', { parse_mode: 'Markdown' });
                 return bot.answerCallbackQuery(query.id);
             }
 
-            if (data === 'admin_empirelevel') {
-                adminState[chatId] = { step: 'amount', action: 'empirelevel' };
-                await bot.sendMessage(chatId, '🏛️ *سطح امپراطوری چند باشه؟ (۰ تا ۶)*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
+            // ============ عملیات فوری ============
+            const doQuick = async (cmd, args, text) => {
+                const result = adminCommand(p, cmd, args);
+                await del();
+                await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
+                return bot.answerCallbackQuery(query.id, { text, show_alert: true });
+            };
 
-            if (data === 'admin_population') {
-                adminState[chatId] = { step: 'amount', action: 'population' };
-                await bot.sendMessage(chatId, '👥 *چند نفر اضافه بشن؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data === 'admin_food') {
-                adminState[chatId] = { step: 'amount', action: 'food' };
-                await bot.sendMessage(chatId, '🍞 *چقدر غذا اضافه بشه؟*\nعدد رو تایپ کن:', { parse_mode: 'Markdown' });
-                return bot.answerCallbackQuery(query.id);
-            }
+            if (data === 'admin_heal') return doQuick('heal', [], '❤️ شفا داده شد!');
+            if (data === 'admin_nextday') return doQuick('nextday', [], '📅 روز بعد!');
+            if (data === 'admin_unlock') return doQuick('unlock', [], '🔓 همه چیز باز شد!');
+            if (data === 'admin_max') return doQuick('max', [], '👑 مکس کامل شد!');
+            if (data === 'admin_god') return doQuick('god', [], '🔱 گاد مود!');
+            if (data === 'admin_quest') return doQuick('quest', [], '📋 ماموریت جدید!');
+            if (data === 'admin_completequest') return doQuick('completequest', [], '✅ ماموریت تکمیل شد!');
+            if (data === 'admin_save') return doQuick('save', [], '💾 ذخیره شد!');
+            if (data === 'admin_reset') return doQuick('reset', [], '🔄 ریست شد!');
+            if (data === 'admin_help') return doQuick('help', [], '❓ راهنما');
+            if (data === 'admin_users') return doQuick('users', [], '👥');
+            if (data === 'admin_top') return doQuick('top', [], '🏆');
+            if (data === 'admin_info') return doQuick('info', [], '📊');
+            if (data === 'admin_income') return doQuick('income', [], '💰 درآمد!');
+            if (data === 'admin_petfood') return doQuick('petfood', [], '🍖 غذا داده شد!');
+            if (data === 'admin_queencare') return doQuick('queencare', [], '💆 رسیدگی شد!');
+            if (data === 'admin_birth') return doQuick('birth', [], '👶 زایمان انجام شد!');
 
         } catch (e) {
             console.log('Admin handler error:', e.message);
@@ -279,47 +152,9 @@ function setupAdminHandlers() {
         const state = adminState[chatId];
         if (!state) return;
 
-        // عملیات با عدد
-        if (state.step === 'amount') {
-            const num = parseInt(text);
-            if (isNaN(num) || num < 0) {
-                return bot.sendMessage(chatId, '❌ یه عدد معتبر وارد کن!');
-            }
-            const result = adminCommand(p, state.action, [text]);
-            delete adminState[chatId];
-            return bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-        }
-
-        // عملیات با متن (آیتم، حیوون، NPC...)
-        if (state.step === 'item_name') {
-            const result = adminCommand(p, 'item', [text, '10']);
-            delete adminState[chatId];
-            return bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-        }
-
-        if (state.step === 'pet_type') {
-            const result = adminCommand(p, 'pet', [text]);
-            delete adminState[chatId];
-            return bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-        }
-
-        if (state.step === 'box_type') {
-            const result = adminCommand(p, state.action, [text]);
-            delete adminState[chatId];
-            return bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-        }
-
-        if (state.step === 'child_class') {
-            const result = adminCommand(p, 'child', [text, 'male']);
-            delete adminState[chatId];
-            return bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-        }
-
-        if (state.step === 'npc_name') {
-            const result = adminCommand(p, state.action, [text]);
-            delete adminState[chatId];
-            return bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
-        }
+        const result = adminCommand(p, state.action, [text]);
+        delete adminState[chatId];
+        await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getAdminMainKeyboard() });
     });
 }
 
