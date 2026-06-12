@@ -2,9 +2,6 @@ const { bot, player, mainMenu, sendAnimation } = require('./core');
 
 function setupHouseHandlers() {
 
-    // =============================================
-    // 🏠 هندلر callback_query های خونه
-    // =============================================
     bot.on('callback_query', async (query) => {
         const chatId = query.message.chat.id;
         const msgId = query.message.message_id;
@@ -13,10 +10,25 @@ function setupHouseHandlers() {
 
         if (!p) return;
 
-        // فقط callbackهای خونه رو هندل کن
-        if (!data.startsWith('house_')) return;
+        // فقط callbackهای خونه و مخفی‌گاه رو هندل کن
+        if (!data.startsWith('house_') && data !== 'secret_chamber') return;
 
         try {
+
+            // =============================================
+            // 🔞 مخفی‌گاه
+            // =============================================
+            if (data === 'secret_chamber') {
+                const { formatSecretChamber, getSecretChamberKeyboard } = require('../secretChamber');
+                try { require('../secretChamber').initSecretChamber(p); } catch(e) {}
+                if (p.level < 30 && (!p.empire || p.empire.level === 0)) {
+                    return bot.answerCallbackQuery(query.id, { text: '🔒 باید سطح ۳۰ باشی!', show_alert: true });
+                }
+                await bot.editMessageText(formatSecretChamber(p), {
+                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getSecretChamberKeyboard(p)
+                });
+                return bot.answerCallbackQuery(query.id);
+            }
 
             // =============================================
             // 🔙 برگشت به لیست خونه
