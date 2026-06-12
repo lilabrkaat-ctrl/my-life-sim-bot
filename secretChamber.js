@@ -126,40 +126,18 @@ function getAvailableBoys(player) {
 function visitGirl(player, girlId, roomType) {
     initSecretChamber(player);
     resetDailyVisits(player);
-
-    if (player.secretChamber.visitsToday >= player.secretChamber.maxVisits) {
-        return { success: false, message: '❌ امروز ۵ بار اومدی! دیگه کافیه.' };
-    }
-
+    if (player.secretChamber.visitsToday >= player.secretChamber.maxVisits) return { success: false, message: '❌ امروز ۵ بار اومدی!' };
     const girl = secretGirls.find(g => g.id === girlId);
-    if (!girl) return { success: false, message: '❌ این دختر پیدا نشد!' };
-    
-    if (player.level < (girl.unlockLevel || 1)) {
-        return { success: false, message: `🔒 نیاز به سطح ${girl.unlockLevel}! (سطح تو: ${player.level})` };
-    }
-
+    if (!girl) return { success: false, message: '❌ پیدا نشد!' };
+    if (player.level < (girl.unlockLevel || 1)) return { success: false, message: `🔒 نیاز به سطح ${girl.unlockLevel}!` };
     const room = chamberRooms[roomType] || chamberRooms.normal;
-    if (player.level < (room.unlockLevel || 1)) {
-        return { success: false, message: `🔒 این اتاق نیاز به سطح ${room.unlockLevel} داره!` };
-    }
-    
+    if (player.level < (room.unlockLevel || 1)) return { success: false, message: `🔒 اتاق نیاز به سطح ${room.unlockLevel}!` };
     const totalCost = girl.cost + room.cost;
-    if ((player.inventory?.gold || 0) < totalCost) {
-        return { success: false, message: `❌ طلا کافی نداری! (${totalCost}👑)` };
-    }
-
+    if ((player.inventory?.gold || 0) < totalCost) return { success: false, message: `❌ ${totalCost}👑 لازمه!` };
     player.inventory.gold -= totalCost;
-
     let girlRecord = player.secretChamber.girls.find(g => g.id === girlId);
-    if (!girlRecord) {
-        girlRecord = { id: girlId, visits: 0, trust: 0, gifts: 0, lastVisit: Date.now() };
-        player.secretChamber.girls.push(girlRecord);
-    }
-
-    girlRecord.visits++;
-    girlRecord.trust = Math.min(100, girlRecord.trust + 2);
-    girlRecord.lastVisit = Date.now();
-
+    if (!girlRecord) { girlRecord = { id: girlId, visits: 0, trust: 0, gifts: 0, lastVisit: Date.now() }; player.secretChamber.girls.push(girlRecord); }
+    girlRecord.visits++; girlRecord.trust = Math.min(100, girlRecord.trust + 2); girlRecord.lastVisit = Date.now();
     const bonus = room.bonus;
     if (girl.rewards.xp) player.xp = (player.xp || 0) + girl.rewards.xp * bonus;
     if (girl.rewards.gold && girl.rewards.gold > 0) player.inventory.gold += girl.rewards.gold * bonus;
@@ -167,53 +145,25 @@ function visitGirl(player, girlId, roomType) {
     if (girl.rewards.ring) player.inventory.ring = (player.inventory.ring || 0) + girl.rewards.ring;
     if (girl.rewards.key) player.inventory.key = (player.inventory.key || 0) + girl.rewards.key;
     if (girl.rewards.wish) player.inventory.wish = (player.inventory.wish || 0) + girl.rewards.wish;
-
-    player.secretChamber.visitsToday++;
-    player.secretChamber.totalVisits++;
-    player.secretChamber.lastVisit = Date.now();
-
+    player.secretChamber.visitsToday++; player.secretChamber.totalVisits++; player.secretChamber.lastVisit = Date.now();
     const dialogue = girl.dialogues[Math.floor(Math.random() * girl.dialogues.length)];
     const rarities = { common: '⚪', rare: '🔵', epic: '🟣', legendary: '🟡' };
-
-    return {
-        success: true,
-        message: `🔞 *${girl.emoji} ${girl.name}* ${rarities[girl.rarity]}\n💕 اعتماد: ${girlRecord.trust}/${girl.trustNeeded}\n💬 "${dialogue}"\n👑 هزینه: ${totalCost} طلا\n🏠 ${room.name}`
-    };
+    return { success: true, message: `🔞 *${girl.emoji} ${girl.name}* ${rarities[girl.rarity]}\n💕 اعتماد: ${girlRecord.trust}/${girl.trustNeeded}\n💬 "${dialogue}"\n👑 هزینه: ${totalCost} طلا\n🏠 ${room.name}` };
 }
 
 function visitBoy(player, boyId, roomType) {
-    initSecretChamber(player);
-    resetDailyVisits(player);
-
-    if (player.secretChamber.visitsToday >= player.secretChamber.maxVisits) {
-        return { success: false, message: '❌ امروز ۵ بار اومدی!' };
-    }
-
+    initSecretChamber(player); resetDailyVisits(player);
+    if (player.secretChamber.visitsToday >= player.secretChamber.maxVisits) return { success: false, message: '❌ امروز ۵ بار اومدی!' };
     const boy = secretBoys.find(b => b.id === boyId);
-    if (!boy) return { success: false, message: '❌ این پسر پیدا نشد!' };
-    
-    if (player.level < (boy.unlockLevel || 1)) {
-        return { success: false, message: `🔒 نیاز به سطح ${boy.unlockLevel}!` };
-    }
-
+    if (!boy) return { success: false, message: '❌ پیدا نشد!' };
+    if (player.level < (boy.unlockLevel || 1)) return { success: false, message: `🔒 نیاز به سطح ${boy.unlockLevel}!` };
     const room = chamberRooms[roomType] || chamberRooms.normal;
     const totalCost = boy.cost + room.cost;
-    if ((player.inventory?.gold || 0) < totalCost) {
-        return { success: false, message: `❌ طلا کافی نداری! (${totalCost}👑)` };
-    }
-
+    if ((player.inventory?.gold || 0) < totalCost) return { success: false, message: `❌ ${totalCost}👑 لازمه!` };
     player.inventory.gold -= totalCost;
-
     let boyRecord = player.secretChamber.boys.find(b => b.id === boyId);
-    if (!boyRecord) {
-        boyRecord = { id: boyId, visits: 0, trust: 0, lastVisit: Date.now() };
-        player.secretChamber.boys.push(boyRecord);
-    }
-
-    boyRecord.visits++;
-    boyRecord.trust = Math.min(100, boyRecord.trust + 2);
-    boyRecord.lastVisit = Date.now();
-
+    if (!boyRecord) { boyRecord = { id: boyId, visits: 0, trust: 0, lastVisit: Date.now() }; player.secretChamber.boys.push(boyRecord); }
+    boyRecord.visits++; boyRecord.trust = Math.min(100, boyRecord.trust + 2); boyRecord.lastVisit = Date.now();
     const bonus = room.bonus;
     if (boy.rewards.xp) player.xp = (player.xp || 0) + boy.rewards.xp * bonus;
     if (boy.rewards.gold && boy.rewards.gold > 0) player.inventory.gold += boy.rewards.gold * bonus;
@@ -221,85 +171,134 @@ function visitBoy(player, boyId, roomType) {
     if (boy.rewards.defense) player.defense = (player.defense || 0) + boy.rewards.defense;
     if (boy.rewards.song) player.inventory.song = (player.inventory.song || 0) + boy.rewards.song;
     if (boy.rewards.diamond) player.inventory.diamond = (player.inventory.diamond || 0) + boy.rewards.diamond;
-
-    player.secretChamber.visitsToday++;
-    player.secretChamber.totalVisits++;
-    player.secretChamber.lastVisit = Date.now();
-
-    return {
-        success: true,
-        message: `🔞 *${boy.emoji} ${boy.name}*\n👑 هزینه: ${totalCost} طلا\n🏠 ${room.name}`
-    };
+    player.secretChamber.visitsToday++; player.secretChamber.totalVisits++; player.secretChamber.lastVisit = Date.now();
+    return { success: true, message: `🔞 *${boy.emoji} ${boy.name}*\n👑 هزینه: ${totalCost} طلا\n🏠 ${room.name}` };
 }
 
 function doActivity(player, activityType) {
-    initSecretChamber(player);
-    resetDailyVisits(player);
-
-    if (player.secretChamber.visitsToday >= player.secretChamber.maxVisits) {
-        return { success: false, message: '❌ امروز ۵ بار اومدی!' };
-    }
-
+    initSecretChamber(player); resetDailyVisits(player);
+    if (player.secretChamber.visitsToday >= player.secretChamber.maxVisits) return { success: false, message: '❌ امروز ۵ بار اومدی!' };
     const activity = activities[activityType];
     if (!activity) return { success: false, message: '❌ فعالیت نامعتبر!' };
-    
-    if (player.level < (activity.unlockLevel || 1)) {
-        return { success: false, message: `🔒 نیاز به سطح ${activity.unlockLevel}!` };
-    }
-
-    if ((player.inventory?.gold || 0) < activity.cost) {
-        return { success: false, message: `❌ طلا کافی نداری! (${activity.cost}👑)` };
-    }
-
+    if (player.level < (activity.unlockLevel || 1)) return { success: false, message: `🔒 نیاز به سطح ${activity.unlockLevel}!` };
+    if ((player.inventory?.gold || 0) < activity.cost) return { success: false, message: `❌ ${activity.cost}👑 لازمه!` };
     player.inventory.gold -= activity.cost;
     let resultMsg = `${activity.emoji} *${activity.name}*\n`;
-
     if (Math.random() < activity.riskChance) {
         resultMsg += `\n❌ *${activity.riskEffect}!*\n`;
-        if (activity.riskEffect === 'اعتیاد') {
-            player.secretChamber.activeAddiction = true;
-            player.secretChamber.addictionDays = 7;
-        } else if (activity.riskEffect === 'زخمی شدن') {
-            player.hp = Math.max(1, (player.hp || 100) - 30);
-        } else if (activity.riskEffect === 'مسمومیت') {
-            player.hp = Math.max(1, (player.hp || 100) - 20);
-        }
+        if (activity.riskEffect === 'اعتیاد') { player.secretChamber.activeAddiction = true; player.secretChamber.addictionDays = 7; }
+        else if (activity.riskEffect === 'زخمی شدن') player.hp = Math.max(1, (player.hp || 100) - 30);
+        else if (activity.riskEffect === 'مسمومیت') player.hp = Math.max(1, (player.hp || 100) - 20);
     } else {
         if (activity.reward.gold) { player.inventory.gold += activity.reward.gold; resultMsg += `\n💰 +${activity.reward.gold}👑`; }
         if (activity.reward.xp) { player.xp = (player.xp || 0) + activity.reward.xp; resultMsg += `\n✨ +${activity.reward.xp} XP`; }
-        if (activity.reward.mood) { resultMsg += `\n😊 روحیه +${activity.reward.mood}`; }
+        if (activity.reward.mood) resultMsg += `\n😊 روحیه +${activity.reward.mood}`;
         if (activity.reward.wish) { player.inventory.wish = (player.inventory.wish || 0) + activity.reward.wish; resultMsg += `\n🔮 +${activity.reward.wish} آرزو`; }
     }
-
-    player.secretChamber.visitsToday++;
-    player.secretChamber.lastVisit = Date.now();
+    player.secretChamber.visitsToday++; player.secretChamber.lastVisit = Date.now();
     return { success: true, message: resultMsg };
 }
 
-function upgradeGirlToQueen(player, girlId) { /* بدون تغییر */ }
-function giveGift(player, personId, isGirl) { /* بدون تغییر */ }
-function hireGuard(player, guardType) { /* بدون تغییر */ }
-function updateLoyaltyLevel(player) { /* بدون تغییر */ }
-function getLoyaltyDiscount(player) { /* بدون تغییر */ }
-function checkAddiction(player) { /* بدون تغییر */ }
-function formatSecretChamber(player) { /* بدون تغییر */ }
+function upgradeGirlToQueen(player, girlId) {
+    initSecretChamber(player);
+    const girl = secretGirls.find(g => g.id === girlId);
+    if (!girl || !girl.canBecomeQueen) return { success: false, message: '❌ نمی‌تونه ملکه بشه!' };
+    const girlRecord = player.secretChamber.girls.find(g => g.id === girlId);
+    if (!girlRecord || girlRecord.trust < girl.trustNeeded) return { success: false, message: '❌ اعتماد کافی نیست!' };
+    if (girlRecord.becameQueen) return { success: false, message: '❌ قبلاً ملکه شده!' };
+    const releaseCost = 1000;
+    if ((player.inventory?.gold || 0) < releaseCost) return { success: false, message: `❌ ${releaseCost}👑 لازمه!` };
+    if (!player.harem || !player.harem.queens) return { success: false, message: '❌ حرمسرا نداری!' };
+    player.inventory.gold -= releaseCost;
+    const queenData = { id: 'queen_' + Date.now(), npcId: girlId, name: girl.name, emoji: girl.emoji, rank: girl.queenRank || 'concubine', points: girlRecord.trust, joinedAt: Date.now(), pregnancies: [], children: [], mood: 80, health: 100, reputation: 60, lastCare: Date.now(), isSpouse: false, room: 'simple', servants: [], dress: null, jewelry: [], diary: [], upbringing: null, cameFromChamber: true };
+    player.harem.queens.push(queenData);
+    girlRecord.becameQueen = true;
+    return { success: true, message: `👑 ${girl.emoji} *${girl.name}* به حرمسرا اومد!` };
+}
+
+function giveGift(player, personId, isGirl) {
+    initSecretChamber(player);
+    const person = isGirl ? player.secretChamber.girls.find(g => g.id === personId) : player.secretChamber.boys.find(b => b.id === personId);
+    if (!person) return { success: false, message: '❌ پیدا نشد!' };
+    if ((player.inventory?.gold || 0) < 100) return { success: false, message: '❌ ۱۰۰👑 لازمه!' };
+    player.inventory.gold -= 100;
+    person.trust = Math.min(100, person.trust + 15);
+    person.gifts = (person.gifts || 0) + 1;
+    return { success: true, message: `🎁 هدیه داده شد!\n💕 اعتماد +۱۵ (${person.trust})` };
+}
+
+function hireGuard(player, guardType) {
+    initSecretChamber(player);
+    const guards = { doorman: { name: 'دربان', emoji: '🛡️', cost: 500, salary: 50 }, watchman: { name: 'دیده‌بان', emoji: '👀', cost: 1000, salary: 100 }, bodyguard: { name: 'محافظ شخصی', emoji: '🗡️', cost: 2000, salary: 200 } };
+    const guard = guards[guardType];
+    if (!guard) return { success: false, message: '❌ نگهبان نامعتبر!' };
+    if (player.secretChamber.guards.find(g => g.type === guardType)) return { success: false, message: '❌ قبلاً استخدام شده!' };
+    if ((player.inventory?.gold || 0) < guard.cost) return { success: false, message: `❌ ${guard.cost}👑 لازمه!` };
+    player.inventory.gold -= guard.cost;
+    player.secretChamber.guards.push({ type: guardType, hiredAt: Date.now() });
+    return { success: true, message: `${guard.emoji} *${guard.name}* استخدام شد!` };
+}
+
+function updateLoyaltyLevel(player) {
+    initSecretChamber(player);
+    const total = player.secretChamber.totalVisits;
+    player.secretChamber.loyaltyLevel = total >= 100 ? 5 : total >= 50 ? 4 : total >= 20 ? 3 : total >= 5 ? 2 : 1;
+    return player.secretChamber.loyaltyLevel;
+}
+
+function getLoyaltyDiscount(player) {
+    initSecretChamber(player);
+    return { 1: 0, 2: 10, 3: 20, 4: 30, 5: 50 }[player.secretChamber.loyaltyLevel] || 0;
+}
+
+function checkAddiction(player) {
+    initSecretChamber(player);
+    if (!player.secretChamber.activeAddiction) return null;
+    player.secretChamber.addictionDays--;
+    if (player.secretChamber.addictionDays <= 0) { player.secretChamber.activeAddiction = false; return { recovered: true, message: '🎉 از اعتیاد پاک شدی!' }; }
+    if ((player.inventory?.gold || 0) < 50) { player.hp = Math.max(1, (player.hp || 100) - 20); return { recovered: false, message: `💊 پول مواد نداری! -۲۰❤️` }; }
+    player.inventory.gold -= 50;
+    return { recovered: false, message: `💊 مواد مصرف شد. -۵۰👑` };
+}
+
+function formatSecretChamber(player) {
+    initSecretChamber(player); resetDailyVisits(player);
+    const loyaltyNames = { 1: 'تازه‌وارد 😐', 2: 'مشتری 🙂', 3: 'مشتری دائم 😊', 4: 'VIP 💎', 5: 'سهام‌دار 👑' };
+    let msg = '🔞 *مخفی‌گاه سلطنتی*\n\n';
+    msg += `🏆 سطح وفاداری: ${loyaltyNames[player.secretChamber.loyaltyLevel]}\n`;
+    msg += `📅 بازدید امروز: ${player.secretChamber.visitsToday}/${player.secretChamber.maxVisits}\n`;
+    msg += `🔢 کل: ${player.secretChamber.totalVisits}\n`;
+    if (player.secretChamber.activeAddiction) msg += `💊 معتاد! ${player.secretChamber.addictionDays} روز\n`;
+    msg += '\n👩 *دختران:*\n';
+    const girls = getAvailableGirls(player);
+    for (let girl of girls) {
+        const record = player.secretChamber.girls.find(g => g.id === girl.id);
+        const trust = record ? record.trust : 0;
+        const becameQueen = record ? record.becameQueen : false;
+        if (becameQueen) msg += `👑 ${girl.emoji} ${girl.name} - ملکه شده!\n`;
+        else if (girl.canMeet) msg += `✅ ${girl.emoji} ${girl.name} - ${girl.cost}👑 | 💕${trust}\n`;
+        else msg += `🔒 ${girl.emoji} ??? (Lv.${girl.unlockLevel})\n`;
+    }
+    msg += '\n👦 *پسران:*\n';
+    const boys = getAvailableBoys(player);
+    for (let boy of boys) {
+        if (boy.canMeet) msg += `✅ ${boy.emoji} ${boy.name} - ${boy.cost}👑\n`;
+        else msg += `🔒 ${boy.emoji} ??? (Lv.${boy.unlockLevel})\n`;
+    }
+    msg += `\n👑 طلا: ${player.inventory?.gold || 0}`;
+    return msg;
+}
 
 // =============================================
 // 🎮 کیبوردهای شیشه‌ای صفحه‌بندی شده
 // =============================================
 const ITEMS_PER_PAGE = 4;
 
-function getSecretChamberKeyboard(player) {
-    return getPagedKeyboard(player, 0);
-}
+function getSecretChamberKeyboard(player) { return getPagedKeyboard(player, 0); }
 
 function getPagedKeyboard(player, page) {
-    initSecretChamber(player);
-    resetDailyVisits(player);
-
+    initSecretChamber(player); resetDailyVisits(player);
     const allItems = [];
-    
-    // دختران
     const girls = getAvailableGirls(player);
     for (let girl of girls) {
         const record = player.secretChamber.girls.find(g => g.id === girl.id);
@@ -307,53 +306,32 @@ function getPagedKeyboard(player, page) {
         if (!becameQueen) {
             const canBeQueen = girl.canBecomeQueen && record && record.trust >= girl.trustNeeded;
             const prefix = canBeQueen ? '👑 ' : '👩 ';
-            if (girl.canMeet) {
-                allItems.push({ text: `${prefix}${girl.emoji} ${girl.name} (${girl.cost}👑)`, callback: `chamber_girl_${girl.id}` });
-            } else {
-                allItems.push({ text: `🔒 ${girl.emoji} ??? (Lv.${girl.unlockLevel})`, callback: 'none' });
-            }
+            if (girl.canMeet) allItems.push({ text: `${prefix}${girl.emoji} ${girl.name} (${girl.cost}👑)`, callback: `chamber_girl_${girl.id}` });
+            else allItems.push({ text: `🔒 ${girl.emoji} ??? (Lv.${girl.unlockLevel})`, callback: 'none' });
         }
     }
-    
-    // پسران
     const boys = getAvailableBoys(player);
     for (let boy of boys) {
-        if (boy.canMeet) {
-            allItems.push({ text: `👦 ${boy.emoji} ${boy.name} (${boy.cost}👑)`, callback: `chamber_boy_${boy.id}` });
-        } else {
-            allItems.push({ text: `🔒 👦 ??? (Lv.${boy.unlockLevel})`, callback: 'none' });
-        }
+        if (boy.canMeet) allItems.push({ text: `👦 ${boy.emoji} ${boy.name} (${boy.cost}👑)`, callback: `chamber_boy_${boy.id}` });
+        else allItems.push({ text: `🔒 👦 ??? (Lv.${boy.unlockLevel})`, callback: 'none' });
     }
-    
-    // فعالیت‌ها
     for (let key in activities) {
         const act = activities[key];
-        if (player.level >= (act.unlockLevel || 1)) {
-            allItems.push({ text: `${act.emoji} ${act.name} (${act.cost}👑)`, callback: `chamber_activity_${key}` });
-        } else {
-            allItems.push({ text: `🔒 ??? (Lv.${act.unlockLevel})`, callback: 'none' });
-        }
+        if (player.level >= (act.unlockLevel || 1)) allItems.push({ text: `${act.emoji} ${act.name} (${act.cost}👑)`, callback: `chamber_activity_${key}` });
+        else allItems.push({ text: `🔒 ??? (Lv.${act.unlockLevel})`, callback: 'none' });
     }
-    
     allItems.push({ text: '🎁 هدیه دادن', callback: 'chamber_gift_menu' });
     allItems.push({ text: '🛡️ استخدام نگهبان', callback: 'chamber_guard_menu' });
-    
-    // صفحه‌بندی
     const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
     const start = page * ITEMS_PER_PAGE;
     const pageItems = allItems.slice(start, start + ITEMS_PER_PAGE);
-    
     const buttons = pageItems.map(item => [{ text: item.text, callback_data: item.callback }]);
-    
-    // دکمه‌های ناوبری
     const navButtons = [];
     if (page > 0) navButtons.push({ text: '⏪ قبلی', callback_data: `chamber_page_${page - 1}` });
     navButtons.push({ text: `📄 ${page + 1}/${totalPages}`, callback_data: 'none' });
     if (page < totalPages - 1) navButtons.push({ text: '⏩ بعدی', callback_data: `chamber_page_${page + 1}` });
     if (navButtons.length > 0) buttons.push(navButtons);
-    
     buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
-    
     return { reply_markup: { inline_keyboard: buttons } };
 }
 
@@ -361,42 +339,28 @@ function getChamberRoomKeyboard(player) {
     const buttons = [];
     for (let key in chamberRooms) {
         const room = chamberRooms[key];
-        if (player && player.level >= (room.unlockLevel || 1)) {
-            buttons.push([{ text: `${room.emoji} ${room.name} (${room.cost}👑) - خطر ${Math.floor(room.riskOfExposure * 100)}٪`, callback_data: `chamber_room_${key}` }]);
-        } else if (player) {
-            buttons.push([{ text: `🔒 ??? (Lv.${room.unlockLevel})`, callback_data: 'none' }]);
-        } else {
-            buttons.push([{ text: `${room.emoji} ${room.name} (${room.cost}👑) - خطر ${Math.floor(room.riskOfExposure * 100)}٪`, callback_data: `chamber_room_${key}` }]);
-        }
+        if (player && player.level >= (room.unlockLevel || 1)) buttons.push([{ text: `${room.emoji} ${room.name} (${room.cost}👑) - خطر ${Math.floor(room.riskOfExposure * 100)}٪`, callback_data: `chamber_room_${key}` }]);
+        else if (player) buttons.push([{ text: `🔒 ??? (Lv.${room.unlockLevel})`, callback_data: 'none' }]);
+        else buttons.push([{ text: `${room.emoji} ${room.name} (${room.cost}👑) - خطر ${Math.floor(room.riskOfExposure * 100)}٪`, callback_data: `chamber_room_${key}` }]);
     }
     buttons.push([{ text: '🔙 برگشت', callback_data: 'chamber_back' }]);
     return { reply_markup: { inline_keyboard: buttons } };
 }
 
 function getGuardKeyboard() {
-    return {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: '🛡️ دربان (۵۰۰👑)', callback_data: 'chamber_guard_doorman' }],
-                [{ text: '👀 دیده‌بان (۱۰۰۰👑)', callback_data: 'chamber_guard_watchman' }],
-                [{ text: '🗡️ محافظ شخصی (۲۰۰۰👑)', callback_data: 'chamber_guard_bodyguard' }],
-                [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
-            ]
-        }
-    };
+    return { reply_markup: { inline_keyboard: [
+        [{ text: '🛡️ دربان (۵۰۰👑)', callback_data: 'chamber_guard_doorman' }],
+        [{ text: '👀 دیده‌بان (۱۰۰۰👑)', callback_data: 'chamber_guard_watchman' }],
+        [{ text: '🗡️ محافظ شخصی (۲۰۰۰👑)', callback_data: 'chamber_guard_bodyguard' }],
+        [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
+    ] } };
 }
 
 function getGiftKeyboard(player) {
     initSecretChamber(player);
     const buttons = [];
-    for (let girl of player.secretChamber.girls) {
-        const g = secretGirls.find(sg => sg.id === girl.id);
-        if (g) buttons.push([{ text: `🎁 ${g.emoji} ${g.name}`, callback_data: `chamber_gift_girl_${g.id}` }]);
-    }
-    for (let boy of player.secretChamber.boys) {
-        const b = secretBoys.find(sb => sb.id === boy.id);
-        if (b) buttons.push([{ text: `🎁 ${b.emoji} ${b.name}`, callback_data: `chamber_gift_boy_${b.id}` }]);
-    }
+    for (let girl of player.secretChamber.girls) { const g = secretGirls.find(sg => sg.id === girl.id); if (g) buttons.push([{ text: `🎁 ${g.emoji} ${g.name}`, callback_data: `chamber_gift_girl_${g.id}` }]); }
+    for (let boy of player.secretChamber.boys) { const b = secretBoys.find(sb => sb.id === boy.id); if (b) buttons.push([{ text: `🎁 ${b.emoji} ${b.name}`, callback_data: `chamber_gift_boy_${b.id}` }]); }
     buttons.push([{ text: '🔙 برگشت', callback_data: 'chamber_back' }]);
     return { reply_markup: { inline_keyboard: buttons } };
 }
