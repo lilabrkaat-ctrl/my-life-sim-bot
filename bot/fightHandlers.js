@@ -10,17 +10,14 @@ function setupFightHandlers() {
         const p = player.getPlayer(chatId);
 
         if (!p) return;
-        
-        // فقط callbackهای نبرد
         if (!data || !data.startsWith('battle_')) return;
 
         try {
             const enemy = activeBattles[chatId];
-            
             if (!enemy) {
-                await bot.answerCallbackQuery(query.id, { text: '❌ نبرد تموم شده!', show_alert: true });
-                try { await bot.deleteMessage(chatId, msgId); } catch (e) {}
-                return;
+                await bot.deleteMessage(chatId, msgId).catch(() => {});
+                await bot.sendMessage(chatId, '❌ نبرد تموم شده!', { parse_mode: 'Markdown', ...mainMenu() });
+                return bot.answerCallbackQuery(query.id);
             }
 
             let result;
@@ -51,8 +48,7 @@ function setupFightHandlers() {
                     const captureResult = captureNpc(p, result.npcId);
                     const npcData = config.images.npcs?.[result.npcId] || config.images.enemies?.[result.npcId];
                     
-                    // پاک کردن پیام قبلی
-                    try { await bot.deleteMessage(chatId, msgId); } catch (e) {}
+                    await bot.deleteMessage(chatId, msgId).catch(() => {});
                     
                     if (npcData && npcData.file_id) {
                         await sendPhoto(chatId, npcData.file_id, result.message + '\n\n' + captureResult.message, mainMenu());
@@ -65,7 +61,7 @@ function setupFightHandlers() {
                 }
 
                 // برد/باخت عادی
-                try { await bot.deleteMessage(chatId, msgId); } catch (e) {}
+                await bot.deleteMessage(chatId, msgId).catch(() => {});
                 
                 if (result.animation) {
                     await sendAnimation(chatId, result.animation, result.message, mainMenu());
@@ -78,10 +74,8 @@ function setupFightHandlers() {
             // ============ نبرد ادامه داره ============
             const { getBattleKeyboard } = require('../fight');
             
-            // پاک کردن پیام قبلی (ممکنه عکس باشه)
-            try { await bot.deleteMessage(chatId, msgId); } catch (e) {}
+            await bot.deleteMessage(chatId, msgId).catch(() => {});
             
-            // ارسال پیام جدید
             if (result.animation) {
                 await sendAnimation(chatId, result.animation, result.message, getBattleKeyboard(p, enemy));
             } else {
@@ -92,13 +86,8 @@ function setupFightHandlers() {
 
         } catch (e) {
             console.log('Fight handler error:', e.message);
-            
-            // پاک کردن پیام قبلی
-            try { await bot.deleteMessage(chatId, msgId); } catch (e2) {}
-            
-            // ارسال پیام خطا
+            await bot.deleteMessage(chatId, msgId).catch(() => {});
             await bot.sendMessage(chatId, '❌ خطا در نبرد! /start بزن.', { parse_mode: 'Markdown', ...mainMenu() });
-            
             if (activeBattles[chatId]) delete activeBattles[chatId];
             return bot.answerCallbackQuery(query.id);
         }
