@@ -32,17 +32,9 @@ function setupEmpireHandlers() {
             data.startsWith('bm_')) return;
 
         try {
-            // ⚡ تابع کمکی: ادیت پیام (فقط برای پیام‌های متنی)
             const edit = (text, kb) => bot.editMessageText(text, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...(kb || {}) }).catch(() => {
-                // اگه نتونه ادیت کنه، پیام جدید بفرسته
                 return bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...(kb || mainMenu()) });
             });
-            
-            // ⚡ تابع کمکی: حذف و ارسال (برای پیام‌های عکس/گیف دار)
-            const delSend = async (text, kb) => {
-                await bot.deleteMessage(chatId, msgId).catch(() => {});
-                return bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...(kb || mainMenu()) });
-            };
 
             // ============ برگشت ============
             if (data === 'back_to_main') {
@@ -102,13 +94,13 @@ function setupEmpireHandlers() {
                 const roleKey = data.replace('empire_assign_', '');
                 const alive = p.children?.filter(c => c.isAlive) || [];
                 if (alive.length === 0) return bot.answerCallbackQuery(query.id, { text: '❌ فرزندی نداری!', show_alert: true });
-                
+
                 const btns = alive.map(child => [{ 
                     text: `${child.emoji} ${child.name} | ${child.classEmoji} ${child.className} | Lv.${child.evolutionLevel}`, 
                     callback_data: `empire_assign_do_${roleKey}_${child.id}` 
                 }]);
                 btns.push([{ text: '🔙 برگشت', callback_data: 'empire_roles_menu' }]);
-                
+
                 await edit('👶 *کدوم فرزند رو می‌خوای منصوب کنی؟*', { reply_markup: { inline_keyboard: btns } });
                 return bot.answerCallbackQuery(query.id);
             }
@@ -403,14 +395,13 @@ if (data === 'queen_remove') {
     await edit(formatHarem(p), getHaremKeyboard(p));
     return bot.answerCallbackQuery(query.id, { text: '✅ اخراج شد!' });
 }
-
-// ============ 🔥 هم‌آغوشی (با delSend چون گیف داره) ============
+// ============ 🔥 هم‌آغوشی ملکه ============
 if (data === 'queen_orgy') {
     const st = require('./core').haremState[chatId];
     if (!st?.queenId) return bot.answerCallbackQuery(query.id, { text: '❌ ملکه انتخاب نشده!' });
     const queen = p.harem?.queens.find(q => q.id === st.queenId);
     if (!queen) return bot.answerCallbackQuery(query.id, { text: '❌ ملکه پیدا نشد!' });
-    
+
     const gif = queenGifs.seduce[0];
     const condomCount = p.inventory?.condom || 0;
     const dialogs = [
@@ -425,7 +416,8 @@ if (data === 'queen_orgy') {
     btns.push([{ text: '🔥 بدون کاندوم', callback_data: `orgy_nocondom_${queen.npcId}` }]);
     btns.push([{ text: '🔙 برگشت', callback_data: `harem_queen_${queen.id}` }]);
 
-    await delSend(msg, { reply_markup: { inline_keyboard: btns } });
+    // فقط گیف با دکمه - پیام متنی اضافه نمیاد
+    await bot.deleteMessage(chatId, msgId).catch(() => {});
     await sendAnimation(chatId, gif, msg, { reply_markup: { inline_keyboard: btns } });
     return bot.answerCallbackQuery(query.id);
 }
@@ -453,7 +445,8 @@ if (data.startsWith('orgy_condom_') || data.startsWith('orgy_nocondom_')) {
         [{ text: '🔙 برگشت', callback_data: `harem_queen_${queen.id}` }]
     ];
 
-    await delSend(`${txt}\n${dialog}`, { reply_markup: { inline_keyboard: btns } });
+    // فقط گیف با دکمه
+    await bot.deleteMessage(chatId, msgId).catch(() => {});
     await sendAnimation(chatId, gif, `${txt}\n${dialog}`, { reply_markup: { inline_keyboard: btns } });
     return bot.answerCallbackQuery(query.id);
 }
@@ -475,14 +468,15 @@ if (data.startsWith('orgy_front_') || data.startsWith('orgy_back_') || data.star
 
     const { positionImages } = require('./core');
     let gif, image, title, dialog;
-    
+
     if (pos === 'front') {
         gif = queenGifs.frontOrgy[Math.floor(Math.random() * queenGifs.frontOrgy.length)];
         image = positionImages.front[Math.floor(Math.random() * positionImages.front.length)];
         title = '🍑 *از جلو*';
         dialog = `👸 ${queen.name}: "اوووه... عمیق‌تر... همه شو بریز تو کسم..."`;
         if (!useCondom && Math.random() < 0.80) {
-            try { require('../queenHarem').startPregnancy(p, queen.id, 'normal'); } catch(e) {}
+            // بارداری فوری - بچه همون لحظه به دنیا میاد 🆕
+            try { require('../queenHarem').startPregnancy(p, queen.id, 'now'); } catch(e) {}
             await bot.deleteMessage(chatId, msgId).catch(() => {});
             await sendAnimation(chatId, queenGifs.frontFinish, '💦 *آب ریختن...*', { reply_markup: { inline_keyboard: [] } });
             await new Promise(r => setTimeout(r, 2000));
@@ -566,7 +560,6 @@ if (data.startsWith('orgy_front_') || data.startsWith('orgy_back_') || data.star
                 return bot.answerCallbackQuery(query.id, { text: '✅', show_alert: true });
             }
 
-            // ============ 🏗️ ساختمان‌ها ============
             if (data === 'people_buildings') {
                 const { initPeople, getBuildingKeyboard } = require('../people');
                 initPeople(p);
@@ -583,7 +576,6 @@ if (data.startsWith('orgy_front_') || data.startsWith('orgy_back_') || data.star
                 return bot.answerCallbackQuery(query.id, { text: result.success ? '✅ ساخته شد!' : result.message.replace(/[*_]/g, '').substring(0, 60), show_alert: true });
             }
 
-            // ============ 📜 تصمیم‌ها ============
             if (data === 'people_decisions') {
                 const { getDecisionKeyboard } = require('../people');
                 await edit('📜 *تصمیم‌های مدیریتی:*', getDecisionKeyboard());
