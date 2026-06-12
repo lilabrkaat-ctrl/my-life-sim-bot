@@ -1,5 +1,5 @@
 const { bot, player, mainMenu, sendPhoto, sendAnimation, chamberState } = require('./core');
-const { visitGirl, visitBoy, doActivity, giveGift, hireGuard, formatSecretChamber, getSecretChamberKeyboard, getChamberRoomKeyboard, getGuardKeyboard, getGiftKeyboard } = require('../secretChamber');
+const { visitGirl, visitBoy, doActivity, giveGift, hireGuard, formatSecretChamber, getSecretChamberKeyboard, getPagedKeyboard, getChamberRoomKeyboard, getGuardKeyboard, getGiftKeyboard } = require('../secretChamber');
 
 // گیف‌های مخفی‌گاه
 const sexyGifs = {
@@ -9,13 +9,13 @@ const sexyGifs = {
         'CgACAgQAAxkBAAEqL15qIyJW5AcK3OWO2Oyif7wI1aiDqQACgQMAAirVQQYo4gxrnlL0zTsE'
     ],
     touchExtra: [
-        'CgACAgQAAxkBAAEqizpqK5tQFeriRVC2jqdHhD_brsXdAwACUx4AAtsXWVGX50vaL2d8KzwE', // بدنمایی شهروند
-        'CgACAgQAAxkBAAEqi09qK5tmyT3ia2dR7m8hTSdyHJKmvAACfhsAAtN3WVFQLM4BGup3wTwE'  // بدنمایی برای جذب
+        'CgACAgQAAxkBAAEqizpqK5tQFeriRVC2jqdHhD_brsXdAwACUx4AAtsXWVGX50vaL2d8KzwE',
+        'CgACAgQAAxkBAAEqi09qK5tmyT3ia2dR7m8hTSdyHJKmvAACfhsAAtN3WVFQLM4BGup3wTwE'
     ],
-    tease: 'CgACAgQAAxkBAAEqi1NqK5tmc79xEIG6arpSFIeLmrFFrQACOR4AAtsXWVGBZG94AAH7sEU8BA', // سینه نمای باز - بعد انتخاب اتاق
+    tease: 'CgACAgQAAxkBAAEqi1NqK5tmc79xEIG6arpSFIeLmrFFrQACOR4AAtsXWVGBZG94AAH7sEU8BA',
     kiss: 'CgACAgIAAxkBAAEqL2hqIyJnncLJlCKF2kJOT7jKi-7r_wACaAIAArqQoEtep7htQxIwxTsE',
     orgy: 'CgACAgQAAxkBAAEqL1xqIyJUx3yIRno4UZtix4SumGHwCgAC6p8AAkMXZAepPlY8DiidIDsE',
-    orgyExtra: 'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE' // کس با کاندوم
+    orgyExtra: 'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE'
 };
 
 // دیالوگ‌های شهوتی
@@ -72,6 +72,16 @@ function setupChamberHandlers() {
         if (!data || !data.startsWith('chamber_')) return;
 
         try {
+            // ============ صفحه‌بندی ============
+            if (data.startsWith('chamber_page_')) {
+                const page = parseInt(data.replace('chamber_page_', ''));
+                await bot.editMessageText(formatSecretChamber(p), {
+                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown',
+                    ...getPagedKeyboard(p, page)
+                });
+                return bot.answerCallbackQuery(query.id);
+            }
+
             // ============ انتخاب دختر ============
             if (data.startsWith('chamber_girl_')) {
                 const girlId = data.replace('chamber_girl_', '');
@@ -82,7 +92,7 @@ function setupChamberHandlers() {
                 chamberState[chatId] = { action: 'visitGirl', girlId: girl.id, person: girl };
                 
                 await bot.editMessageText(`🏠 *انتخاب اتاق برای ${girl.emoji} ${girl.name}:*`, {
-                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getChamberRoomKeyboard()
+                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getChamberRoomKeyboard(p)
                 });
                 return bot.answerCallbackQuery(query.id);
             }
@@ -97,7 +107,7 @@ function setupChamberHandlers() {
                 chamberState[chatId] = { action: 'visitBoy', boyId: boy.id, person: boy };
                 
                 await bot.editMessageText(`🏠 *انتخاب اتاق برای ${boy.emoji} ${boy.name}:*`, {
-                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getChamberRoomKeyboard()
+                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getChamberRoomKeyboard(p)
                 });
                 return bot.answerCallbackQuery(query.id);
             }
@@ -120,11 +130,18 @@ function setupChamberHandlers() {
                     result = visitBoy(p, chamberState[chatId].boyId, roomType);
                 }
                 
+                if (!result || !result.success) {
+                    await bot.editMessageText(result ? result.message : '❌ خطا!', {
+                        chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getSecretChamberKeyboard(p)
+                    });
+                    delete chamberState[chatId];
+                    return bot.answerCallbackQuery(query.id);
+                }
+                
                 chamberState[chatId] = { person, roomType };
                 
-                // 🆕 دیالوگ و گیف بعد انتخاب اتاق
+                // دیالوگ و گیف بعد انتخاب اتاق
                 const teaseDialog = dialogs.tease[Math.floor(Math.random() * dialogs.tease.length)];
-                const teaseGif = sexyGifs.tease;
                 
                 const btns = [
                     [{ text: '🖐️ لمس کن', callback_data: `chamber_touch_${person.id}` }],
@@ -134,7 +151,7 @@ function setupChamberHandlers() {
                 ];
                 
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, teaseGif, 
+                await sendAnimation(chatId, sexyGifs.tease, 
                     `${person.emoji} *${person.name}*\n${teaseDialog}\n\n🔥 *چی کار می‌خوای بکنی؟*`, 
                     { reply_markup: { inline_keyboard: btns } }
                 );
@@ -194,7 +211,6 @@ function setupChamberHandlers() {
                 if (!st || !st.person) return bot.answerCallbackQuery(query.id, { text: '❌ یک نفر انتخاب کن!' });
                 const person = st.person;
                 
-                // ۵ گیف لمس
                 const allTouchGifs = [...sexyGifs.touch, ...sexyGifs.touchExtra];
                 const gif = allTouchGifs[Math.floor(Math.random() * allTouchGifs.length)];
                 const dialog = dialogs.touch[Math.floor(Math.random() * dialogs.touch.length)];
@@ -240,7 +256,6 @@ function setupChamberHandlers() {
                 if (!st || !st.person) return bot.answerCallbackQuery(query.id, { text: '❌ یک نفر انتخاب کن!' });
                 const person = st.person;
                 
-                // ۲ گیف عیاشی
                 const orgyGifs = [sexyGifs.orgy, sexyGifs.orgyExtra];
                 const gif = orgyGifs[Math.floor(Math.random() * orgyGifs.length)];
                 
