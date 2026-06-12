@@ -41,9 +41,7 @@ function initPeople(player) {
             population: {},
             lands: [],
             buildings: [],
-            stats: {
-                happiness: 60, hunger: 70, safety: 50, justice: 50, faith: 50
-            },
+            stats: { happiness: 60, hunger: 70, safety: 50, justice: 50, faith: 50 },
             storage: { food: 100, water: 50 },
             lastUpdate: Date.now(),
             events: []
@@ -98,20 +96,15 @@ function updatePopulation(player) {
     initPeople(player);
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
-
     if (now - player.people.lastUpdate < oneDay) return [];
 
     const events = [];
-
     for (let type in player.people.population) {
         const popData = populationTypes[type];
         const pop = player.people.population[type];
         if (popData.growthRate > 0) {
             const growth = Math.floor(pop.count * popData.growthRate);
-            if (growth > 0) {
-                pop.count += growth;
-                events.push(`👥 +${growth} ${popData.emoji} ${popData.name}`);
-            }
+            if (growth > 0) { pop.count += growth; events.push(`👥 +${growth} ${popData.emoji} ${popData.name}`); }
         }
     }
 
@@ -199,7 +192,7 @@ function assignLand(player, landType, count) {
         }
     }
 
-    return { success: true, message: `🌾 ${land.emoji} *${land.name}* ایجاد شد!\n📐 ${count} هکتار\n👥 ${land.workersNeeded * count} کارگر\n💧 نیاز آب: ${land.waterNeeded * count}\n⏰ ${land.cycleDays} روز تا برداشت` };
+    return { success: true, message: `🌾 ${land.emoji} *${land.name}* ایجاد شد!\n📐 ${count} هکتار\n👥 ${land.workersNeeded * count} کارگر\n⏰ ${land.cycleDays} روز تا برداشت` };
 }
 
 function waterLand(player, landId) {
@@ -209,12 +202,8 @@ function waterLand(player, landId) {
 
     const landData = landTypes[land.type];
     const waterNeeded = landData.waterNeeded * land.count - land.waterUsed;
-
     if (waterNeeded <= 0) return { success: false, message: '✅ این زمین کاملاً آبیاری شده!' };
-
-    if ((player.inventory?.water || 0) < waterNeeded) {
-        return { success: false, message: `❌ آب کافی نداری!\n💧 نیاز: ${waterNeeded}\n💧 داری: ${player.inventory?.water || 0}` };
-    }
+    if ((player.inventory?.water || 0) < waterNeeded) return { success: false, message: `❌ آب کافی نداری!\n💧 نیاز: ${waterNeeded}\n💧 داری: ${player.inventory?.water || 0}` };
 
     player.inventory.water -= waterNeeded;
     land.waterUsed += waterNeeded;
@@ -230,7 +219,6 @@ function harvestLand(player, landId) {
     const land = player.people.lands[landIndex];
     const landData = landTypes[land.type];
     const now = Date.now();
-
     if (now < land.harvestAt) {
         const remaining = Math.ceil((land.harvestAt - now) / (24 * 60 * 60 * 1000));
         return { success: false, message: `⏰ ${remaining} روز دیگه تا برداشت` };
@@ -238,7 +226,6 @@ function harvestLand(player, landId) {
 
     const waterBonus = land.waterUsed >= landData.waterNeeded * land.count ? 1.2 : 0.8;
     const harvested = {};
-
     for (let item in landData.production) {
         const amount = Math.floor(landData.production[item] * land.count * waterBonus);
         player.inventory[item] = (player.inventory[item] || 0) + amount;
@@ -248,7 +235,6 @@ function harvestLand(player, landId) {
     for (let type in player.people.population) {
         player.people.population[type].employed = Math.max(0, player.people.population[type].employed - land.workers);
     }
-
     player.people.lands.splice(landIndex, 1);
 
     let message = `🌾 *برداشت محصول!*\n\n`;
@@ -256,7 +242,6 @@ function harvestLand(player, landId) {
         const emoji = config.images?.resources?.[item]?.emoji || '';
         message += `${emoji} ${item}: +${harvested[item]}\n`;
     }
-
     return { success: true, message };
 }
 
@@ -264,17 +249,12 @@ function harvestAllLands(player) {
     initPeople(player);
     const now = Date.now();
     const readyLands = player.people.lands.filter(l => now >= l.harvestAt);
-
-    if (readyLands.length === 0) {
-        return { success: false, message: '❌ هیچ زمینی آماده برداشت نیست!' };
-    }
-
+    if (readyLands.length === 0) return { success: false, message: '❌ هیچ زمینی آماده برداشت نیست!' };
     let message = '🌾 *برداشت همه زمین‌ها*\n\n';
     for (let land of readyLands) {
         const result = harvestLand(player, land.id);
         if (result.success) message += result.message + '\n';
     }
-
     return { success: true, message };
 }
 
@@ -324,7 +304,6 @@ function collectTaxes(player) {
     initPeople(player);
     let totalTax = 0;
     const taxDetails = [];
-
     for (let type in player.people.population) {
         const popData = populationTypes[type];
         const pop = player.people.population[type];
@@ -336,13 +315,10 @@ function collectTaxes(player) {
             if (popData.taxRate > 0.30) pop.unhappy += Math.floor(pop.count * 0.05);
         }
     }
-
     player.inventory.gold = (player.inventory.gold || 0) + totalTax;
-
     let message = `💰 *جمع‌آوری مالیات*\n\n`;
     for (let detail of taxDetails) message += `${detail}\n`;
     message += `\n👑 کل: ${totalTax} طلا`;
-
     return { success: true, message };
 }
 
@@ -377,48 +353,18 @@ function makeDecision(player, decisionType, choice) {
 function getRandomEvent(player) {
     initPeople(player);
     const events = [
-        {
-            id: 'good_harvest', name: 'برداشت عالی', emoji: '🌾', description: 'محصول امسال عالی بود!',
-            choices: [
-                { text: '💰 ذخیره کن', effect: { food: 100 } },
-                { text: '🎉 جشن بگیر', effect: { happiness: 10, food: 50 } }
-            ]
-        },
-        {
-            id: 'fire', name: 'آتش‌سوزی', emoji: '🔥', description: 'آتش‌سوزی توی شهر!',
-            choices: [
-                { text: '🧯 خاموش کن', effect: { gold: -50 } },
-                { text: '😐 بی‌خیال', effect: { happiness: -20, population: -20 } }
-            ]
-        },
-        {
-            id: 'plague', name: 'طاعون', emoji: '😷', description: 'بیماری بین مردم پیچیده!',
-            choices: [
-                { text: '🏥 درمان کن', effect: { gold: -100, sick: -30 } },
-                { text: '🚫 قرنطینه', effect: { happiness: -15, population: -10 } }
-            ]
-        },
-        {
-            id: 'rebellion', name: 'شورش', emoji: '🐍', description: 'مردم شورش کردن!',
-            choices: [
-                { text: '⚔️ سرکوب', effect: { happiness: -20, population: -30, military: 10 } },
-                { text: '🤝 مذاکره', effect: { gold: -100, happiness: 10 } }
-            ]
-        },
-        {
-            id: 'baby_boom', name: 'تولد نوزادان', emoji: '👶', description: 'کلی بچه به دنیا اومده!',
-            choices: [
-                { text: '🎉 جشن بگیر', effect: { happiness: 10, population: 25 } },
-                { text: '😐 بی‌تفاوت', effect: { population: 15 } }
-            ]
-        },
-        {
-            id: 'mine_found', name: 'پیدا شدن معدن', emoji: '💰', description: 'یه معدن جدید پیدا شده!',
-            choices: [
-                { text: '⛏️ استخراج', effect: { iron: 200, workers: -10 } },
-                { text: '💰 بفروش', effect: { gold: 500 } }
-            ]
-        }
+        { id: 'good_harvest', name: 'برداشت عالی', emoji: '🌾', description: 'محصول امسال عالی بود!',
+            choices: [{ text: '💰 ذخیره کن', effect: { food: 100 } }, { text: '🎉 جشن بگیر', effect: { happiness: 10, food: 50 } }] },
+        { id: 'fire', name: 'آتش‌سوزی', emoji: '🔥', description: 'آتش‌سوزی توی شهر!',
+            choices: [{ text: '🧯 خاموش کن', effect: { gold: -50 } }, { text: '😐 بی‌خیال', effect: { happiness: -20, population: -20 } }] },
+        { id: 'plague', name: 'طاعون', emoji: '😷', description: 'بیماری بین مردم پیچیده!',
+            choices: [{ text: '🏥 درمان کن', effect: { gold: -100, sick: -30 } }, { text: '🚫 قرنطینه', effect: { happiness: -15, population: -10 } }] },
+        { id: 'rebellion', name: 'شورش', emoji: '🐍', description: 'مردم شورش کردن!',
+            choices: [{ text: '⚔️ سرکوب', effect: { happiness: -20, population: -30, military: 10 } }, { text: '🤝 مذاکره', effect: { gold: -100, happiness: 10 } }] },
+        { id: 'baby_boom', name: 'تولد نوزادان', emoji: '👶', description: 'کلی بچه به دنیا اومده!',
+            choices: [{ text: '🎉 جشن بگیر', effect: { happiness: 10, population: 25 } }, { text: '😐 بی‌تفاوت', effect: { population: 15 } }] },
+        { id: 'mine_found', name: 'پیدا شدن معدن', emoji: '💰', description: 'یه معدن جدید پیدا شده!',
+            choices: [{ text: '⛏️ استخراج', effect: { iron: 200, workers: -10 } }, { text: '💰 بفروش', effect: { gold: 500 } }] }
     ];
 
     if (Math.random() < 0.30) {
@@ -432,13 +378,11 @@ function getRandomEvent(player) {
 function handleEventChoice(player, choiceIndex) {
     initPeople(player);
     if (!player.people.currentEvent) return { success: false, message: '❌ رویدادی در جریان نیست!' };
-
     const event = player.people.currentEvent;
     const choice = event.choices[choiceIndex];
     if (!choice) return { success: false, message: '❌ انتخاب نامعتبر!' };
 
     let message = `${event.emoji} *${event.name}*\n${choice.text}\n\n`;
-
     if (choice.effect.food) { player.people.storage.food += choice.effect.food; message += `🍞 ${choice.effect.food > 0 ? '+' : ''}${choice.effect.food} غذا\n`; }
     if (choice.effect.gold) { player.inventory.gold = Math.max(0, (player.inventory.gold || 0) + choice.effect.gold); message += `👑 ${choice.effect.gold > 0 ? '+' : ''}${choice.effect.gold} طلا\n`; }
     if (choice.effect.happiness) { player.people.stats.happiness = Math.min(100, Math.max(0, player.people.stats.happiness + choice.effect.happiness)); message += `😊 ${choice.effect.happiness > 0 ? '+' : ''}${choice.effect.happiness} خوشبختی\n`; }
@@ -548,12 +492,21 @@ function getLandKeyboard() {
     return { reply_markup: { inline_keyboard: buttons } };
 }
 
-function getBuildingKeyboard() {
+function getBuildingKeyboard(player) {
+    initPeople(player);
     const buttons = [];
 
     for (let key in buildings) {
         const building = buildings[key];
-        buttons.push([{ text: `🏗️ ${building.emoji} ${building.name}`, callback_data: `people_building_${key}` }]);
+        // فقط ساختمان‌های نساخته رو نشون بده
+        if (!player.people.buildings.includes(key)) {
+            buttons.push([{ text: `🏗️ ${building.emoji} ${building.name}`, callback_data: `people_building_${key}` }]);
+        }
+    }
+
+    // اگه همه ساختمان‌ها ساخته شدن
+    if (buttons.length === 0) {
+        buttons.push([{ text: '✅ همه ساختمان‌ها ساخته شدن!', callback_data: 'none' }]);
     }
 
     buttons.push([{ text: '🔙 برگشت', callback_data: 'people_menu' }]);
