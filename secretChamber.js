@@ -214,9 +214,6 @@ function visitGirl(player, girlId, roomType) {
     const dialogue = girl.dialogues[Math.floor(Math.random() * girl.dialogues.length)];
     const rarities = { common: '⚪', rare: '🔵', epic: '🟣', legendary: '🟡' };
 
-    // ❌ این خط رو حذف کردیم
-    // delete chamberState[chatId];
-
     return {
         success: true,
         message: `🔞 *${girl.emoji} ${girl.name}* ${rarities[girl.rarity]}\n📝 ${girl.description}\n💕 اعتماد: ${girlRecord.trust}/${girl.trustNeeded}\n💬 "${dialogue}"\n👑 هزینه: ${totalCost} طلا\n🏠 ${room.name}\n📅 ${player.secretChamber.visitsToday}/${player.secretChamber.maxVisits}`
@@ -264,9 +261,6 @@ function visitBoy(player, boyId, roomType) {
     player.secretChamber.visitsToday++;
     player.secretChamber.totalVisits++;
     player.secretChamber.lastVisit = Date.now();
-
-    // ❌ این خط رو حذف کردیم
-    // delete chamberState[chatId];
 
     return {
         success: true,
@@ -415,20 +409,16 @@ function formatSecretChamber(player) {
     msg += `📅 بازدید امروز: ${player.secretChamber.visitsToday}/${player.secretChamber.maxVisits}\n`;
     msg += `🔢 کل بازدیدها: ${player.secretChamber.totalVisits}\n`;
 
-    if (player.secretChamber.activeAddiction) {
-        msg += `💊 *معتاد!* ${player.secretChamber.addictionDays} روز مونده...\n`;
-    }
+    if (player.secretChamber.activeAddiction) msg += `💊 *معتاد!* ${player.secretChamber.addictionDays} روز مونده...\n`;
 
     msg += '\n👩 *دختران:*\n';
     const girls = getAvailableGirls(player);
     for (let girl of girls) {
         const record = player.secretChamber.girls.find(g => g.id === girl.id);
         const trust = record ? record.trust : 0;
-        const visits = record ? record.visits : 0;
         const becameQueen = record ? record.becameQueen : false;
-
         if (becameQueen) msg += `👑 ${girl.emoji} ${girl.name} - *ملکه شده!*\n`;
-        else if (girl.canMeet) msg += `✅ ${girl.emoji} ${girl.name} - ${girl.cost}👑 | 💕${trust} | 👁️${visits}\n`;
+        else if (girl.canMeet) msg += `✅ ${girl.emoji} ${girl.name} - ${girl.cost}👑 | 💕${trust}\n`;
         else msg += `🔒 ${girl.emoji} ${girl.name} - نیاز به سطح ${girl.requirements.level}+\n`;
     }
 
@@ -436,8 +426,7 @@ function formatSecretChamber(player) {
     const boys = getAvailableBoys(player);
     for (let boy of boys) {
         const record = player.secretChamber.boys.find(b => b.id === boy.id);
-        const trust = record ? record.trust : 0;
-        if (boy.canMeet) msg += `✅ ${boy.emoji} ${boy.name} - ${boy.cost}👑 | 💕${trust}\n`;
+        if (boy.canMeet) msg += `✅ ${boy.emoji} ${boy.name} - ${boy.cost}👑 | 💕${record ? record.trust : 0}\n`;
         else msg += `🔒 ${boy.emoji} ${boy.name} - نیاز به سطح ${boy.requirements.level}+\n`;
     }
 
@@ -445,6 +434,9 @@ function formatSecretChamber(player) {
     return msg;
 }
 
+// =============================================
+// 🎮 کیبوردهای شیشه‌ای (inline)
+// =============================================
 function getSecretChamberKeyboard(player) {
     initSecretChamber(player);
     resetDailyVisits(player);
@@ -459,34 +451,39 @@ function getSecretChamberKeyboard(player) {
         if (girl.canMeet && !becameQueen) {
             const canBeQueen = girl.canBecomeQueen && record && record.trust >= girl.trustNeeded;
             const prefix = canBeQueen ? '👑 ' : '👩 ';
-            buttons.push([`${prefix}${girl.emoji} ${girl.name} (${girl.cost}👑)`]);
+            buttons.push([{ text: `${prefix}${girl.emoji} ${girl.name} (${girl.cost}👑)`, callback_data: `chamber_girl_${girl.id}` }]);
         }
     }
 
     for (let boy of boys) {
-        if (boy.canMeet) buttons.push([`👦 ${boy.emoji} ${boy.name} (${boy.cost}👑)`]);
+        if (boy.canMeet) {
+            buttons.push([{ text: `👦 ${boy.emoji} ${boy.name} (${boy.cost}👑)`, callback_data: `chamber_boy_${boy.id}` }]);
+        }
     }
 
-    buttons.push(['🎲 قمار (۵۰👑)', '🍷 میخانه (۳۰👑)']);
-    buttons.push(['🎵 موسیقی (۲۰👑)', '🔮 فال‌گیری (۵۰👑)']);
-    buttons.push(['🗡️ مبارزه (۱۰۰👑)', '💊 تریاک (۱۰۰👑)']);
-    buttons.push(['🎁 هدیه دادن']);
-    buttons.push(['🛡️ استخدام نگهبان']);
-    buttons.push(['🔙 برگشت']);
+    buttons.push([{ text: '🎲 قمار (۵۰👑)', callback_data: 'chamber_activity_gambling' }]);
+    buttons.push([{ text: '🍷 میخانه (۳۰👑)', callback_data: 'chamber_activity_drinking' }]);
+    buttons.push([{ text: '🎵 موسیقی (۲۰👑)', callback_data: 'chamber_activity_music' }]);
+    buttons.push([{ text: '🔮 فال‌گیری (۵۰👑)', callback_data: 'chamber_activity_fortune' }]);
+    buttons.push([{ text: '🗡️ مبارزه (۱۰۰👑)', callback_data: 'chamber_activity_fighting' }]);
+    buttons.push([{ text: '💊 تریاک (۱۰۰👑)', callback_data: 'chamber_activity_opium' }]);
+    buttons.push([{ text: '🎁 هدیه دادن', callback_data: 'chamber_gift_menu' }]);
+    buttons.push([{ text: '🛡️ استخدام نگهبان', callback_data: 'chamber_guard_menu' }]);
+    buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
 
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
 function getChamberRoomKeyboard() {
     return {
         reply_markup: {
-            keyboard: [
-                ['🛏️ معمولی (۲۰👑) - خطر ۳۰٪'],
-                ['🛏️✨ ویژه (۱۰۰👑) - خطر ۱۵٪'],
-                ['🛏️💫 سلطنتی (۵۰۰👑) - خطر ۵٪'],
-                ['🔒 مخفی (۱۰۰۰👑) - امن'],
-                ['🔙 برگشت']
-            ], resize_keyboard: true
+            inline_keyboard: [
+                [{ text: '🛏️ معمولی (۲۰👑) - خطر ۳۰٪', callback_data: 'chamber_room_normal' }],
+                [{ text: '🛏️✨ ویژه (۱۰۰👑) - خطر ۱۵٪', callback_data: 'chamber_room_vip' }],
+                [{ text: '🛏️💫 سلطنتی (۵۰۰👑) - خطر ۵٪', callback_data: 'chamber_room_royal' }],
+                [{ text: '🔒 مخفی (۱۰۰۰👑) - امن', callback_data: 'chamber_room_secret' }],
+                [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
+            ]
         }
     };
 }
@@ -494,12 +491,12 @@ function getChamberRoomKeyboard() {
 function getGuardKeyboard() {
     return {
         reply_markup: {
-            keyboard: [
-                ['🛡️ دربان (۵۰۰👑)'],
-                ['👀 دیده‌بان (۱۰۰۰👑)'],
-                ['🗡️ محافظ شخصی (۲۰۰۰👑)'],
-                ['🔙 برگشت']
-            ], resize_keyboard: true
+            inline_keyboard: [
+                [{ text: '🛡️ دربان (۵۰۰👑)', callback_data: 'chamber_guard_doorman' }],
+                [{ text: '👀 دیده‌بان (۱۰۰۰👑)', callback_data: 'chamber_guard_watchman' }],
+                [{ text: '🗡️ محافظ شخصی (۲۰۰۰👑)', callback_data: 'chamber_guard_bodyguard' }],
+                [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
+            ]
         }
     };
 }
@@ -509,14 +506,14 @@ function getGiftKeyboard(player) {
     const buttons = [];
     for (let girl of player.secretChamber.girls) {
         const g = secretGirls.find(sg => sg.id === girl.id);
-        if (g) buttons.push([`🎁 ${g.emoji} ${g.name}`]);
+        if (g) buttons.push([{ text: `🎁 ${g.emoji} ${g.name}`, callback_data: `chamber_gift_girl_${g.id}` }]);
     }
     for (let boy of player.secretChamber.boys) {
         const b = secretBoys.find(sb => sb.id === boy.id);
-        if (b) buttons.push([`🎁 ${b.emoji} ${b.name}`]);
+        if (b) buttons.push([{ text: `🎁 ${b.emoji} ${b.name}`, callback_data: `chamber_gift_boy_${b.id}` }]);
     }
-    buttons.push(['🔙 برگشت']);
-    return { reply_markup: { keyboard: buttons, resize_keyboard: true } };
+    buttons.push([{ text: '🔙 برگشت', callback_data: 'chamber_back' }]);
+    return { reply_markup: { inline_keyboard: buttons } };
 }
 
 module.exports = {
