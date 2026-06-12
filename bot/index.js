@@ -20,9 +20,9 @@ try { require('./courtHandlers').setupCourtHandlers(); } catch(e) { console.log(
 try { require('./peopleHandlers').setupPeopleHandlers(); } catch(e) { console.log('peopleHandlers:', e.message); }
 try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log('adminHandlers:', e.message); }
 
-console.log('✅ تمام هندلرها راه‌اندازی شدن (با try/catch)!');
+console.log('✅ تمام هندلرها راه‌اندازی شدن!');
 
-const { isAdmin, adminCommand, adminState, mainMenu, activeBattles, sendAnimation, sendPhoto } = require('./core');
+const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
 const config = require('../config');
 
@@ -49,7 +49,7 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
 });
 
 // =============================================
-// 🔙 برگشت به منوی اصلی (callback_query شیشه‌ای)
+// 🔙 برگشت شیشه‌ای
 // =============================================
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
@@ -72,11 +72,8 @@ bot.on('callback_query', async (query) => {
         const loc = config.images.locations[p.location] || config.images.locations.village;
         let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`;
         
-        try {
-            await bot.editMessageText(welcome, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...mainMenu() });
-        } catch (e) {
-            await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
-        }
+        await bot.deleteMessage(chatId, msgId).catch(() => {});
+        await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
         return bot.answerCallbackQuery(query.id);
     }
 });
