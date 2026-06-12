@@ -20,26 +20,9 @@ try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log(
 
 console.log('✅ تمام ۱۴ هندلر راه‌اندازی شدن!');
 
-const { isAdmin, adminCommand, adminState, mainMenu, activeBattles, sendPhoto, sendAnimation, chamberState, positionImages } = require('./core');
+const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
 const config = require('../config');
-
-// گیف‌های مخفی‌گاه
-const sexyGifs = {
-    touch: [
-        'CgACAgIAAxkBAAEqL2xqIyJty9xl0ap5lrJYra2GtlNQdQACTwMAAiY94UhMlGoX_JSICTsE',
-        'CgACAgQAAxkBAAEqL2pqIyJpy-g7HaM9YEhpzyE0RU-1MwACrAADXSmNUjSWJGIYVG3KOwQ',
-        'CgACAgQAAxkBAAEqL15qIyJW5AcK3OWO2Oyif7wI1aiDqQACgQMAAirVQQYo4gxrnlL0zTsE'
-    ],
-    kiss: 'CgACAgIAAxkBAAEqL2hqIyJnncLJlCKF2kJOT7jKi-7r_wACaAIAArqQoEtep7htQxIwxTsE',
-    orgy: 'CgACAgQAAxkBAAEqL1xqIyJUx3yIRno4UZtix4SumGHwCgAC6p8AAkMXZAepPlY8DiidIDsE',
-    extra: [
-        'CgACAgQAAxkBAAEqizpqK5tQFeriRVC2jqdHhD_brsXdAwACUx4AAtsXWVGX50vaL2d8KzwE',
-        'CgACAgQAAxkBAAEqi09qK5tmyT3ia2dR7m8hTSdyHJKmvAACfhsAAtN3WVFQLM4BGup3wTwE',
-        'CgACAgQAAxkBAAEqi1NqK5tmc79xEIG6arpSFIeLmrFFrQACOR4AAtsXWVGBZG94AAH7sEU8BA',
-        'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE'
-    ]
-};
 
 // =============================================
 // 📅 دستور day/روز
@@ -60,6 +43,7 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
     
     try {
         const { checkAllBirths } = require('../player');
+        const { sendPhoto } = require('./core');
         const { getBirthImage } = require('../offspring');
         const births = checkAllBirths(p);
         if (births && births.length > 0) {
@@ -87,7 +71,7 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
-    const { empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
+    const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
     [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => { if (s && s[chatId]) delete s[chatId]; });
     if (activeBattles[chatId]) delete activeBattles[chatId];
     
@@ -98,7 +82,7 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
 });
 
 // =============================================
-// 🔙 برگشت شیشه‌ای + callbackهای مخفی‌گاه
+// 🔙 برگشت شیشه‌ای
 // =============================================
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
@@ -108,9 +92,8 @@ bot.on('callback_query', async (query) => {
 
     if (!p) return bot.answerCallbackQuery(query.id, { text: '❌ /start بزن!', show_alert: true });
 
-    // ============ برگشت به منوی اصلی ============
     if (data === 'back_to_main') {
-        const { empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
+        const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
         [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => { if (s && s[chatId]) delete s[chatId]; });
         if (activeBattles[chatId]) delete activeBattles[chatId];
 
@@ -120,86 +103,6 @@ bot.on('callback_query', async (query) => {
         await bot.deleteMessage(chatId, msgId).catch(() => {});
         await bot.sendMessage(chatId, `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
         return bot.answerCallbackQuery(query.id);
-    }
-
-    // ============ 🔞 callbackهای مخفی‌گاه ============
-    if (data && data.startsWith('chamber_')) {
-        const st = chamberState[chatId];
-        if (!st || !st.person) {
-            return bot.answerCallbackQuery(query.id, { text: '❌ یک شخص انتخاب کن!' });
-        }
-
-        const person = st.person;
-
-        try {
-            if (data === 'chamber_back') {
-                delete chamberState[chatId];
-                await bot.deleteMessage(chatId, msgId).catch(() => {});
-                const { formatSecretChamber, getSecretChamberKeyboard } = require('../secretChamber');
-                await bot.sendMessage(chatId, formatSecretChamber(p), { parse_mode: 'Markdown', ...getSecretChamberKeyboard(p) });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data.startsWith('chamber_touch_')) {
-                const gif = sexyGifs.touch[Math.floor(Math.random() * sexyGifs.touch.length)];
-                if (!p.prisonRelations) p.prisonRelations = {};
-                p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 5);
-                
-                const btns = [
-                    [{ text: '💋 ببوس', callback_data: `chamber_kiss_${person.id}` }],
-                    [{ text: '🔥 عیاشی', callback_data: `chamber_orgy_${person.id}` }],
-                    [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
-                ];
-                
-                await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, gif, `🖐️ ${person.emoji} ${person.name} رو لمس کردی...\n💕 +۵`, { reply_markup: { inline_keyboard: btns } });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data.startsWith('chamber_kiss_')) {
-                if (!p.prisonRelations) p.prisonRelations = {};
-                p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 10);
-                
-                const btns = [
-                    [{ text: '🔥 عیاشی', callback_data: `chamber_orgy_${person.id}` }],
-                    [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
-                ];
-                
-                await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, sexyGifs.kiss, `💋 ${person.emoji} ${person.name} رو بوسیدی...\n💕 +۱۰`, { reply_markup: { inline_keyboard: btns } });
-                return bot.answerCallbackQuery(query.id);
-            }
-
-            if (data.startsWith('chamber_orgy_')) {
-                const allOrgyGifs = [sexyGifs.orgy, ...sexyGifs.extra];
-                const gif = allOrgyGifs[Math.floor(Math.random() * allOrgyGifs.length)];
-                
-                if (!p.prisonRelations) p.prisonRelations = {};
-                p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 15);
-                
-                const positions = ['front', 'back', 'oral'];
-                const pos = positions[Math.floor(Math.random() * positions.length)];
-                const image = positionImages[pos] ? positionImages[pos][Math.floor(Math.random() * positionImages[pos].length)] : null;
-                const titles = { front: '🍑 از جلو', back: '🍑 از عقب', oral: '👄 دهنی' };
-                
-                await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, gif, `🔥 با ${person.emoji} ${person.name}...`, { reply_markup: { inline_keyboard: [] } });
-                await new Promise(r => setTimeout(r, 2000));
-                
-                const btns = [[{ text: '🔙 برگشت', callback_data: 'chamber_back' }]];
-                if (image) {
-                    await sendPhoto(chatId, image, `${titles[pos]}\n\n💕 +۱۵`, { reply_markup: { inline_keyboard: btns } });
-                } else {
-                    await bot.sendMessage(chatId, `${titles[pos]}\n\n💕 +۱۵`, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: btns } });
-                }
-                
-                delete chamberState[chatId];
-                return bot.answerCallbackQuery(query.id);
-            }
-        } catch(e) {
-            console.log('Chamber callback error:', e.message);
-            return bot.answerCallbackQuery(query.id, { text: '❌ خطا!' });
-        }
     }
 });
 
