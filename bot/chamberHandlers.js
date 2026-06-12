@@ -15,7 +15,11 @@ const sexyGifs = {
     tease: 'CgACAgQAAxkBAAEqi1NqK5tmc79xEIG6arpSFIeLmrFFrQACOR4AAtsXWVGBZG94AAH7sEU8BA',
     kiss: 'CgACAgIAAxkBAAEqL2hqIyJnncLJlCKF2kJOT7jKi-7r_wACaAIAArqQoEtep7htQxIwxTsE',
     orgy: 'CgACAgQAAxkBAAEqL1xqIyJUx3yIRno4UZtix4SumGHwCgAC6p8AAkMXZAepPlY8DiidIDsE',
-    orgyExtra: 'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE'
+    orgyExtra: [
+        'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE',
+        'CgACAgQAAxkBAAEqkK1qLAiZFuc_3efDCVPrsuT_0QNSsgACDCEAAtsXYVHZL9Wynu09VzwE',
+        'CgACAgQAAxkBAAEqkK5qLAiZNDfe_SJAKSeMn7BoQ4R_nwACDSEAAtsXYVHcaB-yfbpTPTwE'
+    ]
 };
 
 // دیالوگ‌های شهوتی
@@ -69,9 +73,24 @@ function setupChamberHandlers() {
         const data = query.data;
         const p = player.getPlayer(chatId);
         if (!p) return;
-        if (!data || !data.startsWith('chamber_')) return;
+        if (!data || (!data.startsWith('chamber_') && data !== 'secret_chamber')) return;
 
         try {
+            // ============ ورود از خونه ============
+            if (data === 'secret_chamber') {
+                if (p.level < 30 && (!p.empire || p.empire.level === 0)) {
+                    return bot.answerCallbackQuery(query.id, { text: '🔒 باید سطح ۳۰ باشی!', show_alert: true });
+                }
+                try { require('../secretChamber').initSecretChamber(p); } catch(e) {}
+                const text = formatSecretChamber(p);
+                if (!text || text.trim() === '') {
+                    return bot.answerCallbackQuery(query.id, { text: '❌ مخفی‌گاه خالیه!' });
+                }
+                await bot.deleteMessage(chatId, msgId).catch(() => {});
+                await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...getSecretChamberKeyboard(p) });
+                return bot.answerCallbackQuery(query.id);
+            }
+
             // ============ صفحه‌بندی ============
             if (data.startsWith('chamber_page_')) {
                 const page = parseInt(data.replace('chamber_page_', ''));
@@ -140,7 +159,6 @@ function setupChamberHandlers() {
                 
                 chamberState[chatId] = { person, roomType };
                 
-                // دیالوگ و گیف بعد انتخاب اتاق
                 const teaseDialog = dialogs.tease[Math.floor(Math.random() * dialogs.tease.length)];
                 
                 const btns = [
@@ -256,7 +274,7 @@ function setupChamberHandlers() {
                 if (!st || !st.person) return bot.answerCallbackQuery(query.id, { text: '❌ یک نفر انتخاب کن!' });
                 const person = st.person;
                 
-                const orgyGifs = [sexyGifs.orgy, sexyGifs.orgyExtra];
+                const orgyGifs = [sexyGifs.orgy, ...sexyGifs.orgyExtra];
                 const gif = orgyGifs[Math.floor(Math.random() * orgyGifs.length)];
                 
                 if (!p.prisonRelations) p.prisonRelations = {};
