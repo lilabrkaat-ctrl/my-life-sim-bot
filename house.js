@@ -115,6 +115,9 @@ function getHouseKeyboard(player) {
         }
     }
 
+    // 🆕 دکمه مخفی‌گاه
+    buttons.push([{ text: '🔞 مخفی‌گاه', callback_data: 'secret_chamber' }]);
+
     buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
 
     return { reply_markup: { inline_keyboard: buttons } };
