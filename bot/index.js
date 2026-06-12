@@ -16,17 +16,16 @@ try { require('./lootboxHandlers').setupLootboxHandlers(); } catch(e) { console.
 try { require('./dailyQuestHandlers').setupDailyQuestHandlers(); } catch(e) { console.log('dailyQuestHandlers:', e.message); }
 try { require('./offspringHandlers').setupOffspringHandlers(); } catch(e) { console.log('offspringHandlers:', e.message); }
 try { require('./courtHandlers').setupCourtHandlers(); } catch(e) { console.log('courtHandlers:', e.message); }
-try { require('./peopleHandlers').setupPeopleHandlers(); } catch(e) { console.log('peopleHandlers:', e.message); }
 try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log('adminHandlers:', e.message); }
 
-console.log('✅ تمام ۱۵ هندلر راه‌اندازی شدن!');
+console.log('✅ تمام ۱۴ هندلر راه‌اندازی شدن!');
 
 const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
 const config = require('../config');
 
 // =============================================
-// 📅 دستور day/روز برای گذر روز
+// 📅 دستور day/روز
 // =============================================
 bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
@@ -37,23 +36,11 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
     }
     
     let p = player.getPlayer(chatId);
-    if (!p) {
-        player.createPlayer(chatId, msg.chat.first_name || 'گمنام');
-        p = player.getPlayer(chatId);
-    }
+    if (!p) { player.createPlayer(chatId, msg.chat.first_name || 'گمنام'); p = player.getPlayer(chatId); }
     
-    // تنظیم روز
     p.gameDay = dayNum;
+    if (p.dailyQuests) { p.dailyQuests.quests = []; p.dailyQuests.completed = []; p.dailyQuests.progress = {}; p.dailyQuests.lastReset = Date.now(); }
     
-    // پاک کردن ماموریت‌های قبلی
-    if (p.dailyQuests) {
-        p.dailyQuests.quests = [];
-        p.dailyQuests.completed = [];
-        p.dailyQuests.progress = {};
-        p.dailyQuests.lastReset = Date.now();
-    }
-    
-    // چک تولدها
     try {
         const { checkAllBirths } = require('../player');
         const { sendPhoto } = require('./core');
@@ -64,23 +51,16 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
                 const child = birth.child || birth;
                 const momInfo = birth.queen ? ` از ${birth.queen.emoji} ${birth.queen.name}` : '';
                 const birthImg = getBirthImage();
-                if (birthImg) {
-                    await sendPhoto(chatId, birthImg, `👶 *${child.name}*${momInfo} به دنیا اومد! ${child.emoji}`, mainMenu());
-                } else {
-                    await bot.sendMessage(chatId, `👶 *${child.name}*${momInfo} به دنیا اومد! ${child.emoji}`, { parse_mode: 'Markdown' });
-                }
+                if (birthImg) await sendPhoto(chatId, birthImg, `👶 *${child.name}*${momInfo} به دنیا اومد!`, mainMenu());
+                else await bot.sendMessage(chatId, `👶 *${child.name}*${momInfo} به دنیا اومد!`, { parse_mode: 'Markdown' });
             }
         }
     } catch(e) {}
     
-    // نمایش وضعیت
     const { getTimeOfDay } = require('../player');
-    const time = getTimeOfDay();
-    p.timeOfDay = time;
+    const time = getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
-    let welcome = `🏛️ *بقای باستانی - روز ${dayNum}/۷*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 🏆 ${p.score || 0} امتیاز`;
-    
-    await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+    await bot.sendMessage(chatId, `🏛️ *بقای باستانی - روز ${dayNum}/۷*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 // =============================================
@@ -92,17 +72,13 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
     const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
-    [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => {
-        if (s && s[chatId]) delete s[chatId];
-    });
+    [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => { if (s && s[chatId]) delete s[chatId]; });
     if (activeBattles[chatId]) delete activeBattles[chatId];
     
     const { getTimeOfDay } = require('../player');
-    const time = getTimeOfDay();
-    p.timeOfDay = time;
+    const time = getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
-    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`;
-    await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+    await bot.sendMessage(chatId, `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
 });
 
 // =============================================
@@ -118,32 +94,26 @@ bot.on('callback_query', async (query) => {
 
     if (data === 'back_to_main') {
         const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
-        [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => {
-            if (s && s[chatId]) delete s[chatId];
-        });
+        [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => { if (s && s[chatId]) delete s[chatId]; });
         if (activeBattles[chatId]) delete activeBattles[chatId];
 
         const { getTimeOfDay } = require('../player');
-        const time = getTimeOfDay();
-        p.timeOfDay = time;
+        const time = getTimeOfDay(); p.timeOfDay = time;
         const loc = config.images.locations[p.location] || config.images.locations.village;
-        let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`;
-        
         await bot.deleteMessage(chatId, msgId).catch(() => {});
-        await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+        await bot.sendMessage(chatId, `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
         return bot.answerCallbackQuery(query.id);
     }
 });
 
 // =============================================
-// 👤 پیام‌های معمولی (ادمین، shop)
+// 👤 پیام‌های معمولی
 // =============================================
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
     if (!text || text.startsWith('/')) return;
 
-    // 👑 ادمین
     if (isAdmin(chatId)) {
         let p = player.getPlayer(chatId);
         if (!p) { player.createPlayer(chatId, 'Admin 👑'); p = player.getPlayer(chatId); }
@@ -163,57 +133,27 @@ bot.on('message', async (msg) => {
         }
 
         const { empireState, courtState, haremState } = require('./core');
-        
-        if (empireState[chatId]?.action === 'setDynasty') {
-            const result = require('../empire').setDynastyName(p, text);
-            delete empireState[chatId];
-            bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' }); return;
-        }
-        if (empireState[chatId]?.action === 'assignRole') {
-            const result = require('../empire').assignRole(p, empireState[chatId].roleKey, text.trim());
-            delete empireState[chatId];
-            bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' }); return;
-        }
-        if (courtState[chatId]?.action === 'intrigue') {
-            const parts = text.split(' ');
-            const result = require('../court').performIntrigue(p, courtState[chatId].intrigueKey, parts[0], parts[1] || parts[0]);
-            delete courtState[chatId];
-            bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' }); return;
-        }
-        if (haremState[chatId]?.action === 'newPregnancy') {
-            const queen = p.harem?.queens.find(q => q.name === text.trim());
-            if (!queen) { bot.sendMessage(chatId, '❌ ملکه پیدا نشد!', mainMenu()); delete haremState[chatId]; return; }
-            haremState[chatId].queenId = queen.id;
-            haremState[chatId].action = 'startPregnancy';
-            bot.sendMessage(chatId, '⏰ سرعت بارداری رو انتخاب کن:', { parse_mode: 'Markdown', ...require('../queenHarem').getPregnancySpeedKeyboard() }); 
-            return;
-        }
+        if (empireState[chatId]?.action === 'setDynasty') { const r = require('../empire').setDynastyName(p, text); delete empireState[chatId]; bot.sendMessage(chatId, r.message, { parse_mode: 'Markdown' }); return; }
+        if (courtState[chatId]?.action === 'intrigue') { const parts = text.split(' '); const r = require('../court').performIntrigue(p, courtState[chatId].intrigueKey, parts[0], parts[1]||parts[0]); delete courtState[chatId]; bot.sendMessage(chatId, r.message, { parse_mode: 'Markdown' }); return; }
+        if (haremState[chatId]?.action === 'newPregnancy') { const q = p.harem?.queens.find(q => q.name === text.trim()); if (!q) { bot.sendMessage(chatId, '❌ ملکه پیدا نشد!', mainMenu()); delete haremState[chatId]; return; } haremState[chatId].queenId = q.id; haremState[chatId].action = 'startPregnancy'; bot.sendMessage(chatId, '⏰ سرعت بارداری:', { parse_mode: 'Markdown', ...require('../queenHarem').getPregnancySpeedKeyboard() }); return; }
 
         const args = text.split(' '); const cmd = args.shift().toLowerCase();
         const adminCommands = ['gold','g','xp','exp','score','sc','heal','hp','item','give','attack','atk','defense','def','level','lvl','energy','en','day','setday','nextday','nd','resetday','rd','condom','cd','unlock','max','maxall','god','pet','addpet','removepet','petfood','box','addbox','openbox','boxes','quest','newquest','completequest','child','addchild','heir','setheir','killchild','tournament','pregnant','birth','addqueen','removequeen','queencare','queensalary','promotequeen','empirelevel','dynasty','income','wonder','population','food','water','building','stats','blackmarket','prison','gift','sendgift','info','whois','users','count','top','resetuser','ru','ban','unban','announce','ann','save','reset','help','addnpc','addprison','addhouse','addhome','removenpc','removeprison','removehouse','removehome','setrelation','setrel','marrynow','forcemarry'];
 
         if (adminCommands.includes(cmd)) {
             const result = adminCommand(p, cmd, args);
-            if (result.announceAll) {
-                for (let id in player.players) { try { bot.sendMessage(id, `📢 ${result.announce}`, { parse_mode: 'Markdown' }); } catch(e) {} }
-                bot.sendMessage(chatId, '✅ پیام به همه ارسال شد!', mainMenu()); return;
-            }
+            if (result.announceAll) { for (let id in player.players) { try { bot.sendMessage(id, `📢 ${result.announce}`, { parse_mode: 'Markdown' }); } catch(e) {} } bot.sendMessage(chatId, '✅ ارسال شد!', mainMenu()); return; }
             bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() }); return;
         }
         return;
     }
 
-    // 👤 کاربر معمولی
     const p = player.getPlayer(chatId);
     if (!p) return;
     p.chatId = chatId;
 
     const shopState = require('../shop').getShopState(p);
-    if (shopState) {
-        const result = require('../shop').processAmount(p, text);
-        if (result.message) bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...require('../shop').getShopKeyboard() });
-        return;
-    }
+    if (shopState) { const r = require('../shop').processAmount(p, text); if (r.message) bot.sendMessage(chatId, r.message, { parse_mode: 'Markdown', ...require('../shop').getShopKeyboard() }); return; }
 
     const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','👸','👩','👦','🎲','🍷','🗡️','💊','🛏️','🧹','⏰','👗','🤰','💆','🍑','👄','🎈'];
     for (let prefix of prefixes) { if (text.startsWith(prefix)) return; }
