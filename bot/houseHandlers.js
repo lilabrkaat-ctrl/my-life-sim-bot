@@ -10,13 +10,13 @@ function setupHouseHandlers() {
 
         if (!p) return;
 
-        // فقط callbackهای خونه و مخفی‌گاه رو هندل کن
+        // فقط callbackهای خونه و مخفی‌گاه
         if (!data.startsWith('house_') && data !== 'secret_chamber') return;
 
         try {
 
             // =============================================
-            // 🔞 مخفی‌گاه
+            // 🔞 مخفی‌گاه (کیبورد معمولی - پاک و ارسال)
             // =============================================
             if (data === 'secret_chamber') {
                 const { formatSecretChamber, getSecretChamberKeyboard } = require('../secretChamber');
@@ -24,9 +24,8 @@ function setupHouseHandlers() {
                 if (p.level < 30 && (!p.empire || p.empire.level === 0)) {
                     return bot.answerCallbackQuery(query.id, { text: '🔒 باید سطح ۳۰ باشی!', show_alert: true });
                 }
-                await bot.editMessageText(formatSecretChamber(p), {
-                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getSecretChamberKeyboard(p)
-                });
+                await bot.deleteMessage(chatId, msgId).catch(() => {});
+                await bot.sendMessage(chatId, formatSecretChamber(p), { parse_mode: 'Markdown', ...getSecretChamberKeyboard(p) });
                 return bot.answerCallbackQuery(query.id);
             }
 
