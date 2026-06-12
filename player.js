@@ -133,7 +133,7 @@ function formatStatus(p) {
         }
     }
 
-    // بارداری‌های حرمسرا 🆕
+    // بارداری‌های حرمسرا
     if (p.harem && p.harem.queens) {
         let totalPreg = 0;
         for (let queen of p.harem.queens) {
@@ -160,7 +160,6 @@ function formatStatus(p) {
     status += `\n🏆 امتیاز: ${p.score||0}`;
     return status;
 }
-
 function formatLeaderboard() {
     const sorted = Object.entries(players).sort((a, b) => (b[1].score || 0) - (a[1].score || 0)).slice(0, 10);
     if (sorted.length === 0) return '📊 *هنوز کسی بازی نکرده!*';
@@ -226,8 +225,35 @@ function initAllSystems(player) {
     if (!player.blackMarket) player.blackMarket = { items: [], specialDeal: null, lastRefresh: 0 };
 }
 
+// =============================================
+// 👶 چک تولد بچه‌ها (offspring + harem)
+// =============================================
+function checkAllBirths(player) {
+    const births = [];
+    
+    // چک بارداری‌های معمولی (offspring)
+    try {
+        const { checkBirths } = require('./offspring');
+        const normalBirths = checkBirths(player);
+        if (normalBirths && normalBirths.length > 0) {
+            births.push(...normalBirths.map(b => ({ type: 'normal', child: b })));
+        }
+    } catch(e) {}
+    
+    // چک بارداری‌های حرمسرا
+    try {
+        const { checkHaremBirths } = require('./queenHarem');
+        const haremBirths = checkHaremBirths(player);
+        if (haremBirths && haremBirths.length > 0) {
+            births.push(...haremBirths.map(b => ({ type: 'harem', ...b })));
+        }
+    } catch(e) {}
+    
+    return births;
+}
+
 module.exports = { 
     players, createPlayer, getPlayer, addScore, checkUnlocks, 
     formatStatus, formatLeaderboard, checkLevelUp, getTimeOfDay,
-    joinPvP, leavePvP, pvpQueue, initAllSystems
+    joinPvP, leavePvP, pvpQueue, initAllSystems, checkAllBirths
 };
