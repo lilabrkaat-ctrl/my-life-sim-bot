@@ -2,6 +2,7 @@ const { bot } = require('./core');
 const { setupMenuHandlers } = require('./menuHandlers');
 const { setupChamberHandlers } = require('./chamberHandlers');
 const { setupEmpireHandlers } = require('./empireHandlers');
+const { setupEmpireOrgyHandlers } = require('./empireOrgyHandlers');
 const { setupHaremHandlers } = require('./haremHandlers');
 const { setupShopHandlers } = require('./shopHandlers');
 const { setupFightHandlers } = require('./fightHandlers');
@@ -22,6 +23,7 @@ const { setupAdminHandlers } = require('./adminHandlers');
 setupMenuHandlers();
 setupChamberHandlers();
 setupEmpireHandlers();
+setupEmpireOrgyHandlers();
 setupHaremHandlers();
 setupShopHandlers();
 setupFightHandlers();
@@ -36,7 +38,7 @@ setupCourtHandlers();
 setupPeopleHandlers();
 setupAdminHandlers();
 
-console.log('✅ تمام ۱۶ هندلر راه‌اندازی شدن!');
+console.log('✅ تمام ۱۷ هندلر راه‌اندازی شدن!');
 
 const { isAdmin, adminCommand, adminState, mainMenu, activeBattles, sendAnimation, sendPhoto } = require('./core');
 const { player } = require('./core');
@@ -50,7 +52,6 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
     
-    // پاک کردن همه state ها
     const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
     [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => {
         if (s && s[chatId]) delete s[chatId];
@@ -115,12 +116,10 @@ bot.on('message', async (msg) => {
         }
         if (!p) return;
         p.chatId = chatId;
-        
-        // اطمینان از init سیستم‌ها
         player.initAllSystems(p);
 
         // state هدیه دادن
-        if (adminState[chatId] && adminState[chatId].step === 'amount' && adminState[chatId].action === 'gift') {
+        if (adminState[chatId] && adminState[chatId].step === 'amount') {
             const amount = parseInt(text);
             if (isNaN(amount) || amount <= 0) { 
                 bot.sendMessage(chatId, '❌ یه عدد معتبر وارد کن!', mainMenu()); 
@@ -139,19 +138,17 @@ bot.on('message', async (msg) => {
             return;
         }
 
-        // state های ادمین
+        // state ها
         const { empireState, courtState, haremState } = require('./core');
         
-        // تغییر نام سلسله
         if (empireState[chatId] && empireState[chatId].action === 'setDynasty') {
-            const { setDynastyName, formatEmpire, getEmpireKeyboard } = require('../empire');
+            const { setDynastyName } = require('../empire');
             const result = setDynastyName(p, text);
             delete empireState[chatId];
             bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' }); 
             return;
         }
 
-        // انتصاب سمت
         if (empireState[chatId] && empireState[chatId].action === 'assignRole') {
             const { assignRole } = require('../empire');
             const result = assignRole(p, empireState[chatId].roleKey, text.trim());
@@ -160,7 +157,6 @@ bot.on('message', async (msg) => {
             return;
         }
 
-        // دسیسه دربار
         if (courtState[chatId] && courtState[chatId].action === 'intrigue') {
             const { performIntrigue } = require('../court');
             const parts = text.split(' ');
@@ -170,7 +166,6 @@ bot.on('message', async (msg) => {
             return;
         }
 
-        // حرمسرا - انتخاب ملکه
         if (haremState[chatId] && haremState[chatId].action === 'newPregnancy') {
             const queen = p.harem?.queens.find(q => q.name === text.trim());
             if (!queen) { 
@@ -185,7 +180,7 @@ bot.on('message', async (msg) => {
             return;
         }
 
-        // دستورات عادی ادمین (فقط برای دستوراتی که adminHandlers هندل نمیکنه)
+        // دستورات عادی ادمین
         const args = text.split(' '); 
         const cmd = args.shift().toLowerCase();
         const adminCommands = [
@@ -229,7 +224,7 @@ bot.on('message', async (msg) => {
     if (!p) return;
     p.chatId = chatId;
 
-    // Shop (خرید/فروش با عدد)
+    // Shop
     const { getShopState, processAmount } = require('../shop');
     const shopState = getShopState(p);
     if (shopState) {
