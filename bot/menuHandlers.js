@@ -14,6 +14,7 @@ const { formatEmpire, getEmpireKeyboard } = require('../empire');
 
 function setupMenuHandlers() {
 
+    // ============ کانال ============
     bot.on('channel_post', async (msg) => {
         if (msg.chat.id === -1003035245907) {
             const text = msg.text || msg.caption || '';
@@ -29,6 +30,7 @@ function setupMenuHandlers() {
         }
     });
 
+    // ============ START ============
     bot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
         const firstName = msg.chat.first_name || 'گمنام';
@@ -55,8 +57,7 @@ function setupMenuHandlers() {
         try { require('../people').initPeople(p); } catch(e) {}
         try { require('../court').initCourt(p); } catch(e) {}
 
-        // ============ 👶 چک تولد بچه‌ها ============
-        // تولد از offspring (بارداری معمولی)
+        // تولد بچه‌ها
         try {
             const births = checkBirths(p);
             if (births && births.length > 0) {
@@ -67,8 +68,7 @@ function setupMenuHandlers() {
                 }
             }
         } catch(e) {}
-
-        // تولد از حرمسرا (بارداری ملکه‌ها) 🆕
+        
         try {
             const { checkHaremBirths } = require('../queenHarem');
             const haremBirths = checkHaremBirths(p);
@@ -81,7 +81,7 @@ function setupMenuHandlers() {
                     else await bot.sendMessage(chatId, `👶 ${childInfo} از ${momName} به دنیا اومد!`, { parse_mode: 'Markdown' });
                 }
             }
-        } catch(e) { console.log('checkHaremBirths error:', e.message); }
+        } catch(e) {}
 
         const loc = config.images?.locations?.[p.location] || { emoji: '🏘️', name: 'روستا', file_id: null };
         let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay||1}/۷ | 🏆 ${p.score||0} امتیاز\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
@@ -92,6 +92,7 @@ function setupMenuHandlers() {
         else await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
     });
 
+    // ============ وضعیت ============
     bot.onText(/^👤 وضعیت$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -100,10 +101,12 @@ function setupMenuHandlers() {
         try { await bot.sendMessage(chatId, formatDailyQuests(p), { parse_mode: 'Markdown', ...getDailyQuestKeyboard(p) }); } catch(e) {}
     });
 
+    // ============ رتبه‌بندی ============
     bot.onText(/^📊 رتبه‌بندی$/, async (msg) => {
         await bot.sendMessage(msg.chat.id, player.formatLeaderboard(), { parse_mode: 'Markdown', ...mainMenu() });
     });
 
+    // ============ جمع‌آوری ============
     bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -117,6 +120,7 @@ function setupMenuHandlers() {
         else await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
     });
 
+    // ============ سفر ============
     bot.onText(/^🗺️ سفر$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
@@ -131,6 +135,7 @@ function setupMenuHandlers() {
         await bot.sendMessage(chatId, mapMsg, { parse_mode: 'Markdown', ...locationMenu(p) });
     });
 
+    // ============ انتخاب لوکیشن سفر ============
     bot.onText(/^✅ (.+)$/, async (msg, match) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
         const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
@@ -145,8 +150,9 @@ function setupMenuHandlers() {
                 if (result.ambush) { 
                     const fr = require('../fight').startFight(p); 
                     if (fr.success) { activeBattles[chatId] = fr.enemy; 
+                        if (fr.enemy.file_id) return await sendPhoto(chatId, fr.enemy.file_id, result.message + '\n' + fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
                         if (fr.animation) return await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
-                        else return await bot.sendMessage(chatId, result.message + '\n' + fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
+                        return await bot.sendMessage(chatId, result.message + '\n' + fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
                     } 
                 }
                 if (result.travelImage) await sendPhoto(chatId, result.travelImage, result.message, mainMenu());
@@ -157,47 +163,66 @@ function setupMenuHandlers() {
         }
     });
 
+    // ============ ⚔️ نبرد (با عکس دشمن) ============
     bot.onText(/^⚔️ نبرد$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+        
         const { startFight } = require('../fight');
         const fr = startFight(p);
-        if (fr.success) { activeBattles[chatId] = fr.enemy;
-            if (fr.animation) await sendAnimation(chatId, fr.animation, fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
-            else await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
-        } else await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...mainMenu() });
+        
+        if (fr.success) {
+            activeBattles[chatId] = fr.enemy;
+            
+            // اول عکس دشمن
+            if (fr.enemy.file_id) {
+                await sendPhoto(chatId, fr.enemy.file_id, fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
+            } else if (fr.animation) {
+                await sendAnimation(chatId, fr.animation, fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
+            } else {
+                await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
+            }
+        } else {
+            await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...mainMenu() });
+        }
     });
 
+    // ============ 🏪 بازار ============
     bot.onText(/^🏪 بازار$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, showShopMenu() + `\n\n👑 طلا: ${p.inventory?.gold || 0}`, { parse_mode: 'Markdown', ...getShopKeyboard() });
     });
 
+    // ============ 🔨 ساخت‌وساز ============
     bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
     });
 
+    // ============ 🏰 زندان ============
     bot.onText(/^🏰 زندان$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatPrison(p), { parse_mode: 'Markdown', ...getPrisonKeyboard(p) });
     });
 
+    // ============ 🏠 خونه ============
     bot.onText(/^🏠 خونه$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatHouse(p), { parse_mode: 'Markdown', ...getHouseKeyboard(p) });
     });
 
+    // ============ 👑 امپراطوری ============
     bot.onText(/^👑 امپراطوری$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatEmpire(p), { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
     });
 
+    // ============ 🔞 مخفی‌گاه ============
     bot.onText(/^🔞 مخفی‌گاه$/, async (msg) => {
         const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
