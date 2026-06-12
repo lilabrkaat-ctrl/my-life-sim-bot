@@ -16,7 +16,7 @@ function setupHouseHandlers() {
         try {
 
             // =============================================
-            // 🔞 مخفی‌گاه (کیبورد معمولی - پاک و ارسال)
+            // 🔞 مخفی‌گاه
             // =============================================
             if (data === 'secret_chamber') {
                 const { formatSecretChamber, getSecretChamberKeyboard } = require('../secretChamber');
@@ -24,8 +24,12 @@ function setupHouseHandlers() {
                 if (p.level < 30 && (!p.empire || p.empire.level === 0)) {
                     return bot.answerCallbackQuery(query.id, { text: '🔒 باید سطح ۳۰ باشی!', show_alert: true });
                 }
+                const text = formatSecretChamber(p);
+                if (!text || text.trim() === '') {
+                    return bot.answerCallbackQuery(query.id, { text: '❌ مخفی‌گاه خالیه!' });
+                }
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await bot.sendMessage(chatId, formatSecretChamber(p), { parse_mode: 'Markdown', ...getSecretChamberKeyboard(p) });
+                await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...getSecretChamberKeyboard(p) });
                 return bot.answerCallbackQuery(query.id);
             }
 
@@ -34,7 +38,11 @@ function setupHouseHandlers() {
             // =============================================
             if (data === 'house_back') {
                 const { formatHouse, getHouseKeyboard } = require('../house');
-                await bot.editMessageText(formatHouse(p), {
+                const text = formatHouse(p);
+                if (!text || text.trim() === '') {
+                    return bot.answerCallbackQuery(query.id, { text: '❌ خونه خالیه!' });
+                }
+                await bot.editMessageText(text, {
                     chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getHouseKeyboard(p)
                 });
                 return bot.answerCallbackQuery(query.id);
@@ -61,6 +69,10 @@ function setupHouseHandlers() {
                 infoMsg += `💕 رابطه: ${relation.name} (${points} امتیاز)\n`;
                 infoMsg += `🖐️ لمس: ${actions.touch} | 💋 بوس: ${actions.kiss} | 🔥 عیاشی: ${actions.orgy}`;
                 if (isSpouse) infoMsg += '\n💍 *همسر*';
+
+                if (!infoMsg || infoMsg.trim() === '') {
+                    return bot.answerCallbackQuery(query.id, { text: '❌ اطلاعات پیدا نشد!' });
+                }
 
                 await bot.editMessageText(infoMsg, {
                     chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getHouseMemberKeyboard(p, npcId)
@@ -135,6 +147,10 @@ function setupHouseHandlers() {
 
                 if (result.success) {
                     const { formatHouse, getHouseKeyboard } = require('../house');
+                    const text = formatHouse(p);
+                    if (!text || text.trim() === '') {
+                        return bot.answerCallbackQuery(query.id, { text: '❌ خونه خالیه!' });
+                    }
                     await bot.editMessageText(`💍 *خواستگاری*\n\n${result.message}`, {
                         chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getHouseKeyboard(p)
                     });
@@ -155,6 +171,10 @@ function setupHouseHandlers() {
                 const result = marry(p, npcId);
 
                 const { formatHouse, getHouseKeyboard } = require('../house');
+                const text = formatHouse(p);
+                if (!text || text.trim() === '') {
+                    return bot.answerCallbackQuery(query.id, { text: '❌ خونه خالیه!' });
+                }
                 await bot.editMessageText(`👰 *عروسی*\n\n${result.message}`, {
                     chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getHouseKeyboard(p)
                 });
@@ -169,7 +189,11 @@ function setupHouseHandlers() {
                 const { kickFromHouse, formatHouse, getHouseKeyboard } = require('../house');
                 const result = kickFromHouse(p, npcId);
 
-                await bot.editMessageText(formatHouse(p) + '\n\n' + result.message, {
+                const text = formatHouse(p);
+                if (!text || text.trim() === '') {
+                    return bot.answerCallbackQuery(query.id, { text: '❌ خونه خالیه!' });
+                }
+                await bot.editMessageText(text + '\n\n' + result.message, {
                     chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getHouseKeyboard(p)
                 });
                 return bot.answerCallbackQuery(query.id, { text: result.message.replace(/[*_]/g, ''), show_alert: true });
