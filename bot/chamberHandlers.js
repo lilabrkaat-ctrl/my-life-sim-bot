@@ -8,19 +8,61 @@ const sexyGifs = {
         'CgACAgQAAxkBAAEqL2pqIyJpy-g7HaM9YEhpzyE0RU-1MwACrAADXSmNUjSWJGIYVG3KOwQ',
         'CgACAgQAAxkBAAEqL15qIyJW5AcK3OWO2Oyif7wI1aiDqQACgQMAAirVQQYo4gxrnlL0zTsE'
     ],
+    touchExtra: [
+        'CgACAgQAAxkBAAEqizpqK5tQFeriRVC2jqdHhD_brsXdAwACUx4AAtsXWVGX50vaL2d8KzwE', // بدنمایی شهروند
+        'CgACAgQAAxkBAAEqi09qK5tmyT3ia2dR7m8hTSdyHJKmvAACfhsAAtN3WVFQLM4BGup3wTwE'  // بدنمایی برای جذب
+    ],
+    tease: 'CgACAgQAAxkBAAEqi1NqK5tmc79xEIG6arpSFIeLmrFFrQACOR4AAtsXWVGBZG94AAH7sEU8BA', // سینه نمای باز - بعد انتخاب اتاق
     kiss: 'CgACAgIAAxkBAAEqL2hqIyJnncLJlCKF2kJOT7jKi-7r_wACaAIAArqQoEtep7htQxIwxTsE',
     orgy: 'CgACAgQAAxkBAAEqL1xqIyJUx3yIRno4UZtix4SumGHwCgAC6p8AAkMXZAepPlY8DiidIDsE',
-    extra: [
-        'CgACAgQAAxkBAAEqizpqK5tQFeriRVC2jqdHhD_brsXdAwACUx4AAtsXWVGX50vaL2d8KzwE',
-        'CgACAgQAAxkBAAEqi09qK5tmyT3ia2dR7m8hTSdyHJKmvAACfhsAAtN3WVFQLM4BGup3wTwE',
-        'CgACAgQAAxkBAAEqi1NqK5tmc79xEIG6arpSFIeLmrFFrQACOR4AAtsXWVGBZG94AAH7sEU8BA',
-        'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE'
+    orgyExtra: 'CgACAgQAAxkBAAEqi0xqK5tmDJWGbx2ZHbZqxV2dIdvU3wACSx4AAjScUVE5YZD0VdPitzwE' // کس با کاندوم
+};
+
+// دیالوگ‌های شهوتی
+const dialogs = {
+    tease: [
+        "👄 آروم آروم لباسامو درمیارم... نگام کن...",
+        "👄 ببین چی برات دارم... دوس داری؟",
+        "👄 می‌خوام امشب یادت بمونه...",
+        "👄 نزدیکتر بیا... بذار بو کنمت...",
+        "👄 نبضت تند شد... هنوز شروع نکردیم که..."
+    ],
+    touch: [
+        "🖐️ آه... دستات گرمه... بازم لمس کن...",
+        "🖐️ همینجا... درست همینجا...",
+        "🖐️ وای... چقدر نرمه دستات...",
+        "🖐️ بیشتر... بیشتر لمس کن...",
+        "🖐️ داغ شدم... دستاتو برندار..."
+    ],
+    kiss: [
+        "💋 ممم... لبات... دوباره ببوس...",
+        "💋 چقدر منتظر این بوسه بودم...",
+        "💋 وای... نفسم بند اومد...",
+        "💋 بازم ببوس... خیلی وقته...",
+        "💋 لبات مث عسل می‌مونه..."
+    ],
+    orgyFront: [
+        "🍑 اوووه... عمیق‌تر... کصم داره می‌ترکه...",
+        "🍑 آهااا... همه شو بریز تو کسم...",
+        "🍑 وای... چه کیر بزرگی... نمیتونم...",
+        "🍑 محکم‌تر بکن... می‌خوام حس کنم..."
+    ],
+    orgyBack: [
+        "🍑 آخ... کونم... محکم‌تر...",
+        "🍑 چه کونی داری... عمیق‌تر برو...",
+        "🍑 وای... کیرت تو کونم عالیه...",
+        "🍑 محکم بگیر کونمو... آهااا..."
+    ],
+    orgyOral: [
+        "👄 ممم... چه مزه‌ای... بازم بریز...",
+        "👄 همه شو خوردم... چقدر آب کیرت زیاده...",
+        "👄 بذار عمیق‌تر بخورمش...",
+        "👄 تف نکن... همه شو می‌خوام..."
     ]
 };
 
 function setupChamberHandlers() {
 
-    // ============ callbackهای شیشه‌ای مخفی‌گاه ============
     bot.on('callback_query', async (query) => {
         const chatId = query.message.chat.id;
         const msgId = query.message.message_id;
@@ -80,6 +122,10 @@ function setupChamberHandlers() {
                 
                 chamberState[chatId] = { person, roomType };
                 
+                // 🆕 دیالوگ و گیف بعد انتخاب اتاق
+                const teaseDialog = dialogs.tease[Math.floor(Math.random() * dialogs.tease.length)];
+                const teaseGif = sexyGifs.tease;
+                
                 const btns = [
                     [{ text: '🖐️ لمس کن', callback_data: `chamber_touch_${person.id}` }],
                     [{ text: '💋 ببوس', callback_data: `chamber_kiss_${person.id}` }],
@@ -87,10 +133,11 @@ function setupChamberHandlers() {
                     [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
                 ];
                 
-                await bot.editMessageText((result && result.message ? result.message : '✅') + '\n\n🔥 *چی کار می‌خوای بکنی؟*', {
-                    chat_id: chatId, message_id: msgId, parse_mode: 'Markdown',
-                    reply_markup: { inline_keyboard: btns }
-                });
+                await bot.deleteMessage(chatId, msgId).catch(() => {});
+                await sendAnimation(chatId, teaseGif, 
+                    `${person.emoji} *${person.name}*\n${teaseDialog}\n\n🔥 *چی کار می‌خوای بکنی؟*`, 
+                    { reply_markup: { inline_keyboard: btns } }
+                );
                 return bot.answerCallbackQuery(query.id);
             }
 
@@ -141,13 +188,17 @@ function setupChamberHandlers() {
                 return bot.answerCallbackQuery(query.id);
             }
 
-            // ============ لمس ============
+            // ============ 🖐️ لمس ============
             if (data.startsWith('chamber_touch_')) {
                 const st = chamberState[chatId];
                 if (!st || !st.person) return bot.answerCallbackQuery(query.id, { text: '❌ یک نفر انتخاب کن!' });
                 const person = st.person;
                 
-                const gif = sexyGifs.touch[Math.floor(Math.random() * sexyGifs.touch.length)];
+                // ۵ گیف لمس
+                const allTouchGifs = [...sexyGifs.touch, ...sexyGifs.touchExtra];
+                const gif = allTouchGifs[Math.floor(Math.random() * allTouchGifs.length)];
+                const dialog = dialogs.touch[Math.floor(Math.random() * dialogs.touch.length)];
+                
                 if (!p.prisonRelations) p.prisonRelations = {};
                 p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 5);
                 
@@ -158,15 +209,17 @@ function setupChamberHandlers() {
                 ];
                 
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, gif, `🖐️ ${person.emoji} ${person.name} رو لمس کردی...\n💕 +۵`, { reply_markup: { inline_keyboard: btns } });
+                await sendAnimation(chatId, gif, `🖐️ ${person.emoji} ${person.name}\n${dialog}\n💕 +۵`, { reply_markup: { inline_keyboard: btns } });
                 return bot.answerCallbackQuery(query.id);
             }
 
-            // ============ بوسه ============
+            // ============ 💋 بوسه ============
             if (data.startsWith('chamber_kiss_')) {
                 const st = chamberState[chatId];
                 if (!st || !st.person) return bot.answerCallbackQuery(query.id, { text: '❌ یک نفر انتخاب کن!' });
                 const person = st.person;
+                
+                const dialog = dialogs.kiss[Math.floor(Math.random() * dialogs.kiss.length)];
                 
                 if (!p.prisonRelations) p.prisonRelations = {};
                 p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 10);
@@ -177,18 +230,19 @@ function setupChamberHandlers() {
                 ];
                 
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, sexyGifs.kiss, `💋 ${person.emoji} ${person.name} رو بوسیدی...\n💕 +۱۰`, { reply_markup: { inline_keyboard: btns } });
+                await sendAnimation(chatId, sexyGifs.kiss, `💋 ${person.emoji} ${person.name}\n${dialog}\n💕 +۱۰`, { reply_markup: { inline_keyboard: btns } });
                 return bot.answerCallbackQuery(query.id);
             }
 
-            // ============ عیاشی ============
+            // ============ 🔥 عیاشی ============
             if (data.startsWith('chamber_orgy_')) {
                 const st = chamberState[chatId];
                 if (!st || !st.person) return bot.answerCallbackQuery(query.id, { text: '❌ یک نفر انتخاب کن!' });
                 const person = st.person;
                 
-                const allOrgyGifs = [sexyGifs.orgy, ...sexyGifs.extra];
-                const gif = allOrgyGifs[Math.floor(Math.random() * allOrgyGifs.length)];
+                // ۲ گیف عیاشی
+                const orgyGifs = [sexyGifs.orgy, sexyGifs.orgyExtra];
+                const gif = orgyGifs[Math.floor(Math.random() * orgyGifs.length)];
                 
                 if (!p.prisonRelations) p.prisonRelations = {};
                 p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 15);
@@ -197,17 +251,23 @@ function setupChamberHandlers() {
                 const positions = ['front', 'back', 'oral'];
                 const pos = positions[Math.floor(Math.random() * positions.length)];
                 const image = positionImages[pos] ? positionImages[pos][Math.floor(Math.random() * positionImages[pos].length)] : null;
+                
+                let dialog;
+                if (pos === 'front') dialog = dialogs.orgyFront[Math.floor(Math.random() * dialogs.orgyFront.length)];
+                else if (pos === 'back') dialog = dialogs.orgyBack[Math.floor(Math.random() * dialogs.orgyBack.length)];
+                else dialog = dialogs.orgyOral[Math.floor(Math.random() * dialogs.orgyOral.length)];
+                
                 const titles = { front: '🍑 از جلو', back: '🍑 از عقب', oral: '👄 دهنی' };
                 
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, gif, `🔥 با ${person.emoji} ${person.name}...`, { reply_markup: { inline_keyboard: [] } });
+                await sendAnimation(chatId, gif, `🔥 ${person.emoji} ${person.name}\n${dialog}`, { reply_markup: { inline_keyboard: [] } });
                 await new Promise(r => setTimeout(r, 2000));
                 
                 const btns = [[{ text: '🔙 برگشت', callback_data: 'chamber_back' }]];
                 if (image) {
-                    await sendPhoto(chatId, image, `${titles[pos]}\n\n💕 +۱۵`, { reply_markup: { inline_keyboard: btns } });
+                    await sendPhoto(chatId, image, `${titles[pos]}\n\n${dialog}\n💕 +۱۵`, { reply_markup: { inline_keyboard: btns } });
                 } else {
-                    await bot.sendMessage(chatId, `${titles[pos]}\n\n💕 +۱۵`, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: btns } });
+                    await bot.sendMessage(chatId, `${titles[pos]}\n\n${dialog}\n💕 +۱۵`, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: btns } });
                 }
                 
                 delete chamberState[chatId];
