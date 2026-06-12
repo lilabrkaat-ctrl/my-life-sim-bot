@@ -5,33 +5,54 @@ const { updateQuestProgress, getQuestCompletionMessage } = require('./dailyQuest
 const { activeBattles } = require('./bot/core');
 
 const animations = {
-    magic: 'CgACAgQAAxkBAAEqLflqIwn95lMF2X_HmipPQR6-l15QEwACsBwAAiiYGVEtH6Hh1OaSvTsE',
-    dragon: 'CgACAgQAAxkBAAEqLfdqIwn9C-y0z3D0l8MfUYPa3dIHwAACmhwAAiiYGVG2mdi_jGe3AjsE',
-    damage: 'CgACAgQAAxkBAAEqLfhqIwn9sRbE1qunXL1XWg3QkXcRCgACqxwAAiiYGVG3erS7MeKUoTsE',
-    heal: 'CgACAgQAAxkBAAEqLsBqIxe3emIP2Fh4QtjKq96Rf8z95AAC9B8AAn4RGFFV9Ndj3CrAuDsE',
-    fire: 'CgACAgQAAxkBAAEqLsFqIxe3l2O8cm0nZ2isbVxO2BC-QQACCyAAAn4RGFHHp4PTxPZjVTsE',
-    levelup: 'CgACAgQAAxkBAAEqLstqIxe31ugPDQ-cHCbwGkNhJ-PCnAACFCAAAn4RGFEJFR7ZyREyTDsE',
-    escape: 'CgACAgQAAxkBAAEqLslqIxe3I_pbDijfOoaA8KpkSKM5FAACEiAAAn4RGFF6LZ6XVqIrbTsE',
-    treasure: 'CgACAgQAAxkBAAEqLsVqIxe3OomIRGM9gLgsnpw8F7mh5gACECAAAn4RGFEvJxvIRXlaGDsE',
-    angel_heal: 'CgACAgQAAxkBAAEqLsZqIxe3aY30jIhHeTSC9bXio7KOkAACESAAAn4RGFG2IV0p66Bn0jsE',
-    sunrise: 'CgACAgQAAxkBAAEqLsJqIxe3mi40nLyoVjUO6F9ItlrA9QACDSAAAn4RGFEf4E1UGbo9tjsE',
-    berserker: 'CgACAgQAAxkBAAEqRWVqJYa2TVUFK_nSAvIt3SIiIAOg5wACixkAAkAyMVGfJUjqLpALJzsE',
+    magic: 'CgACAgQAAxkBAAEqku5qLCpAFGSp3M3EXT3FPHD1Ls6dJAACsBwAAiiYGVEtH6Hh1OaSvTwE',
+    dragon: 'CgACAgQAAxkBAAEqlRhqLEyoYoM1bJF4DqnL7j4_EYxWpAACsR8AAkFkMFEpN4IbeZXYeTwE',
+    damage: 'CgACAgQAAxkBAAEqkutqLCpAQTFjRZ0TxyiGCU7ZI7NtvAACqxwAAiiYGVG3erS7MeKUoTwE',
+    heal: 'CgACAgQAAxkBAAEqkotqLCoRXrUAAQUU8ybUBPLmGiGDOE8AAhEgAAJ-ERhRtiFdKeugZ9I8BA',
+    fire: 'CgACAgQAAxkBAAEqkvFqLCpAWah9q1w2YW8OOQtR3_AKhQACCyAAAn4RGFHHp4PTxPZjVTwE',
+    levelup: 'CgACAgQAAxkBAAEqkpBqLCoRCC2648MmrXSCeBaybYCzYAACFCAAAn4RGFEJFR7ZyREyTDwE',
+    escape: 'CgACAgQAAxkBAAEqko5qLCoRinyQQT9UAAEl91Z0BKHxlgsAAhIgAAJ-ERhRei2el1aiK208BA',
+    treasure: 'CgACAgQAAxkBAAEqkopqLCoR1IgcdmDfgVWYSC7qDN8sagACECAAAn4RGFEvJxvIRXlaGDwE',
+    angel_heal: 'CgACAgQAAxkBAAEqkotqLCoRXrUAAQUU8ybUBPLmGiGDOE8AAhEgAAJ-ERhRtiFdKeugZ9I8BA',
+    sunrise: 'CgACAgQAAxkBAAEqkohqLCoRXbrOFKJjGoJjUZQ3vL8nwgACDSAAAn4RGFEf4E1UGbo9tjwE',
+    berserker: 'CgACAgQAAxkBAAEqlTVqLEzDhbKvXkIDuTZjHaxnoEGWoQACgwkAAtVIvVOiZ50eqcLd5zwE',
+    death: 'CgACAgQAAxkBAAEqlT5qLEzZKou_3AABDGBGKKYxQZrOEA0AAqsEAAJK_KVTb_ma18ekVek8BA',
     finishers: [
-        'CgACAgQAAxkBAAEqRWZqJYa2e9FkXsztJ-BOXzyyjXfN5wACmxkAAkAyMVHaZAocqbHGbzsE',
-        'CgACAgQAAxkBAAEqRWdqJYa2TaaQzKc4W4qkFSPWKvwi9wACnRkAAkAyMVEYchd_ykOmTjsE',
-        'CgACAgQAAxkBAAEqRWlqJYa2fDow-DNQIg9-dAPS7U4mvQACeQkAAhIaHFHlkzt2PO4tOjsE',
-        'CgACAgQAAxkBAAEqRWpqJYa2uomoiYOxOviaFlGmOoFa6wACswYAAuRYtVJ0ZNS8EgyklzsE',
+        'CgACAgQAAxkBAAEqlRZqLEyoakeuxfI7l5Q-TlYUuYzTywACeQkAAhIaHFHlkzt2PO4tOjwE',
+        'CgACAgQAAxkBAAEqlRdqLEyoPX9rqw6JGYrhBYnNNOvJIwACnRkAAkAyMVEYchd_ykOmTjwE',
+        'CgACAgQAAxkBAAEqlR5qLEyouQYIksEo_BpO1MrGpax3hAACixkAAkAyMVGfJUjqLpALJzwE',
+        'CgACAgQAAxkBAAEqlR9qLEyosRaT0TmWjU_KQP6XOQh2bgACmxkAAkAyMVHaZAocqbHGbzwE',
         'CgACAgQAAxkBAAEqRWxqJYa2Ej-2qNGT0topYPHCv92E9AACoBkAAkAyMVE2H37n_FRKNjsE',
         'CgACAgQAAxkBAAEqRW5qJYa2yJzekFeRpBCj6Ltik2O72AACoRkAAkAyMVGfRbpmel7AcjsE'
     ],
-    spell: 'CgACAgQAAxkBAAEqLflqIwn95lMF2X_HmipPQR6-l15QEwACsBwAAiiYGVEtH6Hh1OaSvTsE',
-    bride: ['CgACAgQAAxkBAAEqOj9qJG3NfiO1gkMUOrvCSNVIr6IEpQAC7x0AAn4RIFHFrkfbT_8nmzsE', 'CgACAgQAAxkBAAEqOkBqJG3N0cWnm1jquRG3VL_rXww-5AAC9R0AAn4RIFGZG58QxOaIxzsE', 'CgACAgQAAxkBAAEqOkJqJG3N5gz64qgv8PSjzapOl4CK6gAC9x0AAn4RIFHhRbdHVJmS2TsE'],
-    mermaid: ['CgACAgQAAxkBAAEqOkNqJG3NvRCafTUH3p8CqA--bmCpggAC-R0AAn4RIFGVBmGKu14XzDsE', 'CgACAgQAAxkBAAEqOkRqJG3NeW_TbQm3-OM6cmZZrRsgfQAC-x0AAn4RIFHtLk6v0vB9sTsE', 'CgACAgQAAxkBAAEqOkZqJG3Nm0O_i1mqV_qHFy4y5gv5hAAC_B0AAn4RIFEJAXO72Rtg3DsE'],
-    young_witch: ['CgACAgQAAxkBAAEqOkhqJG3NjA04jvxfyUlR414WjSPS6gACCB4AAn4RIFFVG52gsjKE2jsE', 'CgACAgQAAxkBAAEqOktqJG3Nzqtkl_I6-d18ab3-kGz9pQACCR4AAn4RIFG4veGbLRgkpjsE'],
-    singer: ['CgACAgQAAxkBAAEqOkxqJG3NQFsxVEaNhpyaAxi4gevcaAACDx4AAn4RIFGYsb_3L6-ZoTsE', 'CgACAgQAAxkBAAEqOk5qJG3NaMmpiI8eIHxti3BHf2pWbgACEB4AAn4RIFEOZrUQKyFrmjsE'],
-    vampire: ['CgACAgQAAxkBAAEqOlNqJG3aUbWRUezNuDxvuptqxrZkLgAC4h0AAn4RIFHNPi8KsHaoFDsE'],
-    genie: ['CgACAgQAAxkBAAEqOlRqJG3adXKT9fNQR1w6mroEDtH1jQAC5R0AAn4RIFFpF2eGhqofdDsE'],
-    bandit_female: ['CgACAgQAAxkBAAEqOlVqJG3a13IUOAkh16KTgBAiWpDxFwAC5x0AAn4RIFGbxUIKqfWb0zsE']
+    spell: 'CgACAgQAAxkBAAEqku5qLCpAFGSp3M3EXT3FPHD1Ls6dJAACsBwAAiiYGVEtH6Hh1OaSvTwE',
+    bride: [
+        'CgACAgQAAxkBAAEqknJqLCnfrY5RJmxaeMcORYwxcKc1ZgAC7x0AAn4RIFHFrkfbT_8nmzwE',
+        'CgACAgQAAxkBAAEqknNqLCnffwKXiZaYV2sBQ4g2UgPDPgAC9R0AAn4RIFGZG58QxOaIxzwE',
+        'CgACAgQAAxkBAAEqknRqLCnfp_Cyj6v6my7ZSQ-YPxYfggAC9x0AAn4RIFHhRbdHVJmS2TwE'
+    ],
+    mermaid: [
+        'CgACAgQAAxkBAAEqknVqLCnfFjqT0KI3dpUuCGNzH_JP1AAC-R0AAn4RIFGVBmGKu14XzDwE',
+        'CgACAgQAAxkBAAEqknZqLCnf-0FLhEAFezr4aFPvdLv8pwAC-x0AAn4RIFHtLk6v0vB9sTwE',
+        'CgACAgQAAxkBAAEqkndqLCnfqusEIkCRajGgvoEGoS8wfQAC_B0AAn4RIFEJAXO72Rtg3DwE'
+    ],
+    young_witch: [
+        'CgACAgQAAxkBAAEqknlqLCnfQrXi2m_4pNuKxO6K-jKifQACCB4AAn4RIFFVG52gsjKE2jwE',
+        'CgACAgQAAxkBAAEqkntqLCnfYYFlGdhlsdKEnK6dCsM55QACCR4AAn4RIFG4veGbLRgkpjwE'
+    ],
+    singer: [
+        'CgACAgQAAxkBAAEqknxqLCnf_Q9chpcNaiyBMX4TXGLGcgACDx4AAn4RIFGYsb_3L6-ZoTwE',
+        'CgACAgQAAxkBAAEqkn5qLCnfzLALPq1XPojqjOnuxiCoFQACEB4AAn4RIFEOZrUQKyFrmjwE'
+    ],
+    vampire: [
+        'CgACAgQAAxkBAAEqkpJqLCoRhCMooPfuv465bLwl51vgMgAC4h0AAn4RIFHNPi8KsHaoFDwE'
+    ],
+    genie: [
+        'CgACAgQAAxkBAAEqkpNqLCoRHQ-Y-xYivMcxDnAGbmQqAwAC5R0AAn4RIFFpF2eGhqofdDwE'
+    ],
+    bandit_female: [
+        'CgACAgQAAxkBAAEqkpVqLCoR_o7UOJajPyJGtJNVrYZSAgAC5x0AAn4RIFGbxUIKqfWb0zwE'
+    ]
 };
 
 function getNpcAnimation(npcKey) {
@@ -103,6 +124,7 @@ function startPvPFight(player1, player2) {
     activeBattles[player2.chatId] = enemy2;
     return { enemy1, enemy2 };
 }
+
 function playerAttack(player, enemy) {
     let log = '';
     const r = Math.random();
@@ -123,7 +145,7 @@ function playerAttack(player, enemy) {
         if (r < 0.15) { dmg = player.attack * 2; log += '💥 *ضربه انتقادی!* '; animation = animations.magic; }
         else if (r < 0.35) { dmg = Math.floor(player.attack * 1.5); log += '🔥 *قدرتمند!* '; animation = animations.fire; }
         else if (r > 0.85) { dmg = Math.floor(player.attack * 0.5); log += '😕 *ضعیف...* '; }
-        else { dmg = player.attack; log += '🗡️ '; }
+        else { dmg = player.attack; log += '🗡️ '; animation = animations.damage; }
 
         if (player.hp < player.maxHp * 0.20) {
             dmg = Math.floor(dmg * 1.5);
@@ -152,7 +174,7 @@ function playerAttack(player, enemy) {
             if (questMsg) log += `\n\n${questMsg}`;
             delete activeBattles[player.chatId];
             delete activeBattles[enemy.opponentId];
-            return { battleOver: true, playerWon: true, message: log, isPvP: true, animation: animations.levelup };
+            return { battleOver: true, playerWon: true, message: log, isPvP: true, animation: animations.death };
         }
 
         log += `💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
@@ -183,15 +205,15 @@ function playerAttack(player, enemy) {
 
         if (enemy.isEnraged) {
             if (player.enraged) delete player.enraged[enemy.key];
-            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation || animation };
+            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation || animation || animations.death };
         }
 
         const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
         if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
-            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation || animation };
+            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation || animation || animations.death };
         }
 
-        return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation || animation };
+        return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation || animation || animations.death };
     }
 
     if (!enemy.isPlayer && enemy.hp < enemy.maxHp * 0.25) {
@@ -295,10 +317,11 @@ function enemyTurn(player, enemy, log, animation) {
         player.location = 'village';
         delete activeBattles[player.chatId];
         log += `💀 *مردی!* به روستا برگشتی.`;
-        return { battleOver: true, playerWon: false, message: log, animation: animations.damage };
+        return { battleOver: true, playerWon: false, message: log, animation: animations.death };
     }
     return { battleOver: false, message: log, animation: animations.damage };
 }
+
 function playerEscape(player, enemy) {
     const r = Math.random();
     if (r < 0.65) {
@@ -317,7 +340,7 @@ function playerEscape(player, enemy) {
             player.score = Math.max(0, (player.score || 0) - 10);
             delete activeBattles[player.chatId];
             msg += '💀 مردی! به روستا برگشتی.';
-            return { battleOver: true, escaped: false, message: msg, animation: animations.damage };
+            return { battleOver: true, escaped: false, message: msg, animation: animations.death };
         }
         return { battleOver: false, escaped: false, message: msg, animation: animations.damage };
     }
@@ -351,9 +374,6 @@ function formatBattle(p, e) {
     return msg;
 }
 
-// =============================================
-// ⚔️ کیبورد شیشه‌ای نبرد
-// =============================================
 function getBattleKeyboard(player, enemy) {
     const buttons = [];
 
