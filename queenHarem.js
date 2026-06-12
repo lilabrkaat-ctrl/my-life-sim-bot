@@ -134,7 +134,6 @@ function addQueenToHarem(player, npcId) {
 
     return { success: true, message: `${queen.emoji} *${queen.name}* وارد حرمسرا شد!\n👑 رتبه: ${haremRanks[rank].emoji} ${haremRanks[rank].name}` };
 }
-
 function removeQueenFromHarem(player, queenId) {
     initHarem(player);
     const index = player.harem.queens.findIndex(q => q.id === queenId);
@@ -366,7 +365,6 @@ function hireServant(player, queenId, servantType) {
     if (servant.healthBonus) queen.health = Math.min(100, queen.health + servant.healthBonus);
     return { success: true, message: `${servant.emoji} *${servant.name}* برای ${queen.emoji} ${queen.name} استخدام شد!\n💰 حقوق ماهانه: ${servant.salary}👑\n📝 ${servant.effect}` };
 }
-
 function performIntrigue(player, performerQueenId, targetQueenId, intrigueType) {
     initHarem(player);
     const performer = player.harem.queens.find(q => q.id === performerQueenId);
@@ -561,6 +559,7 @@ function getQueenKeyboard(player, queenId) {
         { text: '🐍 دسیسه', callback_data: 'queen_intrigue' }
     ]);
     buttons.push([{ text: '📔 خاطرات', callback_data: 'queen_diary' }]);
+    buttons.push([{ text: '🔥 هم‌آغوشی', callback_data: 'queen_orgy' }]);
     buttons.push([
         { text: '🚪 اخراج', callback_data: 'queen_remove' },
         { text: '🔙 برگشت', callback_data: 'harem_menu' }
