@@ -18,7 +18,7 @@ const sexyGifs = {
     ]
 };
 
-// عکس‌های پوزیشن برای عیاشی
+// عکس‌های پوزیشن
 const { positionImages } = require('./core');
 
 function setupChamberHandlers() {
@@ -71,7 +71,7 @@ function setupChamberHandlers() {
         await bot.sendMessage(chatId, `🏠 *انتخاب اتاق برای ${boy.emoji} ${boy.name}:*`, { parse_mode: 'Markdown', ...getChamberRoomKeyboard() });
     });
 
-    // ============ انتخاب اتاق ============
+    // ============ انتخاب اتاق و نمایش منوی لمس/بوسه/عیاشی ============
     bot.onText(/^🛏️ (.+?) \((\d+)👑\) - (.+)$/, async (msg, match) => {
         const chatId = msg.chat.id;
         const p = player.getPlayer(chatId);
@@ -83,6 +83,7 @@ function setupChamberHandlers() {
         else if (roomName.includes('سلطنتی')) roomType = 'royal';
         else if (roomName.includes('مخفی')) roomType = 'secret';
 
+        // اجرای visitGirl یا visitBoy
         let result;
         if (chamberState[chatId].action === 'visitGirl') {
             result = visitGirl(p, chamberState[chatId].girlId, roomType);
@@ -90,25 +91,32 @@ function setupChamberHandlers() {
             result = visitBoy(p, chamberState[chatId].boyId, roomType);
         }
         
+        // ذخیره اطلاعات شخص برای لمس/بوسه/عیاشی
+        const person = chamberState[chatId].action === 'visitGirl' ? chamberState[chatId].girl : chamberState[chatId].boy;
+        chamberState[chatId] = { 
+            ...chamberState[chatId], 
+            roomType, 
+            person 
+        };
+        
+        // منوی شیشه‌ای لمس/بوسه/عیاشی
+        const btns = [
+            [{ text: '🖐️ لمس کن', callback_data: `chamber_touch_${person.id}` }],
+            [{ text: '💋 ببوس', callback_data: `chamber_kiss_${person.id}` }],
+            [{ text: '🔥 عیاشی', callback_data: `chamber_orgy_${person.id}` }],
+            [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
+        ];
+        
         if (result && result.success) {
-            // ذخیره اطلاعات
-            const person = chamberState[chatId].action === 'visitGirl' ? chamberState[chatId].girl : chamberState[chatId].boy;
-            chamberState[chatId] = { ...chamberState[chatId], roomType, person };
-            
-            // منوی لمس/بوسه/عیاشی
-            const btns = [
-                [{ text: '🖐️ لمس کن', callback_data: `chamber_touch_${person.id}` }],
-                [{ text: '💋 ببوس', callback_data: `chamber_kiss_${person.id}` }],
-                [{ text: '🔥 عیاشی', callback_data: `chamber_orgy_${person.id}` }],
-                [{ text: '🔙 برگشت', callback_data: 'chamber_back' }]
-            ];
-            
             await bot.sendMessage(chatId, result.message + '\n\n🔥 *حالا چی کار می‌خوای بکنی؟*', { 
                 parse_mode: 'Markdown', 
                 reply_markup: { inline_keyboard: btns } 
             });
-        } else if (result) {
-            await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...getSecretChamberKeyboard(p) });
+        } else {
+            await bot.sendMessage(chatId, (result ? result.message : '❌ خطا!') + '\n\n🔥 *حالا چی کار می‌خوای بکنی؟*', { 
+                parse_mode: 'Markdown', 
+                reply_markup: { inline_keyboard: btns } 
+            });
         }
     });
 
@@ -122,10 +130,15 @@ function setupChamberHandlers() {
         if (!data || !data.startsWith('chamber_')) return;
 
         const st = chamberState[chatId];
-        if (!st || !st.person) return;
+        if (!st || !st.person) {
+            try { await bot.answerCallbackQuery(query.id, { text: '❌ یک شخص انتخاب کن!', show_alert: true }); } catch(e) {}
+            return;
+        }
+
+        const person = st.person;
 
         try {
-            // برگشت
+            // ============ برگشت به مخفی‌گاه ============
             if (data === 'chamber_back') {
                 delete chamberState[chatId];
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
@@ -133,20 +146,12 @@ function setupChamberHandlers() {
                 return bot.answerCallbackQuery(query.id);
             }
 
-            const parts = data.split('_');
-            const personId = parts[2];
-            const person = st.person;
-            if (!person || person.id !== personId) return;
-
-            // 🖐️ لمس
+            // ============ 🖐️ لمس ============
             if (data.startsWith('chamber_touch_')) {
                 const gif = sexyGifs.touch[Math.floor(Math.random() * sexyGifs.touch.length)];
-                
-                // بهبود رابطه
                 if (!p.prisonRelations) p.prisonRelations = {};
                 p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 5);
                 
-                // دکمه‌های بعد از لمس
                 const btns = [
                     [{ text: '💋 ببوس', callback_data: `chamber_kiss_${person.id}` }],
                     [{ text: '🔥 عیاشی', callback_data: `chamber_orgy_${person.id}` }],
@@ -158,7 +163,7 @@ function setupChamberHandlers() {
                 return bot.answerCallbackQuery(query.id);
             }
 
-            // 💋 بوسه
+            // ============ 💋 بوسه ============
             if (data.startsWith('chamber_kiss_')) {
                 if (!p.prisonRelations) p.prisonRelations = {};
                 p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 10);
@@ -173,30 +178,27 @@ function setupChamberHandlers() {
                 return bot.answerCallbackQuery(query.id);
             }
 
-            // 🔥 عیاشی
+            // ============ 🔥 عیاشی ============
             if (data.startsWith('chamber_orgy_')) {
-                // انتخاب گیف (orgy + extra)
                 const allOrgyGifs = [sexyGifs.orgy, ...sexyGifs.extra];
                 const gif = allOrgyGifs[Math.floor(Math.random() * allOrgyGifs.length)];
                 
-                // بهبود رابطه
                 if (!p.prisonRelations) p.prisonRelations = {};
                 p.prisonRelations[person.id] = Math.min(100, (p.prisonRelations[person.id] || 30) + 15);
                 
-                // انتخاب عکس پوزیشن
                 const positions = ['front', 'back', 'oral'];
                 const pos = positions[Math.floor(Math.random() * positions.length)];
-                const image = positionImages[pos][Math.floor(Math.random() * positionImages[pos].length)];
+                const image = positionImages[pos] ? positionImages[pos][Math.floor(Math.random() * positionImages[pos].length)] : null;
                 
-                // نمایش گیف عیاشی
+                const titles = { front: '🍑 از جلو', back: '🍑 از عقب', oral: '👄 دهنی' };
+                
+                // گیف عیاشی
                 await bot.deleteMessage(chatId, msgId).catch(() => {});
-                await sendAnimation(chatId, gif, `🔥 با ${person.emoji} ${person.name} عیاشی کردی...`, { reply_markup: { inline_keyboard: [] } });
+                await sendAnimation(chatId, gif, `🔥 با ${person.emoji} ${person.name}...`, { reply_markup: { inline_keyboard: [] } });
                 await new Promise(r => setTimeout(r, 2000));
                 
-                // نمایش عکس
-                const titles = { front: '🍑 از جلو', back: '🍑 از عقب', oral: '👄 دهنی' };
+                // عکس نتیجه
                 const btns = [[{ text: '🔙 برگشت', callback_data: 'chamber_back' }]];
-                
                 if (image) {
                     await sendPhoto(chatId, image, `${titles[pos]}\n\n💕 رابطه +۱۵`, { reply_markup: { inline_keyboard: btns } });
                 } else {
@@ -209,7 +211,7 @@ function setupChamberHandlers() {
 
         } catch(e) {
             console.log('Chamber callback error:', e.message);
-            return bot.answerCallbackQuery(query.id, { text: '❌ خطا!' });
+            try { await bot.answerCallbackQuery(query.id, { text: '❌ خطا!', show_alert: true }); } catch(e2) {}
         }
     });
 
