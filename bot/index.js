@@ -26,6 +26,64 @@ const { player } = require('./core');
 const config = require('../config');
 
 // =============================================
+// 📅 دستور day/روز برای گذر روز
+// =============================================
+bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const dayNum = parseInt(match[1] || match[2]);
+    
+    if (isNaN(dayNum) || dayNum < 1 || dayNum > 7) {
+        return bot.sendMessage(chatId, '❌ روز باید بین ۱ تا ۷ باشه!');
+    }
+    
+    let p = player.getPlayer(chatId);
+    if (!p) {
+        player.createPlayer(chatId, msg.chat.first_name || 'گمنام');
+        p = player.getPlayer(chatId);
+    }
+    
+    // تنظیم روز
+    p.gameDay = dayNum;
+    
+    // پاک کردن ماموریت‌های قبلی
+    if (p.dailyQuests) {
+        p.dailyQuests.quests = [];
+        p.dailyQuests.completed = [];
+        p.dailyQuests.progress = {};
+        p.dailyQuests.lastReset = Date.now();
+    }
+    
+    // چک تولدها
+    try {
+        const { checkAllBirths } = require('../player');
+        const { sendPhoto } = require('./core');
+        const { getBirthImage } = require('../offspring');
+        const births = checkAllBirths(p);
+        if (births && births.length > 0) {
+            for (let birth of births) {
+                const child = birth.child || birth;
+                const momInfo = birth.queen ? ` از ${birth.queen.emoji} ${birth.queen.name}` : '';
+                const birthImg = getBirthImage();
+                if (birthImg) {
+                    await sendPhoto(chatId, birthImg, `👶 *${child.name}*${momInfo} به دنیا اومد! ${child.emoji}`, mainMenu());
+                } else {
+                    await bot.sendMessage(chatId, `👶 *${child.name}*${momInfo} به دنیا اومد! ${child.emoji}`, { parse_mode: 'Markdown' });
+                }
+            }
+        }
+    } catch(e) {}
+    
+    // نمایش وضعیت
+    const { getTimeOfDay } = require('../player');
+    const time = getTimeOfDay();
+    p.timeOfDay = time;
+    const loc = config.images.locations[p.location] || config.images.locations.village;
+    let welcome = `🏛️ *بقای باستانی - روز ${dayNum}/۷*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 🏆 ${p.score || 0} امتیاز`;
+    
+    await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+// =============================================
 // 🔙 دکمه برگشت (کیبورد معمولی)
 // =============================================
 bot.onText(/^🔙 برگشت$/, async (msg) => {
