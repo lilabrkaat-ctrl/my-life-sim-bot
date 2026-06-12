@@ -14,7 +14,6 @@ const { formatEmpire, getEmpireKeyboard } = require('../empire');
 
 function setupMenuHandlers() {
 
-    // ============ کانال ============
     bot.on('channel_post', async (msg) => {
         if (msg.chat.id === -1003035245907) {
             const text = msg.text || msg.caption || '';
@@ -30,7 +29,6 @@ function setupMenuHandlers() {
         }
     });
 
-    // ============ START ============
     bot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
         const firstName = msg.chat.first_name || 'گمنام';
@@ -40,13 +38,11 @@ function setupMenuHandlers() {
         if (!p) return bot.sendMessage(chatId, '❌ خطا! /start بزن.');
         
         player.initAllSystems(p);
-        const time = getTimeOfDay();
-        p.timeOfDay = time;
+        const time = getTimeOfDay(); p.timeOfDay = time;
         if (!p.gameDay) p.gameDay = 1;
         if (!p.inventory) p.inventory = {};
         if (!p.inventory.condom) p.inventory.condom = 0;
-        player.checkUnlocks(p);
-        p.chatId = chatId;
+        player.checkUnlocks(p); p.chatId = chatId;
         
         try { initPets(p); } catch(e) {}
         try { initDailyQuests(p); } catch(e) {}
@@ -59,6 +55,8 @@ function setupMenuHandlers() {
         try { require('../people').initPeople(p); } catch(e) {}
         try { require('../court').initCourt(p); } catch(e) {}
 
+        // ============ 👶 چک تولد بچه‌ها ============
+        // تولد از offspring (بارداری معمولی)
         try {
             const births = checkBirths(p);
             if (births && births.length > 0) {
@@ -70,6 +68,21 @@ function setupMenuHandlers() {
             }
         } catch(e) {}
 
+        // تولد از حرمسرا (بارداری ملکه‌ها) 🆕
+        try {
+            const { checkHaremBirths } = require('../queenHarem');
+            const haremBirths = checkHaremBirths(p);
+            if (haremBirths && haremBirths.length > 0) {
+                for (let birth of haremBirths) {
+                    const birthImg = getBirthImage();
+                    const momName = birth.queen.emoji + ' ' + birth.queen.name;
+                    const childInfo = birth.child.emoji + ' *' + birth.child.name + '*';
+                    if (birthImg) await sendPhoto(chatId, birthImg, `👶 ${childInfo} از ${momName} به دنیا اومد!`, mainMenu());
+                    else await bot.sendMessage(chatId, `👶 ${childInfo} از ${momName} به دنیا اومد!`, { parse_mode: 'Markdown' });
+                }
+            }
+        } catch(e) { console.log('checkHaremBirths error:', e.message); }
+
         const loc = config.images?.locations?.[p.location] || { emoji: '🏘️', name: 'روستا', file_id: null };
         let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay||1}/۷ | 🏆 ${p.score||0} امتیاز\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
         if (p.unlockedMessage) { welcome += `\n\n${p.unlockedMessage}`; p.unlockedMessage = null; }
@@ -79,31 +92,24 @@ function setupMenuHandlers() {
         else await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ وضعیت ============
     bot.onText(/^👤 وضعیت$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-        p.timeOfDay = getTimeOfDay();
-        if (!p.gameDay) p.gameDay = 1;
+        p.timeOfDay = getTimeOfDay(); if (!p.gameDay) p.gameDay = 1;
         await bot.sendMessage(chatId, player.formatStatus(p), { parse_mode: 'Markdown', ...mainMenu() });
         try { await bot.sendMessage(chatId, formatDailyQuests(p), { parse_mode: 'Markdown', ...getDailyQuestKeyboard(p) }); } catch(e) {}
     });
 
-    // ============ رتبه‌بندی ============
     bot.onText(/^📊 رتبه‌بندی$/, async (msg) => {
         await bot.sendMessage(msg.chat.id, player.formatLeaderboard(), { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ جمع‌آوری ============
     bot.onText(/^🌿 جمع‌آوری$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         p.chatId = chatId;
         const result = gather(p);
-        player.addScore(p, 5);
-        player.checkUnlocks(p);
+        player.addScore(p, 5); player.checkUnlocks(p);
         let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
         if (p.unlockedMessage) p.unlockedMessage = null;
         if (result.petImage) await sendPhoto(chatId, result.petImage, result.message + extra, mainMenu());
@@ -111,10 +117,8 @@ function setupMenuHandlers() {
         else await bot.sendMessage(chatId, result.message + extra, { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ سفر ============
     bot.onText(/^🗺️ سفر$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         let mapMsg = '🗺️ *نقشه سفر*\n\n';
         const locReqs = config.locationRequirements || {};
@@ -127,14 +131,9 @@ function setupMenuHandlers() {
         await bot.sendMessage(chatId, mapMsg, { parse_mode: 'Markdown', ...locationMenu(p) });
     });
 
-    // ============ انتخاب لوکیشن سفر ============
     bot.onText(/^✅ (.+)$/, async (msg, match) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
-        if (!p) return;
-        const parts = match[1].split(' ');
-        const emoji = parts[0];
-        const name = parts.slice(1).join(' ');
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId); if (!p) return;
+        const parts = match[1].split(' '); const emoji = parts[0]; const name = parts.slice(1).join(' ');
         for (let k in config.images.locations) {
             const loc = config.images.locations[k];
             if (loc.emoji === emoji && loc.name === name) {
@@ -142,86 +141,65 @@ function setupMenuHandlers() {
                     if ((p.inventory?.key || 0) > 0) { p.inventory.key--; p.unlocked.locations.push(k); return bot.sendMessage(chatId, `🗝️ باز شد! ${loc.emoji} *${loc.name}*`, mainMenu()); }
                     return bot.sendMessage(chatId, `🔒 نیاز به ${(config.locationRequirements[k]||9999)-p.score} امتیاز`, mainMenu());
                 }
-                const result = travel(p, k);
-                player.addScore(p, 10);
-                player.checkUnlocks(p);
-                if (result.ambush) {
-                    const fr = require('../fight').startFight(p);
-                    if (fr.success) {
-                        activeBattles[chatId] = fr.enemy;
+                const result = travel(p, k); player.addScore(p, 10); player.checkUnlocks(p);
+                if (result.ambush) { 
+                    const fr = require('../fight').startFight(p); 
+                    if (fr.success) { activeBattles[chatId] = fr.enemy; 
                         if (fr.animation) return await sendAnimation(chatId, fr.animation, result.message + '\n' + fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
                         else return await bot.sendMessage(chatId, result.message + '\n' + fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
-                    }
+                    } 
                 }
                 if (result.travelImage) await sendPhoto(chatId, result.travelImage, result.message, mainMenu());
                 else await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown', ...mainMenu() });
-                let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : '';
-                if (p.unlockedMessage) p.unlockedMessage = null;
+                let extra = p.unlockedMessage ? '\n\n' + p.unlockedMessage : ''; if (p.unlockedMessage) p.unlockedMessage = null;
                 return bot.sendMessage(chatId, '🏛️ سفر تموم شد!' + extra, { parse_mode: 'Markdown', ...mainMenu() });
             }
         }
     });
 
-    // ============ ⚔️ نبرد ============
     bot.onText(/^⚔️ نبرد$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         const { startFight } = require('../fight');
         const fr = startFight(p);
-        if (fr.success) {
-            activeBattles[chatId] = fr.enemy;
+        if (fr.success) { activeBattles[chatId] = fr.enemy;
             if (fr.animation) await sendAnimation(chatId, fr.animation, fr.message, require('../fight').getBattleKeyboard(p, fr.enemy));
             else await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...require('../fight').getBattleKeyboard(p, fr.enemy) });
-        } else {
-            await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...mainMenu() });
-        }
+        } else await bot.sendMessage(chatId, fr.message, { parse_mode: 'Markdown', ...mainMenu() });
     });
 
-    // ============ 🏪 بازار ============
     bot.onText(/^🏪 بازار$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, showShopMenu() + `\n\n👑 طلا: ${p.inventory?.gold || 0}`, { parse_mode: 'Markdown', ...getShopKeyboard() });
     });
 
-    // ============ 🔨 ساخت‌وساز ============
     bot.onText(/^🔨 ساخت‌وساز$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, showCraftMenu(p), { parse_mode: 'Markdown', ...getCraftKeyboard(p) });
     });
 
-    // ============ 🏰 زندان ============
     bot.onText(/^🏰 زندان$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatPrison(p), { parse_mode: 'Markdown', ...getPrisonKeyboard(p) });
     });
 
-    // ============ 🏠 خونه ============
     bot.onText(/^🏠 خونه$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatHouse(p), { parse_mode: 'Markdown', ...getHouseKeyboard(p) });
     });
 
-    // ============ 👑 امپراطوری (کیبورد شیشه‌ای) ============
     bot.onText(/^👑 امپراطوری$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         await bot.sendMessage(chatId, formatEmpire(p), { parse_mode: 'Markdown', ...getEmpireKeyboard(p) });
     });
 
-    // ============ 🔞 مخفی‌گاه ============
     bot.onText(/^🔞 مخفی‌گاه$/, async (msg) => {
-        const chatId = msg.chat.id;
-        const p = player.getPlayer(chatId);
+        const chatId = msg.chat.id; const p = player.getPlayer(chatId);
         if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
         if (p.level < 30 && (!p.empire || p.empire.level === 0)) return bot.sendMessage(chatId, '🔒 باید سطح ۳۰ باشی!', mainMenu());
         try { require('../secretChamber').initSecretChamber(p); } catch(e) {}
