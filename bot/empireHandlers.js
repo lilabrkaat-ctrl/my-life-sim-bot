@@ -788,12 +788,7 @@ if (data === 'people_menu') {
             const msgId = empireState[chatId].msgId;
             delete empireState[chatId];
             if (msgId) {
-                try { await bot.editMessageText(formatEmpire(p), { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getEmpireKeyboard(p) }); } catch (e) {}
-            }
-            await bot.sendMessage(chatId, result.message, { parse_mode: 'Markdown' });
-            return;
-        }
-    });
+                try { await bot.editMessageText(formatEmpire(p), { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...getEmpireKeyboard(p) }); } catch} catch (e) {
+    console.log('Empire handler error:', e.message, e.stack);
+    return bot.answerCallbackQuery(query.id, { text: '❌ خطا: ' + e.message.substring(0, 100), show_alert: true });
 }
-
-module.exports = { setupEmpireHandlers };
