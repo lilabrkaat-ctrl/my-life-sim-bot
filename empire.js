@@ -196,31 +196,14 @@ function getEmpireKeyboard(player) {
     initEmpire(player);
     const buttons = [];
 
-    // ردیف اول - درآمد
     buttons.push([{ text: '💰 جمع‌آوری درآمد', callback_data: 'empire_income' }]);
-
-    // سمت‌های خالی
-    for (let roleKey in empireRoles) {
-        const role = empireRoles[roleKey];
-        if (player.empire.level >= role.minLevel && !player.empire.roles[roleKey]) {
-            buttons.push([{ text: `📋 ${role.emoji} ${role.name}`, callback_data: `empire_assign_${roleKey}` }]);
-        }
-    }
-
-    // عجایب نساخته
-    for (let wonderKey in wonders) {
-        const wonder = wonders[wonderKey];
-        if (!player.empire.wonders.includes(wonderKey) && player.empire.level >= wonder.minLevel) {
-            buttons.push([{ text: `🏗️ ${wonder.emoji} ${wonder.name}`, callback_data: `empire_wonder_${wonderKey}` }]);
-        }
-    }
-
-    // ردیف‌های پایین
-    buttons.push([{ text: '📝 تغییر نام سلسله', callback_data: 'empire_dynasty' }]);
     buttons.push([{ text: '👸 حرمسرا', callback_data: 'harem_menu' }]);
-    buttons.push([{ text: '🏛️ دربار', callback_data: 'court_menu' }]);
-    buttons.push([{ text: '👥 مردم', callback_data: 'people_menu' }]);
     buttons.push([{ text: '👶 فرزندان', callback_data: 'children_menu' }]);
+    buttons.push([{ text: '📋 انتصاب (سمت‌ها)', callback_data: 'empire_roles_menu' }]);
+    buttons.push([{ text: '👥 مردم', callback_data: 'people_menu' }]);
+    buttons.push([{ text: '🏗️ احداث (عجایب)', callback_data: 'empire_wonders_menu' }]);
+    buttons.push([{ text: '🏛️ دربار', callback_data: 'court_menu' }]);
+    buttons.push([{ text: '📝 تغییر نام سلسله', callback_data: 'empire_dynasty' }]);
     buttons.push([{ text: '🔙 برگشت', callback_data: 'back_to_main' }]);
 
     return { reply_markup: { inline_keyboard: buttons } };
