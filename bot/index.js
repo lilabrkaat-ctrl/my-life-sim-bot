@@ -65,6 +65,59 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
 });
 
 // =============================================
+// 📅 روز بعد - دکمه
+// =============================================
+bot.onText(/^📅 روز بعد$/, async (msg) => {
+    const chatId = msg.chat.id;
+    const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
+
+    p.gameDay = (p.gameDay || 1) >= 7 ? 1 : (p.gameDay || 1) + 1;
+
+    // ریست ماموریت‌ها
+    try { const { generateDailyQuests } = require('../dailyQuest'); generateDailyQuests(p); } catch(e) {}
+
+    // ریست بازار مکاره
+    try { const { refreshBlackMarket } = require('../blackMarket'); refreshBlackMarket(p); } catch(e) {}
+
+    // چک تولد بچه‌ها
+    try {
+        const { checkAllBirths } = require('../player');
+        const births = checkAllBirths(p);
+        if (births && births.length > 0) {
+            for (let birth of births) {
+                const child = birth.child || birth;
+                const momInfo = birth.queen ? ` از ${birth.queen.emoji} ${birth.queen.name}` : '';
+                await bot.sendMessage(chatId, `👶 *${child.name}* ${child.emoji}${momInfo} به دنیا اومد! 🎉`, { parse_mode: 'Markdown' });
+            }
+        }
+    } catch(e) {}
+
+    // چک فرار زندانی‌ها
+    try {
+        const { checkEscapes } = require('../prison');
+        const escaped = checkEscapes(p);
+        if (escaped && escaped.length > 0) {
+            for (let prisoner of escaped) {
+                await bot.sendMessage(chatId, `🏃 *${prisoner.name}* از زندان فرار کرد!`, { parse_mode: 'Markdown' });
+            }
+        }
+    } catch(e) {}
+
+    const time = require('../player').getTimeOfDay();
+    p.timeOfDay = time;
+    const loc = config.images.locations[p.location] || config.images.locations.village;
+
+    let msg = `📅 *روز ${p.gameDay}/۷*\n\n`;
+    msg += `${time.name} | 🏆 ${p.score || 0} امتیاز\n`;
+    msg += `📍 ${loc.emoji} ${loc.name}\n\n`;
+    msg += `✅ ماموریت‌های جدید آماده!\n`;
+    msg += `🔄 بازار مکاره بروز شد!`;
+
+    await bot.sendMessage(chatId, msg, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+// =============================================
 // 🔙 دکمه برگشت (کیبورد معمولی)
 // =============================================
 bot.onText(/^🔙 برگشت$/, async (msg) => {
@@ -156,7 +209,6 @@ bot.on('message', async (msg) => {
     const shopState = require('../shop').getShopState(p);
     if (shopState) { const r = require('../shop').processAmount(p, text); if (r.message) bot.sendMessage(chatId, r.message, { parse_mode: 'Markdown', ...require('../shop').getShopKeyboard() }); return; }
 
-    // 📅 از لیست prefixها حذف شد
     const prefixes = ['🪵','🪨','🍖','💧','🦴','⛏️','📤','🏪','💎','💀','👤','🌿','🗺️','⚔️','🔨','📜','⚡','✅','❌','📊','🏰','🏠','🔒','🖐️','💋','🔥','🔓','🏃','💍','👰','🚪','🎵','🧿','🩸','🔮','🐾','🍼','📦','🎁','👶','👑','💰','🕶️','🛒','🤝','📚','🌾','🏗️','🐍','📋','🏛️','👸','👩','👦','🎲','🍷','🗡️','💊','🛏️','🧹','⏰','👗','🤰','💆','🍑','👄','🎈'];
     for (let prefix of prefixes) { if (text.startsWith(prefix)) return; }
 });
