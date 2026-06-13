@@ -1,12 +1,12 @@
 const images = {
   locations: {
-    village: { name: "روستای باستانی", emoji: "🏘️", file_id: "AgACAgQAAxkBAAEqkudqLCpAmNoqCQdfnY9TrHTPpHciKgACHQ5rG_JGEVHS9BRhnONEfgEAAwIAA3kAAzwE", description: "محل امن برای تجارت" },
-    forest: { name: "جنگل انبوه", emoji: "🌲", file_id: "AgACAgQAAxkBAAEqJLFqImgBRr6egi64V6G9dtn2NTn4JAACJA5rG_JGEVH4izsi-XOlCAEAAwIAA3gAAzsE", description: "جایی برای جمع‌آوری چوب" },
-    mountain: { name: "کوهستان سنگی", emoji: "⛰️", file_id: "AgACAgQAAxkBAAEqJLBqImgBHaP5wsytI0iH4hom1STMFwACIw5rG_JGEVEFGX2QG5KEiwEAAwIAA3gAAzsE", description: "معدن سنگ و آهن" },
-    river: { name: "رودخانه", emoji: "🌊", file_id: "AgACAgQAAxkBAAEqJK9qImgBrtw-ly3r4FRhQuEFITDvXgACIg5rG_JGEVFH-WLEPGeJVgEAAwIAA3gAAzsE", description: "منبع آب و ماهی" },
-    plain: { name: "دشت باز", emoji: "🌾", file_id: "AgACAgQAAxkBAAEqJK5qImgBV7keC3wKzuUwxD5Br_96UQACIQ5rG_JGEVHeuU1s4y0hSQEAAwIAA3gAAzsE", description: "محل شکار حیوانات" },
-    cave: { name: "غار تاریک", emoji: "🕳️", file_id: "AgACAgQAAxkBAAEqJKxqImgB3vBluHkUjvTLCW0VpBVGQwACIA5rG_JGEVEHSyCpNnErHQEAAwIAA3gAAzsE", description: "استخراج آهن و طلا" },
-    desert: { name: "بیابان", emoji: "🏜️", file_id: "AgACAgQAAxkBAAEqlIRqLER10E2aB3F1FVVWSo1EGvVIQQACqA5rG9sXYVGTcj87MhMGegEAAwIAA3kAAzwE", description: "محیط خطرناک با دشمنان قوی" }
+    village: { name: "روستای باستانی", emoji: "🏘️", file_id: "AgACAgQAAxkBAAEqohhqLadvAa_KXoZZ_FInFQHvQSrtMwAC_Q1rG3-IcVEh_P79z9XpMQEAAwIAA3kAAzwE", description: "محل امن برای تجارت" },
+    forest: { name: "جنگل انبوه", emoji: "🌲", file_id: "AgACAgQAAxkBAAEqoOVqLZPxLozS1NM6esKQG7llBR2guwACzA1rG3-IcVFCRrJt3ibxDgEAAwIAA3gAAzwE", description: "جایی برای جمع‌آوری چوب" },
+    mountain: { name: "کوهستان سنگی", emoji: "⛰️", file_id: "AgACAgQAAxkBAAEqoONqLZPxeWDhtYFFcHYMZ1ctQ_a__AACyg1rG3-IcVFV4MehT_ipzAEAAwIAA3gAAzwE", description: "معدن سنگ و آهن" },
+    river: { name: "رودخانه", emoji: "🌊", file_id: "AgACAgQAAxkBAAEqoOlqLZPxVjV2eOrmMHVR3-VbJN05EwACzw1rG3-IcVHyNvrCWHbspgEAAwIAA3gAAzwE", description: "منبع آب و ماهی" },
+    plain: { name: "دشت باز", emoji: "🌾", file_id: "AgACAgQAAxkBAAEqoORqLZPxvdxmBuZ8jIKQbEIyaxSeTgACyw1rG3-IcVH76iYITnFE3gEAAwIAA3gAAzwE", description: "محل شکار حیوانات" },
+    cave: { name: "غار تاریک", emoji: "🕳️", file_id: "AgACAgQAAxkBAAEqoOFqLZPxxO3sqr01Kian5KIyUFIRCAACyQ1rG3-IcVHj70KKLuZmpQEAAwIAA3gAAzwE", description: "استخراج آهن و طلا" },
+    desert: { name: "بیابان", emoji: "🏜️", file_id: "AgACAgQAAxkBAAEqoOBqLZPx5EKETc1In3bV4wFoalX2hwACyA1rG3-IcVHbvNrIvkpYjAEAAwIAA3gAAzwE", description: "محیط خطرناک با دشمنان قوی" }
   },
   resources: {
     wood: { name: "چوب", emoji: "🪵" },
@@ -34,9 +34,9 @@ const images = {
     werewolf: { name: "گرگینه مخوف", emoji: "🐺", file_id: "AgACAgQAAxkBAAEqlItqLER2twTaLNdDiSOFh50vGVEWzAACrw5rG9sXYVGT_LAl_B0s0gEAAwIAA3kAAzwE", hp: 90, attack: 18, reward: { xp: 90, gold: 40, skin: 10 } },
     skeleton: { name: "اسکلت سکسی", emoji: "💀", file_id: "AgACAgQAAxkBAAEqlINqLER1noX3Zy8EjubZ-qBZBVY8_wACpw5rG9sXYVFjww43DCJd1QEAAwIAA3kAAzwE", hp: 45, attack: 9, reward: { xp: 40, gold: 15, iron: 5 } },
     dragon: { name: "اژدها", emoji: "🐉", file_id: "AgACAgQAAxkBAAEqlIZqLER2cEtzc1-Ek6HzL1rWX5Ug6wACqg5rG9sXYVHl-SOnJOjsBwEAAwIAA3kAAzwE", hp: 200, attack: 30, reward: { xp: 200, gold: 100, iron: 20 } },
-    scorpion: { name: "عقرب غول‌پیکر", emoji: "🦂", hp: 70, attack: 14, reward: { xp: 70, gold: 35, iron: 8 } },
-    crocodile: { name: "تمساح", emoji: "🐊", hp: 65, attack: 13, reward: { xp: 65, gold: 30, skin: 6 } },
-    eagle: { name: "عقاب", emoji: "🦅", hp: 55, attack: 11, reward: { xp: 55, gold: 25, skin: 4 } },
+    scorpion: { name: "عقرب غول‌پیکر", emoji: "🦂", file_id: "AgACAgQAAxkBAAEqoWhqLZtrLymxXJVcf0F14Fu9aaQKWgAC4g1rG3-IcVELh2P7UlK4nQEAAwIAA3gAAzwE", hp: 70, attack: 14, reward: { xp: 70, gold: 35, iron: 8 } },
+    crocodile: { name: "تمساح", emoji: "🐊", file_id: "AgACAgQAAxkBAAEqoOZqLZPxCLriztNQDbhcSsVt196gdwACzQ1rG3-IcVE_gA4g8gngbQEAAwIAA3gAAzwE", hp: 65, attack: 13, reward: { xp: 65, gold: 30, skin: 6 } },
+    eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqoOhqLZPxF2vkYCVPDXn7SapBOk17GQACzg1rG3-IcVHFDpbB2aRFbAEAAwIAA3gAAzwE", hp: 55, attack: 11, reward: { xp: 55, gold: 25, skin: 4 } },
     knight_enemy: { name: "شوالیه سکسی", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqlJ1qLESI8GrSy6RixmjlvWG21CS_YwACow5rG9sXYVFF3K_3qb33QwEAAwIAA3kAAzwE", hp: 100, attack: 16, reward: { xp: 80, gold: 60, iron: 10 } },
     queen: { name: "ملکه کویین", emoji: "👑", file_id: "AgACAgQAAxkBAAEqlJ9qLESIrpWwDJRUgTnzaZ-Ov0UU5wACpA5rG9sXYVEf4bJyfqVukgEAAwIAA3kAAzwE", hp: 250, attack: 35, reward: { xp: 300, gold: 200, iron: 30 } },
     bride: { name: "عروس فراری", emoji: "👰", hp: 80, attack: 8, reward: { xp: 40, gold: 50, ring: 1 } },
@@ -60,24 +60,25 @@ const images = {
     jester: { name: "دلقک سکسی", emoji: "🎭", file_id: "AgACAgQAAxkBAAEqlIVqLER1Oc9Maqg15T2LJr8tv66GkQACqQ5rG9sXYVF4jEGinB--HAEAAwIAA3kAAzwE", role: "شوخی و خنده" },
     wizard: { name: "جادوگر", emoji: "🧙‍♂️", file_id: "AgACAgQAAxkBAAEqlKBqLESIkr7pD86aEHDQbEGdugl6rwACpQ5rG9sXYVFVBRu5N7cIaQEAAwIAA3kAAzwE", role: "جادوی تصادفی" },
     knight: { name: "سرباز سکسی", emoji: "⚔️", file_id: "AgACAgQAAxkBAAEqlJ1qLESI8GrSy6RixmjlvWG21CS_YwACow5rG9sXYVFF3K_3qb33QwEAAwIAA3kAAzwE", role: "مبارزه دوستانه" },
-    angel: { name: "فرشته خانوم", emoji: "👼", file_id: "AgACAgQAAxkBAAEqlItqLER2twTaLNdDiSOFh50vGVEWzAACrw5rG9sXYVGT_LAl_B0s0gEAAwIAA3kAAzwE", role: "شفای کامل" }
+    angel: { name: "فرشته خانوم", emoji: "👼", file_id: "AgACAgQAAxkBAAEqkotqLCoRXrUAAQUU8ybUBPLmGiGDOE8AAhEgAAJ-ERhRtiFdKeugZ9I8BA", role: "شفای کامل" }
   },
   events: {
-    snow: { name: "برف", emoji: "❄️" },
-    beehive: { name: "کندوی عسل", emoji: "🍯" },
-    rainbow: { name: "رنگین کمان", emoji: "🌈" },
-    fire: { name: "آتش", emoji: "🔥" },
-    treasure: { name: "گنج کوچیک", emoji: "💰" },
-    treasure_chest: { name: "گنج پر ارزش", emoji: "📦" },
-    tornado: { name: "گردباد", emoji: "🌪" },
-    magic_mushroom: { name: "قارچ جادویی", emoji: "🍄" },
-    diamond: { name: "صندوق الماس", emoji: "💎" },
-    crystal: { name: "کریستال", emoji: "🔮" },
+    snow: { name: "برف", emoji: "❄️", file_id: "AgACAgQAAxkBAAEqoWNqLZtrCW8PUtp6JA0TRHlWhS_zbgAC3w1rG3-IcVEbuTWwL7Hr2gEAAwIAA3gAAzwE" },
+    beehive: { name: "کندوی عسل", emoji: "🍯", file_id: "AgACAgQAAxkBAAEqoWlqLZtrLB21hKSBEEteoU4ds-cCaAAC4w1rG3-IcVFEvgFlPGmoyQEAAwIAA3gAAzwE" },
+    rainbow: { name: "رنگین کمان", emoji: "🌈", file_id: "AgACAgQAAxkBAAEqoWVqLZtrIhUZLz86TZhTgTAh5LvJKgAC4A1rG3-IcVECC8kOrps7rAEAAwIAA3gAAzwE" },
+    fire: { name: "آتش", emoji: "🔥", file_id: "AgACAgQAAxkBAAEqoWZqLZtrtfNR5JoAAdxlYoESUj0ZUjsAAuENaxt_iHFRLbQ94fPAxcIBAAMCAAN4AAM8BA" },
+    treasure: { name: "گنج کوچیک", emoji: "💰", file_id: "AgACAgQAAxkBAAEqoV5qLZtqPv_6ilHeQ_fAVCJiC2YsnwAC2w1rG3-IcVFsAAE4xP_18ygBAAMCAAN4AAM8BA" },
+    treasure_chest: { name: "گنج پر ارزش", emoji: "📦", file_id: "AgACAgQAAxkBAAEqoWBqLZtq-abZ1iofYe8qYBB0uLHmvQAC3A1rG3-IcVFHux311np9_wEAAwIAA3gAAzwE" },
+    tornado: { name: "گردباد", emoji: "🌪", file_id: "AgACAgQAAxkBAAEqoWFqLZtr59FodB7ZGztbCHxJ6W2uKwAC3g1rG3-IcVGkpPpNXuZn-gEAAwIAA3gAAzwE" },
+    magic_mushroom: { name: "قارچ جادویی", emoji: "🍄", file_id: "AgACAgQAAxkBAAEqoV1qLZtqkZtSbZzW9Dciu6Gjm6rtNQAC2g1rG3-IcVHJHXbjdPOtwQEAAwIAA3gAAzwE" },
+    diamond: { name: "صندوق الماس", emoji: "💎", file_id: "AgACAgQAAxkBAAEqoVxqLZtqFIC6d-z8PByvLR037bLQxQAC2A1rG3-IcVE6RJPKmpzqwQEAAwIAA3gAAzwE" },
+    crystal: { name: "کریستال", emoji: "🔮", file_id: "AgACAgQAAxkBAAEqoXFqLZt9gd6_SXqlMly3SxUuiHAeGAAC1w1rG3-IcVG0MCCY6nsbHAEAAwIAA3gAAzwE" },
     magic_potion: { name: "طلسم جادوگر", emoji: "🧪", file_id: "AgACAgQAAxkBAAEqlIlqLER2DkUzjerp_nvWODAWGLj2PAACrQ5rG9sXYVEqzSyc1qsY9wEAAwIAA3kAAzwE" },
-    lightning: { name: "رعد و برق", emoji: "⚡" },
-    snake_event: { name: "مار", emoji: "🐍" },
-    eagle: { name: "عقاب", emoji: "🦅" }
-  }
+    lightning: { name: "رعد و برق", emoji: "⚡", file_id: "AgACAgQAAxkBAAEqoXBqLZt97Vy2Vuqh3PYID4fEVa0fugAC1g1rG3-IcVFBSIXL3DMLPAEAAwIAA3gAAzwE" },
+    snake_event: { name: "مار", emoji: "🐍", file_id: "AgACAgQAAxkBAAEqlJdqLESIWF43e0ntTwpTmMpmKf-eagACng5rG9sXYVE3lA8nZEiF4gEAAwIAA3kAAzwE" },
+    eagle: { name: "عقاب", emoji: "🦅", file_id: "AgACAgQAAxkBAAEqoOhqLZPxF2vkYCVPDXn7SapBOk17GQACzg1rG3-IcVHFDpbB2aRFbAEAAwIAA3gAAzwE" }
+  },
+  startScreen: { file_id: "AgACAgQAAxkBAAEqohpqLadvnHJo3G8csNlI6stVLgWFKQAC_g1rG3-IcVEL8QVh3EtIEAEAAwIAA3kAAzwE" }
 };
 
 module.exports = {
