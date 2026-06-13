@@ -4,7 +4,7 @@ const { getTimeOfDay } = require('./player');
 function triggerRandomEvent(player, action) {
     const ev = config.images.events;
     if (!ev) return null;
-    
+
     const r = Math.random();
     let result = null;
 
@@ -63,6 +63,9 @@ function triggerRandomEvent(player, action) {
             player.hp = Math.min((player.maxHp || 100), (player.hp || 100) + 10); 
             result = { msg: '❄️ *برف!* +۱۰❤️', img: ev.snow.file_id }; 
         }
+        else if (r < 0.50 && ev.tornado) {
+            result = { msg: '🌪 *گردباد!* چیزی پیدا نکردی...', img: ev.tornado.file_id };
+        }
     }
 
     if (action === 'travel') {
@@ -99,6 +102,14 @@ function triggerRandomEvent(player, action) {
         else if (r < 0.52 && ev.diamond) { 
             player.inventory.gold = (player.inventory.gold || 0) + 30; 
             result = { msg: '💎 *صندوق الماس!* +۳۰👑', img: ev.diamond.file_id }; 
+        }
+        else if (r < 0.56 && ev.fire) {
+            player.hp = Math.max(1, (player.hp || 100) - 8);
+            result = { msg: '🔥 *آتش تو راه!* -۸❤️', img: ev.fire.file_id };
+        }
+        else if (r < 0.60 && ev.magic_mushroom) {
+            player.hp = Math.min((player.maxHp || 100), (player.hp || 100) + 15);
+            result = { msg: '🍄 *قارچ جادویی تو راه!* +۱۵❤️', img: ev.magic_mushroom.file_id };
         }
     }
 
