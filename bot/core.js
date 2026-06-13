@@ -63,7 +63,8 @@ function mainMenu() {
         ['🗺️ سفر', '⚔️ نبرد'],
         ['🔨 ساخت‌وساز', '🏪 بازار'],
         ['🏠 خونه', '🏰 زندان'],
-        ['👑 امپراطوری', '📊 رتبه‌بندی']
+        ['👑 امپراطوری', '📊 رتبه‌بندی'],
+        ['📅 روز بعد']
     ], resize_keyboard: true } };
 }
 
@@ -80,12 +81,22 @@ function locationMenu(player) {
 }
 
 async function sendAnimation(chatId, fileId, caption, keyboard) {
-    if (fileId) { try { await bot.sendAnimation(chatId, fileId, { caption, parse_mode: 'Markdown', ...keyboard }); return; } catch (e) {} }
+    if (fileId) { 
+        try { 
+            await bot.sendAnimation(chatId, fileId, { caption, parse_mode: 'Markdown', ...keyboard }); 
+            return; 
+        } catch (e) {} 
+    }
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
 
 async function sendPhoto(chatId, fileId, caption, keyboard) {
-    if (fileId) { try { await bot.sendPhoto(chatId, fileId, { caption, parse_mode: 'Markdown', ...keyboard }); return; } catch (e) {} }
+    if (fileId) { 
+        try { 
+            await bot.sendPhoto(chatId, fileId, { caption, parse_mode: 'Markdown', ...keyboard }); 
+            return; 
+        } catch (e) {} 
+    }
     await bot.sendMessage(chatId, caption, { parse_mode: 'Markdown', ...keyboard });
 }
 
