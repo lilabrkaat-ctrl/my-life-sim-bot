@@ -17,8 +17,9 @@ try { require('./dailyQuestHandlers').setupDailyQuestHandlers(); } catch(e) { co
 try { require('./offspringHandlers').setupOffspringHandlers(); } catch(e) { console.log('offspringHandlers:', e.message); }
 try { require('./courtHandlers').setupCourtHandlers(); } catch(e) { console.log('courtHandlers:', e.message); }
 try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log('adminHandlers:', e.message); }
+try { require('./dayHandler').setupDayHandler(); } catch(e) { console.log('dayHandler:', e.message); }
 
-console.log('✅ تمام ۱۴ هندلر راه‌اندازی شدن!');
+console.log('✅ تمام ۱۵ هندلر راه‌اندازی شدن!');
 
 const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
@@ -30,17 +31,17 @@ const config = require('../config');
 bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const dayNum = parseInt(match[1] || match[2]);
-    
+
     if (isNaN(dayNum) || dayNum < 1 || dayNum > 7) {
         return bot.sendMessage(chatId, '❌ روز باید بین ۱ تا ۷ باشه!');
     }
-    
+
     let p = player.getPlayer(chatId);
     if (!p) { player.createPlayer(chatId, msg.chat.first_name || 'گمنام'); p = player.getPlayer(chatId); }
-    
+
     p.gameDay = dayNum;
     if (p.dailyQuests) { p.dailyQuests.quests = []; p.dailyQuests.completed = []; p.dailyQuests.progress = {}; p.dailyQuests.lastReset = Date.now(); }
-    
+
     try {
         const { checkAllBirths } = require('../player');
         const { sendPhoto } = require('./core');
@@ -56,7 +57,7 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
             }
         }
     } catch(e) {}
-    
+
     const { getTimeOfDay } = require('../player');
     const time = getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
@@ -70,11 +71,11 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
     const chatId = msg.chat.id;
     const p = player.getPlayer(chatId);
     if (!p) return bot.sendMessage(chatId, '❌ /start بزن!', mainMenu());
-    
+
     const { chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc } = require('./core');
     [adminState, chamberState, empireState, peopleState, courtState, haremState, activePrisoner, activeHouseNpc].forEach(s => { if (s && s[chatId]) delete s[chatId]; });
     if (activeBattles[chatId]) delete activeBattles[chatId];
-    
+
     const { getTimeOfDay } = require('../player');
     const time = getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
