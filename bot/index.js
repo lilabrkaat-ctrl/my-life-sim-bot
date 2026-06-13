@@ -17,13 +17,13 @@ try { require('./dailyQuestHandlers').setupDailyQuestHandlers(); } catch(e) { co
 try { require('./offspringHandlers').setupOffspringHandlers(); } catch(e) { console.log('offspringHandlers:', e.message); }
 try { require('./courtHandlers').setupCourtHandlers(); } catch(e) { console.log('courtHandlers:', e.message); }
 try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log('adminHandlers:', e.message); }
-try { require('./dayHandler').setupDayHandler(); } catch(e) { console.log('dayHandler:', e.message); }
 
-console.log('✅ تمام ۱۵ هندلر راه‌اندازی شدن!');
+console.log('✅ تمام ۱۴ هندلر راه‌اندازی شدن!');
 
 const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
 const config = require('../config');
+const audienceStates = {};
 
 // =============================================
 // 📅 دستور day/روز
@@ -31,10 +31,7 @@ const config = require('../config');
 bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
     const chatId = msg.chat.id;
     const dayNum = parseInt(match[1] || match[2]);
-
-    if (isNaN(dayNum) || dayNum < 1 || dayNum > 7) {
-        return bot.sendMessage(chatId, '❌ روز باید بین ۱ تا ۷ باشه!');
-    }
+    if (isNaN(dayNum) || dayNum < 1 || dayNum > 7) return bot.sendMessage(chatId, '❌ روز باید بین ۱ تا ۷ باشه!');
 
     let p = player.getPlayer(chatId);
     if (!p) { player.createPlayer(chatId, msg.chat.first_name || 'گمنام'); p = player.getPlayer(chatId); }
@@ -42,24 +39,7 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
     p.gameDay = dayNum;
     if (p.dailyQuests) { p.dailyQuests.quests = []; p.dailyQuests.completed = []; p.dailyQuests.progress = {}; p.dailyQuests.lastReset = Date.now(); }
 
-    try {
-        const { checkAllBirths } = require('../player');
-        const { sendPhoto } = require('./core');
-        const { getBirthImage } = require('../offspring');
-        const births = checkAllBirths(p);
-        if (births && births.length > 0) {
-            for (let birth of births) {
-                const child = birth.child || birth;
-                const momInfo = birth.queen ? ` از ${birth.queen.emoji} ${birth.queen.name}` : '';
-                const birthImg = getBirthImage();
-                if (birthImg) await sendPhoto(chatId, birthImg, `👶 *${child.name}*${momInfo} به دنیا اومد!`, mainMenu());
-                else await bot.sendMessage(chatId, `👶 *${child.name}*${momInfo} به دنیا اومد!`, { parse_mode: 'Markdown' });
-            }
-        }
-    } catch(e) {}
-
-    const { getTimeOfDay } = require('../player');
-    const time = getTimeOfDay(); p.timeOfDay = time;
+    const time = require('../player').getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
     await bot.sendMessage(chatId, `🏛️ *بقای باستانی - روز ${dayNum}/۷*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
 });
@@ -76,45 +56,124 @@ bot.onText(/^📅 روز بعد$/, async (msg) => {
 
     try { const { generateDailyQuests } = require('../dailyQuest'); generateDailyQuests(p); } catch(e) {}
     try { const { refreshBlackMarket } = require('../blackMarket'); refreshBlackMarket(p); } catch(e) {}
-    
+
     try {
-        const { checkAllBirths } = require('../player');
-        const births = checkAllBirths(p);
-        if (births && births.length > 0) {
-            for (let birth of births) {
-                const child = birth.child || birth;
-                const momInfo = birth.queen ? ` از ${birth.queen.emoji} ${birth.queen.name}` : '';
-                await bot.sendMessage(chatId, `👶 *${child.name}* ${child.emoji}${momInfo} به دنیا اومد!`, { parse_mode: 'Markdown' });
-            }
-        }
+        const { checkBirths } = require('../offspring');
+        const births = checkBirths(p);
+        if (births && births.length > 0) for (let child of births) await bot.sendMessage(chatId, `👶 *${child.name}* ${child.emoji} به دنیا اومد!`, { parse_mode: 'Markdown' });
+    } catch(e) {}
+
+    try {
+        const { checkHaremBirths } = require('../queenHarem');
+        const births = checkHaremBirths(p);
+        if (births && births.length > 0) for (let b of births) await bot.sendMessage(chatId, `👶 *${b.child.name}* از ${b.queen.emoji} ${b.queen.name} به دنیا اومد!`, { parse_mode: 'Markdown' });
     } catch(e) {}
 
     try {
         const { checkEscapes } = require('../prison');
         const escaped = checkEscapes(p);
-        if (escaped && escaped.length > 0) {
-            for (let prisoner of escaped) {
-                await bot.sendMessage(chatId, `🏃 *${prisoner.name}* از زندان فرار کرد!`, { parse_mode: 'Markdown' });
-            }
-        }
+        if (escaped && escaped.length > 0) for (let prisoner of escaped) await bot.sendMessage(chatId, `🏃 *${prisoner.name}* فرار کرد!`, { parse_mode: 'Markdown' });
     } catch(e) {}
 
-    const time = require('../player').getTimeOfDay();
-    p.timeOfDay = time;
+    try { const { autoFeedCheck } = require('../pet'); const hungry = autoFeedCheck(p); if (hungry) await bot.sendMessage(chatId, `🍖 ${hungry}`, { parse_mode: 'Markdown' }); } catch(e) {}
+
+    const time = require('../player').getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
 
     await bot.sendMessage(chatId, 
-        `📅 *روز ${p.gameDay}/۷*\n\n` +
-        `${time.name} | 🏆 ${p.score || 0} امتیاز\n` +
-        `📍 ${loc.emoji} ${loc.name}\n\n` +
-        `✅ ماموریت‌های جدید آماده!\n` +
-        `🔄 بازار مکاره بروز شد!`, 
+        `📅 *روز ${p.gameDay}/۷*\n\n${time.name} | 🏆 ${p.score || 0} امتیاز\n📍 ${loc.emoji} ${loc.name}\n\n✅ ماموریت‌های جدید!\n🔄 بازار مکاره بروز شد!`, 
         { parse_mode: 'Markdown', ...mainMenu() }
     );
+
+    // 👑 ملاقات درباری (از سطح ۳۰)
+    if (p.level >= 30) {
+        const audiences = [
+            { title: '👨‍🌾 دهقانان گرسنه', desc: 'قربان! محصولاتمون از بین رفته. کمک کنین!', choices: [
+                { text: '🍞 از انبار بده (۵۰ غذا)', callback: 'audience_food', effect: { food: -50, happiness: 20 } },
+                { text: '💰 پول بده (۱۰۰ طلا)', callback: 'audience_gold100', effect: { gold: -100, happiness: 10 } },
+                { text: '😤 رد کن', callback: 'audience_no', effect: { happiness: -15 } }
+            ]},
+            { title: '📜 شکایت از مالیات', desc: 'شاه! مالیات‌ها سنگینه...', choices: [
+                { text: '📉 کم کن', callback: 'audience_tax', effect: { happiness: 15, gold: -30 } },
+                { text: '⏸️ این ماه ببخش', callback: 'audience_free', effect: { happiness: 25, gold: -50 } },
+                { text: '😤 باید بدن', callback: 'audience_no', effect: { happiness: -20 } }
+            ]},
+            { title: '⚖️ محاکمه دزد', desc: 'اعلی‌حضرت! یه دزد گرفتن...', choices: [
+                { text: '💀 اعدام', callback: 'audience_kill', effect: { justice: 10, safety: 15 } },
+                { text: '🔒 زندان ابد', callback: 'audience_jail', effect: { justice: 5 } },
+                { text: '🤝 ببخش', callback: 'audience_pardon', effect: { happiness: 10, faith: 10 } }
+            ]},
+            { title: '💰 گزارش خزانه‌دار', desc: 'شاهم! هزینه‌های قصر زیاده...', choices: [
+                { text: '📊 کم کن', callback: 'audience_cut', effect: { gold: 30 } },
+                { text: '💰 از مردم بگیر', callback: 'audience_collect', effect: { gold: 50, happiness: -10 } },
+                { text: '✅ باشه', callback: 'audience_ok', effect: {} }
+            ]},
+            { title: '👸 درخواست ملکه', desc: 'ملکه: "شوهرم... جواهر می‌خوام..."', choices: [
+                { text: '💍 بخر (۲۰۰ طلا)', callback: 'audience_queen', effect: { gold: -200, queenMood: 30 } },
+                { text: '💋 بعداً', callback: 'audience_later', effect: { queenMood: -10 } },
+                { text: '😤 نه!', callback: 'audience_no', effect: { queenMood: -25 } }
+            ]},
+            { title: '🎉 درخواست جشن', desc: 'مردم می‌خوان جشن بگیرن!', choices: [
+                { text: '🎊 بزرگ (۳۰۰ طلا)', callback: 'audience_fest_big', effect: { gold: -300, happiness: 30 } },
+                { text: '🎈 کوچیک (۱۰۰ طلا)', callback: 'audience_fest_small', effect: { gold: -100, happiness: 15 } },
+                { text: '😤 نه', callback: 'audience_no', effect: { happiness: -20 } }
+            ]}
+        ];
+
+        const aud = audiences[Math.floor(Math.random() * audiences.length)];
+        const buttons = aud.choices.map(c => [{ text: c.text, callback_data: c.callback }]);
+        audienceStates[chatId] = { currentAudience: aud };
+
+        await bot.sendMessage(chatId,
+            `👑 *ملاقات درباری - روز ${p.gameDay}*\n\n${aud.title}\n\n💬 "${aud.desc}"\n\n🤔 *تصمیم شما چیه؟*`,
+            { parse_mode: 'Markdown', reply_markup: { inline_keyboard: buttons } }
+        );
+    }
 });
 
 // =============================================
-// 🔙 دکمه برگشت (کیبورد معمولی)
+// 👑 هندلر تصمیم‌های ملاقات درباری
+// =============================================
+bot.on('callback_query', async (query) => {
+    const chatId = query.message.chat.id;
+    const msgId = query.message.message_id;
+    const data = query.data;
+    const p = player.getPlayer(chatId);
+    if (!p || !data || !data.startsWith('audience_')) return;
+
+    const state = audienceStates[chatId];
+    if (!state || !state.currentAudience) return bot.answerCallbackQuery(query.id, { text: '❌ ملاقات تموم شده!' });
+
+    const aud = state.currentAudience;
+    const choice = aud.choices.find(c => c.callback === data);
+    if (!choice) return bot.answerCallbackQuery(query.id);
+
+    // اعمال اثر
+    const eff = choice.effect || {};
+    if (eff.gold) p.inventory.gold = Math.max(0, (p.inventory.gold || 0) + eff.gold);
+    if (eff.food) p.inventory.food = Math.max(0, (p.inventory.food || 0) + eff.food);
+    if (eff.happiness && p.people) p.people.stats.happiness = Math.min(100, Math.max(0, (p.people.stats.happiness || 50) + eff.happiness));
+    if (eff.faith && p.people) p.people.stats.faith = Math.min(100, Math.max(0, (p.people.stats.faith || 50) + eff.faith));
+    if (eff.justice && p.people) p.people.stats.justice = Math.min(100, Math.max(0, (p.people.stats.justice || 50) + eff.justice));
+    if (eff.safety && p.people) p.people.stats.safety = Math.min(100, Math.max(0, (p.people.stats.safety || 50) + eff.safety));
+    if (eff.queenMood && p.harem && p.harem.queens && p.harem.queens.length > 0) {
+        const q = p.harem.queens[0];
+        q.mood = Math.min(100, Math.max(0, (q.mood || 50) + eff.queenMood));
+    }
+
+    let result = '✅ انجام شد.';
+    if (eff.happiness) result += `\n😊 خوشبختی ${eff.happiness > 0 ? '+' : ''}${eff.happiness}`;
+    if (eff.gold) result += `\n👑 طلا ${eff.gold > 0 ? '+' : ''}${eff.gold}`;
+    if (eff.food) result += `\n🍞 غذا ${eff.food > 0 ? '+' : ''}${eff.food}`;
+
+    await bot.editMessageText(`👑 *ملاقات درباری*\n\n${aud.title}\n\n✅ *${choice.text}*\n${result}`,
+        { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown' });
+    delete state.currentAudience;
+    return bot.answerCallbackQuery(query.id, { text: '✅' });
+});
+
+// =============================================
+// 🔙 دکمه برگشت
 // =============================================
 bot.onText(/^🔙 برگشت$/, async (msg) => {
     const chatId = msg.chat.id;
@@ -124,8 +183,7 @@ bot.onText(/^🔙 برگشت$/, async (msg) => {
     if (adminState[chatId]) delete adminState[chatId];
     if (activeBattles[chatId]) delete activeBattles[chatId];
 
-    const { getTimeOfDay } = require('../player');
-    const time = getTimeOfDay(); p.timeOfDay = time;
+    const time = require('../player').getTimeOfDay(); p.timeOfDay = time;
     const loc = config.images.locations[p.location] || config.images.locations.village;
     await bot.sendMessage(chatId, `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
 });
@@ -138,15 +196,13 @@ bot.on('callback_query', async (query) => {
     const msgId = query.message.message_id;
     const data = query.data;
     const p = player.getPlayer(chatId);
-
     if (!p) return bot.answerCallbackQuery(query.id, { text: '❌ /start بزن!', show_alert: true });
 
     if (data === 'back_to_main') {
         if (adminState[chatId]) delete adminState[chatId];
         if (activeBattles[chatId]) delete activeBattles[chatId];
 
-        const { getTimeOfDay } = require('../player');
-        const time = getTimeOfDay(); p.timeOfDay = time;
+        const time = require('../player').getTimeOfDay(); p.timeOfDay = time;
         const loc = config.images.locations[p.location] || config.images.locations.village;
         await bot.deleteMessage(chatId, msgId).catch(() => {});
         await bot.sendMessage(chatId, `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay || 1}/۷ | 🏆 ${p.score || 0} امتیاز`, { parse_mode: 'Markdown', ...mainMenu() });
@@ -182,7 +238,6 @@ bot.on('message', async (msg) => {
 
         const args = text.split(' '); const cmd = args.shift().toLowerCase();
         const adminCommands = ['gold','g','xp','exp','score','sc','heal','hp','item','give','attack','atk','defense','def','level','lvl','energy','en','setday','nextday','nd','resetday','rd','condom','cd','unlock','max','maxall','god','pet','addpet','removepet','petfood','box','addbox','openbox','boxes','quest','newquest','completequest','child','addchild','heir','setheir','killchild','tournament','pregnant','birth','addqueen','removequeen','queencare','queensalary','promotequeen','empirelevel','dynasty','income','wonder','population','food','water','building','stats','blackmarket','prison','gift','sendgift','info','whois','users','count','top','resetuser','ru','ban','unban','announce','ann','save','reset','help','addnpc','addprison','addhouse','addhome','removenpc','removeprison','removehouse','removehome','setrelation','setrel','marrynow','forcemarry'];
-
         if (adminCommands.includes(cmd)) {
             const result = adminCommand(p, cmd, args);
             if (result.announceAll) { for (let id in player.players) { try { bot.sendMessage(id, `📢 ${result.announce}`, { parse_mode: 'Markdown' }); } catch(e) {} } bot.sendMessage(chatId, '✅ ارسال شد!', mainMenu()); return; }
