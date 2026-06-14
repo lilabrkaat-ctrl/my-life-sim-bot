@@ -42,7 +42,7 @@ bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
 });
 
 // =============================================
-// 📅 روز بعد - دکمه (با تسریع بارداری)
+// 📅 روز بعد - دکمه (با تسریع بارداری و چک مرگ)
 // =============================================
 bot.onText(/^📅 روز بعد$/, async (msg) => {
     const chatId = msg.chat.id;
@@ -51,22 +51,23 @@ bot.onText(/^📅 روز بعد$/, async (msg) => {
 
     p.gameDay = (p.gameDay || 1) >= 7 ? 1 : (p.gameDay || 1) + 1;
 
-    // 🆕 تسریع بارداری‌های معمولی
-    if (p.pregnancies) {
-        for (let preg of p.pregnancies) {
-            if (!preg.born && preg.dueDate) preg.dueDate -= 24 * 60 * 60 * 1000;
+    // 🆕 چک مرگ
+    if (p.isDead) {
+        const daysPassed = p.gameDay - (p.deathDay || p.gameDay);
+        if (daysPassed >= 2 || daysPassed < 0) {
+            p.isDead = false;
+            p.deathDay = null;
+            await bot.sendMessage(chatId, '✨ *درمان شدی!*\n\n🏥 بعد از ۲ روز استراحت، زخم‌هات خوب شدن!\n⚔️ آماده نبرد دوباره!', { parse_mode: 'Markdown', ...mainMenu() });
+        } else {
+            const remaining = 2 - daysPassed;
+            await bot.sendMessage(chatId, `🏥 *در حال درمان...*\n\n💀 شکست خوردی و زخمی شدی.\n📅 ${remaining} روز دیگه استراحت کن.\n⏰ دکمه "روز بعد" رو بزن.`, { parse_mode: 'Markdown', ...mainMenu() });
+            return;
         }
     }
-    // 🆕 تسریع بارداری‌های حرمسرا
-    if (p.harem && p.harem.queens) {
-        for (let queen of p.harem.queens) {
-            if (queen.pregnancies) {
-                for (let preg of queen.pregnancies) {
-                    if (!preg.born && preg.dueDate) preg.dueDate -= 24 * 60 * 60 * 1000;
-                }
-            }
-        }
-    }
+
+    // تسریع بارداری‌ها
+    if (p.pregnancies) { for (let preg of p.pregnancies) { if (!preg.born && preg.dueDate) preg.dueDate -= 24 * 60 * 60 * 1000; } }
+    if (p.harem && p.harem.queens) { for (let queen of p.harem.queens) { if (queen.pregnancies) { for (let preg of queen.pregnancies) { if (!preg.born && preg.dueDate) preg.dueDate -= 24 * 60 * 60 * 1000; } } } }
 
     try { const { generateDailyQuests } = require('../dailyQuest'); generateDailyQuests(p); } catch(e) {}
     try { const { refreshBlackMarket } = require('../blackMarket'); refreshBlackMarket(p); } catch(e) {}
@@ -88,7 +89,7 @@ bot.onText(/^📅 روز بعد$/, async (msg) => {
 });
 
 // =============================================
-// بخش ۱: ۲۰ سناریو سطح ۱-۳۰
+// ۲۰ سناریو سطح ۱-۳۰
 // =============================================
 function getLowLevelAudiences() {
     return [
@@ -116,7 +117,7 @@ function getLowLevelAudiences() {
 }
 
 // =============================================
-// بخش ۲: ۵۰ سناریو پادشاه (سطح ۳۰+)
+// ۵۰ سناریو پادشاه (سطح ۳۰+)
 // =============================================
 function getKingAudiences() {
     return [
@@ -230,7 +231,7 @@ bot.on('callback_query', async (query) => {
 });
 
 // =============================================
-// 🔙 برگشت و پیام‌ها
+// 🔙 برگشت
 // =============================================
 bot.onText(/^🔙 برگشت$/, async (msg) => {
     const chatId = msg.chat.id;
@@ -260,10 +261,22 @@ bot.on('callback_query', async (query) => {
     }
 });
 
+// =============================================
+// 👤 پیام‌های معمولی
+// =============================================
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
     if (!text || text.startsWith('/')) return;
+
+    // 🆕 چک مرگ
+    const pCheck = player.getPlayer(chatId);
+    if (pCheck && pCheck.isDead) {
+        const daysPassed = (pCheck.gameDay || 1) - (pCheck.deathDay || 1);
+        if (daysPassed < 2 && daysPassed >= 0) {
+            return bot.sendMessage(chatId, `🏥 *هنوز زخمی هستی!*\n\n📅 باید ${2 - daysPassed} روز دیگه استراحت کنی.\n⏰ دکمه "روز بعد" رو بزن.`, mainMenu());
+        }
+    }
 
     if (isAdmin(chatId)) {
         let p = player.getPlayer(chatId);
@@ -299,4 +312,4 @@ bot.on('message', async (msg) => {
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی - نسخه کامل با ۷۰ سناریو و تسریع بارداری آماده شد! 🎉👑🔥');
+console.log('✅ ربات بقای باستانی - نسخه کامل آماده شد! 🎉👑🔥');
