@@ -26,33 +26,13 @@ const animations = {
         'CgACAgQAAxkBAAEqRW5qJYa2yJzekFeRpBCj6Ltik2O72AACoRkAAkAyMVGfRbpmel7AcjsE'
     ],
     spell: 'CgACAgQAAxkBAAEqku5qLCpAFGSp3M3EXT3FPHD1Ls6dJAACsBwAAiiYGVEtH6Hh1OaSvTwE',
-    bride: [
-        'CgACAgQAAxkBAAEqknJqLCnfrY5RJmxaeMcORYwxcKc1ZgAC7x0AAn4RIFHFrkfbT_8nmzwE',
-        'CgACAgQAAxkBAAEqknNqLCnffwKXiZaYV2sBQ4g2UgPDPgAC9R0AAn4RIFGZG58QxOaIxzwE',
-        'CgACAgQAAxkBAAEqknRqLCnfp_Cyj6v6my7ZSQ-YPxYfggAC9x0AAn4RIFHhRbdHVJmS2TwE'
-    ],
-    mermaid: [
-        'CgACAgQAAxkBAAEqknVqLCnfFjqT0KI3dpUuCGNzH_JP1AAC-R0AAn4RIFGVBmGKu14XzDwE',
-        'CgACAgQAAxkBAAEqknZqLCnf-0FLhEAFezr4aFPvdLv8pwAC-x0AAn4RIFHtLk6v0vB9sTwE',
-        'CgACAgQAAxkBAAEqkndqLCnfqusEIkCRajGgvoEGoS8wfQAC_B0AAn4RIFEJAXO72Rtg3DwE'
-    ],
-    young_witch: [
-        'CgACAgQAAxkBAAEqknlqLCnfQrXi2m_4pNuKxO6K-jKifQACCB4AAn4RIFFVG52gsjKE2jwE',
-        'CgACAgQAAxkBAAEqkntqLCnfYYFlGdhlsdKEnK6dCsM55QACCR4AAn4RIFG4veGbLRgkpjwE'
-    ],
-    singer: [
-        'CgACAgQAAxkBAAEqknxqLCnf_Q9chpcNaiyBMX4TXGLGcgACDx4AAn4RIFGYsb_3L6-ZoTwE',
-        'CgACAgQAAxkBAAEqkn5qLCnfzLALPq1XPojqjOnuxiCoFQACEB4AAn4RIFEOZrUQKyFrmjwE'
-    ],
-    vampire: [
-        'CgACAgQAAxkBAAEqkpJqLCoRhCMooPfuv465bLwl51vgMgAC4h0AAn4RIFHNPi8KsHaoFDwE'
-    ],
-    genie: [
-        'CgACAgQAAxkBAAEqkpNqLCoRHQ-Y-xYivMcxDnAGbmQqAwAC5R0AAn4RIFFpF2eGhqofdDwE'
-    ],
-    bandit_female: [
-        'CgACAgQAAxkBAAEqkpVqLCoR_o7UOJajPyJGtJNVrYZSAgAC5x0AAn4RIFGbxUIKqfWb0zwE'
-    ]
+    bride: ['CgACAgQAAxkBAAEqknJqLCnfrY5RJmxaeMcORYwxcKc1ZgAC7x0AAn4RIFHFrkfbT_8nmzwE', 'CgACAgQAAxkBAAEqknNqLCnffwKXiZaYV2sBQ4g2UgPDPgAC9R0AAn4RIFGZG58QxOaIxzwE', 'CgACAgQAAxkBAAEqknRqLCnfp_Cyj6v6my7ZSQ-YPxYfggAC9x0AAn4RIFHhRbdHVJmS2TwE'],
+    mermaid: ['CgACAgQAAxkBAAEqknVqLCnfFjqT0KI3dpUuCGNzH_JP1AAC-R0AAn4RIFGVBmGKu14XzDwE', 'CgACAgQAAxkBAAEqknZqLCnf-0FLhEAFezr4aFPvdLv8pwAC-x0AAn4RIFHtLk6v0vB9sTwE', 'CgACAgQAAxkBAAEqkndqLCnfqusEIkCRajGgvoEGoS8wfQAC_B0AAn4RIFEJAXO72Rtg3DwE'],
+    young_witch: ['CgACAgQAAxkBAAEqknlqLCnfQrXi2m_4pNuKxO6K-jKifQACCB4AAn4RIFFVG52gsjKE2jwE', 'CgACAgQAAxkBAAEqkntqLCnfYYFlGdhlsdKEnK6dCsM55QACCR4AAn4RIFG4veGbLRgkpjwE'],
+    singer: ['CgACAgQAAxkBAAEqknxqLCnf_Q9chpcNaiyBMX4TXGLGcgACDx4AAn4RIFGYsb_3L6-ZoTwE', 'CgACAgQAAxkBAAEqkn5qLCnfzLALPq1XPojqjOnuxiCoFQACEB4AAn4RIFEOZrUQKyFrmjwE'],
+    vampire: ['CgACAgQAAxkBAAEqkpJqLCoRhCMooPfuv465bLwl51vgMgAC4h0AAn4RIFHNPi8KsHaoFDwE'],
+    genie: ['CgACAgQAAxkBAAEqkpNqLCoRHQ-Y-xYivMcxDnAGbmQqAwAC5R0AAn4RIFFpF2eGhqofdDwE'],
+    bandit_female: ['CgACAgQAAxkBAAEqkpVqLCoR_o7UOJajPyJGtJNVrYZSAgAC5x0AAn4RIFGbxUIKqfWb0zwE']
 };
 
 function getNpcAnimation(npcKey) {
@@ -154,35 +134,17 @@ function playerAttack(player, enemy) {
         }
     }
 
-    let finisherAnimation = null;
-    if (enemy.hp <= enemy.maxHp * 0.15) {
-        finisherAnimation = animations.finishers[Math.floor(Math.random() * animations.finishers.length)];
-        log += '💀 *فینیشر!* ';
-    }
-
     enemy.hp -= dmg;
     if (enemy.hp < 0) enemy.hp = 0;
     log += `${dmg} ضربه | ${hpBar(enemy.hp, enemy.maxHp)}\n`;
 
     if (enemy.hp <= 0) {
-        if (enemy.isPlayer && enemy.opponentId) {
-            log += `💀 ${enemy.name} کشته شد! +۵۰🏆`;
-            player.score = (player.score || 0) + 50;
-            require('./player').checkUnlocks(player);
-            updateQuestProgress(player, 'defeat', enemy.key);
-            const questMsg = getQuestCompletionMessage(player);
-            if (questMsg) log += `\n\n${questMsg}`;
-            delete activeBattles[player.chatId];
-            delete activeBattles[enemy.opponentId];
-            return { battleOver: true, playerWon: true, message: log, isPvP: true, animation: animations.death };
-        }
-
-        log += `💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
-        player.xp += enemy.reward.xp || 10;
+        // 🆕 کشتن = ۳۰ XP
+        player.xp = (player.xp || 0) + 30;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
-        player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+        player.score = (player.score || 0) + 20;
         player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
-        log += `\n⚡ +۵ انرژی`;
+        log += `💀 ${enemy.name} کشته شد! ⚔️ +۳۰ XP\n⚡ +۵ انرژی`;
 
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
@@ -203,23 +165,21 @@ function playerAttack(player, enemy) {
 
         delete activeBattles[player.chatId];
 
-        if (enemy.isEnraged) {
-            if (player.enraged) delete player.enraged[enemy.key];
-            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation || animation || animations.death };
-        }
-
+        // 🆕 شانس زندانی ۶۶٪
         const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
-        if (npcKeys.includes(enemy.key) && Math.random() < 0.4) {
-            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation || animation || animations.death };
+        if (npcKeys.includes(enemy.key) && Math.random() < 0.66) {
+            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animation };
         }
 
-        return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation || animation || animations.death };
+        return { battleOver: true, playerWon: true, message: log, animation: animation };
     }
 
     if (!enemy.isPlayer && enemy.hp < enemy.maxHp * 0.25) {
         const roll = Math.random();
         if (roll < 0.55) {
-            log += `🏃 ${enemy.name} فرار کرد!`;
+            // 🆕 فرار = ۲۰ XP به کاربر
+            player.xp = (player.xp || 0) + 20;
+            log += `🏃 ${enemy.name} فرار کرد! 🏃 +۲۰ XP`;
             delete activeBattles[player.chatId];
             return { battleOver: true, playerWon: false, message: log, animation: animations.escape, escaped: true, escapedNpc: enemy.key };
         }
@@ -237,12 +197,12 @@ function useSpell(player, enemy) {
     if (enemy.hp < 0) enemy.hp = 0;
     let log = `📜 *طلسم!* -${dmg} ضربه جادویی!\n${hpBar(enemy.hp, enemy.maxHp)}\n`;
     if (enemy.hp <= 0) {
-        log += `💀 ${enemy.name} با طلسم کشته شد! 🎉 +${enemy.reward.xp}✨`;
-        player.xp += enemy.reward.xp || 10;
+        // 🆕 کشتن با طلسم = ۳۰ XP
+        player.xp = (player.xp || 0) + 30;
         player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
-        player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+        player.score = (player.score || 0) + 20;
         player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
-        log += `\n⚡ +۵ انرژی`;
+        log += `💀 ${enemy.name} با طلسم کشته شد! ⚔️ +۳۰ XP\n⚡ +۵ انرژی`;
 
         for (let rw in enemy.reward) {
             if (rw !== 'xp' && player.inventory[rw] !== undefined) {
@@ -260,9 +220,12 @@ function useSpell(player, enemy) {
         if (leveledUp) log += '⬆️ لول آپ! ';
         require('./player').checkUnlocks(player);
         delete activeBattles[player.chatId];
-        if (enemy.isPlayer && enemy.opponentId) delete activeBattles[enemy.opponentId];
+
+        // 🆕 شانس زندانی ۶۶٪
         const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
-        if (npcKeys.includes(enemy.key) && Math.random() < 0.4) return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animations.spell };
+        if (npcKeys.includes(enemy.key) && Math.random() < 0.66) {
+            return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: animations.spell };
+        }
         return { battleOver: true, playerWon: true, message: log, animation: animations.spell };
     }
     return { battleOver: false, message: log, animation: animations.spell };
@@ -274,12 +237,14 @@ function useFinisher(player, enemy) {
     const dmg = enemy.hp;
     enemy.hp = 0;
     const finisherAnimation = animations.finishers[Math.floor(Math.random() * animations.finishers.length)];
-    let log = `💀 *فینیشر!* ${dmg} ضربه مرگبار!\n💀 ${enemy.name} کشته شد! 🎉 +${enemy.reward.xp}✨`;
-    player.xp += enemy.reward.xp || 10;
+    
+    // 🆕 کشتن با فنیشر = ۳۰ XP
+    player.xp = (player.xp || 0) + 30;
     player.enemiesDefeated = (player.enemiesDefeated || 0) + 1;
-    player.score = (player.score || 0) + (enemy.isEnraged ? 40 : 20);
+    player.score = (player.score || 0) + 20;
     player.energy = Math.min((player.maxEnergy || 100), (player.energy || 0) + 5);
-    log += `\n⚡ +۵ انرژی`;
+    
+    let log = `💀 *فینیشر!* ${dmg} ضربه مرگبار!\n💀 ${enemy.name} کشته شد! ⚔️ +۳۰ XP\n⚡ +۵ انرژی`;
 
     for (let rw in enemy.reward) {
         if (rw !== 'xp' && player.inventory[rw] !== undefined) {
@@ -297,9 +262,12 @@ function useFinisher(player, enemy) {
     if (leveledUp) log += '\n⬆️ لول آپ! ';
     require('./player').checkUnlocks(player);
     delete activeBattles[player.chatId];
-    if (enemy.isPlayer && enemy.opponentId) delete activeBattles[enemy.opponentId];
+
+    // 🆕 شانس زندانی ۶۶٪
     const npcKeys = ['witch', 'ghost', 'fairy', 'angel', 'knight', 'jester', 'prince', 'skeleton', 'werewolf', 'wizard', 'knight_enemy', 'queen', 'bride', 'mermaid', 'young_witch', 'singer', 'vampire', 'genie', 'bandit_female'];
-    if (npcKeys.includes(enemy.key) && Math.random() < 0.4) return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation };
+    if (npcKeys.includes(enemy.key) && Math.random() < 0.66) {
+        return { battleOver: true, playerWon: true, message: log, canCapture: true, npcId: enemy.key, animation: finisherAnimation };
+    }
     return { battleOver: true, playerWon: true, message: log, animation: finisherAnimation };
 }
 
@@ -309,14 +277,24 @@ function enemyTurn(player, enemy, log, animation) {
     player.hp -= dmg;
     if (player.hp < 0) player.hp = 0;
     log += `💢 ${enemy.name} ${dmg} زد! | ${hpBar(player.hp, player.maxHp)}\n`;
+    
     if (player.hp <= 0) {
-        player.hp = Math.floor(player.maxHp / 2);
-        player.xp = Math.max(0, player.xp - 5);
-        player.inventory.gold = Math.max(0, player.inventory.gold - 5);
+        // 🆕 سیستم مرگ - ۲ روز استراحت
+        player.isDead = true;
+        player.deathDay = player.gameDay || 1;
+        player.hp = Math.floor((player.maxHp || 100) / 2);
+        player.xp = Math.max(0, (player.xp || 0) - 5);
+        player.inventory.gold = Math.max(0, (player.inventory.gold || 0) - Math.floor((player.inventory.gold || 0) * 0.1));
         player.score = Math.max(0, (player.score || 0) - 10);
         player.location = 'village';
         delete activeBattles[player.chatId];
-        log += `💀 *مردی!* به روستا برگشتی.`;
+        
+        log += `\n💀 *شکست خوردی!*\n\n` +
+               `🏥 *بذار درمان بشی...*\n` +
+               `📅 ۲ روز استراحت کن تا زخم‌هات خوب بشه.\n` +
+               `⏰ دکمه "روز بعد" رو بزن.\n` +
+               `✨ -۵ XP | 👑 -۱۰٪ طلا | 🏆 -۱۰ امتیاز`;
+        
         return { battleOver: true, playerWon: false, message: log, animation: animations.death };
     }
     return { battleOver: false, message: log, animation: animations.damage };
@@ -326,7 +304,9 @@ function playerEscape(player, enemy) {
     const r = Math.random();
     if (r < 0.65) {
         delete activeBattles[player.chatId];
-        return { battleOver: true, escaped: true, message: '💨 فرار کردی!', animation: animations.escape };
+        // 🆕 فرار = ۲۰ XP
+        player.xp = (player.xp || 0) + 20;
+        return { battleOver: true, escaped: true, message: '💨 *فرار کردی!*\n🏃 +۲۰ XP', animation: animations.escape };
     }
     else if (r < 0.90) {
         enemy.status = 'trapped_player';
@@ -335,11 +315,21 @@ function playerEscape(player, enemy) {
         if (player.hp < 0) player.hp = 0;
         let msg = `🔒 محاصره شدی! ${enemy.name} ${dmg} زد!`;
         if (player.hp <= 0) {
-            player.hp = Math.floor(player.maxHp / 2);
-            player.location = 'village';
+            // 🆕 مرگ حین فرار
+            player.isDead = true;
+            player.deathDay = player.gameDay || 1;
+            player.hp = Math.floor((player.maxHp || 100) / 2);
+            player.xp = Math.max(0, (player.xp || 0) - 5);
+            player.inventory.gold = Math.max(0, (player.inventory.gold || 0) - Math.floor((player.inventory.gold || 0) * 0.1));
             player.score = Math.max(0, (player.score || 0) - 10);
+            player.location = 'village';
             delete activeBattles[player.chatId];
-            msg += '💀 مردی! به روستا برگشتی.';
+            
+            msg += `\n\n💀 *شکست خوردی!*\n\n` +
+                   `🏥 *بذار درمان بشی...*\n` +
+                   `📅 ۲ روز استراحت کن تا زخم‌هات خوب بشه.\n` +
+                   `⏰ دکمه "روز بعد" رو بزن.`;
+            
             return { battleOver: true, escaped: false, message: msg, animation: animations.death };
         }
         return { battleOver: false, escaped: false, message: msg, animation: animations.damage };
@@ -365,20 +355,16 @@ function hpBar(c, m) {
 
 function formatBattle(p, e) {
     let msg = `⚔️ ${e.emoji} ${e.name}\n${hpBar(e.hp, e.maxHp)}\n👤 تو\n${hpBar(p.hp, p.maxHp)} | ⚔️${p.attack} 🛡️${p.defense}`;
-
     if (p.pets && p.pets.length > 0) {
         msg += '\n🐾 ';
         for (let pet of p.pets) msg += `${pet.emoji} `;
     }
-
     return msg;
 }
 
 function getBattleKeyboard(player, enemy) {
     const buttons = [];
-
     buttons.push([{ text: '⚔️ 🗡️ حمله کن', callback_data: 'battle_attack' }]);
-
     const row2 = [];
     if ((player.inventory?.spell || 0) > 0) {
         row2.push({ text: `📜 طلسم (${player.inventory.spell})`, callback_data: 'battle_spell' });
@@ -387,11 +373,9 @@ function getBattleKeyboard(player, enemy) {
         row2.push({ text: `💀 فنیشر (${player.inventory.finisher})`, callback_data: 'battle_finisher' });
     }
     if (row2.length > 0) buttons.push(row2);
-
     if (!enemy?.trapped_player) {
         buttons.push([{ text: '🏃 💨 فرار کن', callback_data: 'battle_escape' }]);
     }
-
     return { reply_markup: { inline_keyboard: buttons } };
 }
 
