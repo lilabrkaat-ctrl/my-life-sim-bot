@@ -23,10 +23,10 @@ const empireRoles = {
 };
 
 const wonders = {
-    statue: { name: 'تندیس امپراطور', emoji: '🗿', cost: { stone: 50, gold: 100 }, bonus: { prestige: 20 }, minLevel: 1, description: 'اعتبار +۲۰٪' },
-    arena: { name: 'میدان نبرد', emoji: '🏟️', cost: { iron: 30, stone: 20 }, bonus: { military: 30 }, minLevel: 2, description: 'قدرت نظامی +۳۰٪' },
+    statue: { name: 'تندیس امپراطور', emoji: '🗿', cost: { stone: 50, gold: 100 }, bonus: { prestige: 20 }, minLevel: 1, description: 'اعتبار +۲۰' },
+    arena: { name: 'میدان نبرد', emoji: '🏟️', cost: { iron: 30, stone: 20 }, bonus: { military: 30 }, minLevel: 2, description: 'قدرت نظامی +۳۰' },
     temple: { name: 'معبد اجداد', emoji: '🏛️', cost: { gold: 200, diamond: 2 }, bonus: { faith: 20 }, minLevel: 3, description: 'شانس افسانه‌ای +۵٪' },
-    library: { name: 'کتابخانه سلطنتی', emoji: '📚', cost: { wood: 40, gold: 100 }, bonus: { xp: 50 }, minLevel: 2, description: 'XP +۵۰٪' },
+    library: { name: 'کتابخانه سلطنتی', emoji: '📚', cost: { wood: 40, gold: 100 }, bonus: { xp: 50 }, minLevel: 2, description: 'XP +۵۰' },
     tower: { name: 'برج دیده‌بانی', emoji: '🗼', cost: { stone: 25, wood: 15 }, bonus: { vision: 1 }, minLevel: 2, description: 'کشف دشمنان' },
     greatWall: { name: 'دیوار بزرگ', emoji: '🛡️', cost: { stone: 60, iron: 30 }, bonus: { defense: 100 }, minLevel: 3, description: 'دفاع ۲ برابر' },
     market: { name: 'بازار بزرگ', emoji: '🏪', cost: { gold: 300, wood: 50 }, bonus: { gold: 30 }, minLevel: 2, description: 'درآمد طلا +۳۰٪' },
@@ -61,30 +61,23 @@ function assignRole(player, roleKey, childId) {
     initChildren(player);
     const role = empireRoles[roleKey];
     if (!role) return { success: false, message: '❌ سمت نامعتبر!' };
-    if (player.empire.level < role.minLevel) return { success: false, message: `❌ نیاز به سطح ${role.minLevel} امپراطوری` };
+    if (player.empire.level < role.minLevel) return { success: false, message: `❌ نیاز به سطح ${role.minLevel}` };
 
     if (role.needsChild) {
         if (!childId) return { success: false, message: '❌ باید یه فرزند انتخاب کنی!' };
-        const child = player.children.find(c => c.id === childId && c.isAlive);
+        const child = player.children?.find(c => c.id === childId && c.isAlive);
         if (!child) return { success: false, message: '❌ فرزند پیدا نشد!' };
         if (role.needsHeir && !child.isHeir) return { success: false, message: '❌ فقط ولیعهد!' };
         if (role.childClass && child.class !== role.childClass) return { success: false, message: `❌ فقط ${role.childClass}ها!` };
         if (role.childEvolution && child.evolutionLevel < role.childEvolution) return { success: false, message: `❌ نیاز به سطح ارتقا ${role.childEvolution}` };
 
         player.empire.roles[roleKey] = { childId: child.id, childName: child.name, childEmoji: child.emoji, assignedAt: Date.now() };
-        child.loyalty = Math.min(100, child.loyalty + 15);
+        child.loyalty = Math.min(100, (child.loyalty || 50) + 15);
         return { success: true, message: `✅ ${child.emoji} *${child.name}* → ${role.emoji} *${role.name}*` };
     }
 
     player.empire.roles[roleKey] = { assignedAt: Date.now() };
     return { success: true, message: `✅ ${role.emoji} *${role.name}* منصوب شد!` };
-}
-
-function removeRole(player, roleKey) {
-    initEmpire(player);
-    if (!player.empire.roles[roleKey]) return { success: false, message: '❌ این سمت خالیه!' };
-    delete player.empire.roles[roleKey];
-    return { success: true, message: `✅ برکنار شد.` };
 }
 
 function collectEmpireIncome(player) {
@@ -94,30 +87,14 @@ function collectEmpireIncome(player) {
 
     if (now - player.empire.lastCollection < oneDay) {
         const remaining = oneDay - (now - player.empire.lastCollection);
-        const hoursLeft = Math.floor(remaining / (60 * 60 * 1000));
-        const minutesLeft = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+        const hoursLeft = Math.floor(remaining / 3600000);
+        const minutesLeft = Math.floor((remaining % 3600000) / 60000);
         return { success: false, message: `⏰ ${hoursLeft}h ${minutesLeft}m تا درآمد بعدی` };
     }
 
     const empireLvl = empireLevels[player.empire.level || 0];
     let totalGold = empireLvl.dailyGold;
-
-    let goldBonus = 0;
-    for (let roleKey in player.empire.roles) {
-        const role = empireRoles[roleKey];
-        if (role && role.bonus && role.bonus.gold) goldBonus += role.bonus.gold;
-    }
-    totalGold = Math.floor(totalGold * (1 + goldBonus / 100));
-
-    for (let wonderKey of player.empire.wonders) {
-        const wonder = wonders[wonderKey];
-        if (wonder && wonder.bonus && wonder.bonus.gold) {
-            totalGold = Math.floor(totalGold * (1 + wonder.bonus.gold / 100));
-        }
-    }
-
-    player.empire.treasury += totalGold;
-    player.empire.totalGoldEarned += totalGold;
+    player.empire.treasury = (player.empire.treasury || 0) + totalGold;
     player.inventory.gold = (player.inventory.gold || 0) + totalGold;
     player.empire.lastCollection = now;
 
@@ -125,16 +102,15 @@ function collectEmpireIncome(player) {
         player.inventory[res] = (player.inventory[res] || 0) + empireLvl.dailyResources[res];
     }
 
-    let msg = `💰 *درآمد امپراطوری*\n\n👑 +${totalGold} طلا\n🏦 خزانه: ${player.empire.treasury} طلا`;
-    return { success: true, message: msg };
+    return { success: true, message: `💰 *درآمد امپراطوری*\n\n👑 +${totalGold} طلا\n🏦 خزانه: ${player.empire.treasury}` };
 }
 
 function buildWonder(player, wonderKey) {
     initEmpire(player);
     const wonder = wonders[wonderKey];
     if (!wonder) return { success: false, message: '❌ عجایب نامعتبر!' };
-    if (player.empire.wonders.includes(wonderKey)) return { success: false, message: '❌ قبلاً ساخته شده!' };
-    if (player.empire.level < wonder.minLevel) return { success: false, message: `❌ نیاز به سطح ${wonder.minLevel} امپراطوری` };
+    if (player.empire.wonders?.includes(wonderKey)) return { success: false, message: '❌ قبلاً ساخته شده!' };
+    if (player.empire.level < wonder.minLevel) return { success: false, message: `❌ نیاز به سطح ${wonder.minLevel}` };
 
     for (let item in wonder.cost) {
         if ((player.inventory[item] || 0) < wonder.cost[item]) {
@@ -142,7 +118,8 @@ function buildWonder(player, wonderKey) {
         }
     }
 
-    for (let item in wonder.cost) { player.inventory[item] -= wonder.cost[item]; }
+    for (let item in wonder.cost) player.inventory[item] -= wonder.cost[item];
+    if (!player.empire.wonders) player.empire.wonders = [];
     player.empire.wonders.push(wonderKey);
     player.score = (player.score || 0) + 200;
 
@@ -165,19 +142,25 @@ function formatEmpire(player) {
     if (player.empire.dynastyName) msg += `📜 سلسله ${player.empire.dynastyName}\n`;
     msg += `⭐ امتیاز: ${player.score || 0}\n`;
     msg += `🏦 خزانه: ${player.empire.treasury || 0} طلا\n`;
-    msg += `💰 درآمد روزانه: ${empireLvl.dailyGold} طلا\n\n`;
+    msg += `💰 درآمد روزانه: ${empireLvl.dailyGold} طلا\n`;
+    msg += `👶 فرزندان: ${(player.children || []).filter(c => c.isAlive).length} نفر\n\n`;
 
     msg += '👥 *سمت‌ها:*\n';
+    let hasRoles = false;
     for (let roleKey in empireRoles) {
         const role = empireRoles[roleKey];
         if (player.empire.level >= role.minLevel) {
-            const roleData = player.empire.roles[roleKey];
-            msg += `   ${role.emoji} ${role.name}: ${roleData ? (roleData.childEmoji || '✅') + ' ' + (roleData.childName || '') : '❌ خالی'}\n`;
+            const roleData = player.empire.roles?.[roleKey];
+            if (roleData) {
+                msg += `   ✅ ${role.emoji} ${role.name}: ${roleData.childEmoji || ''} ${roleData.childName || ''}\n`;
+                hasRoles = true;
+            }
         }
     }
+    if (!hasRoles) msg += '   ❌ هیچ سمتی منصوب نشده\n';
 
     msg += '\n🏛️ *عجایب:*\n';
-    if (player.empire.wonders.length === 0) {
+    if (!player.empire.wonders || player.empire.wonders.length === 0) {
         msg += '   ❌ هیچی ساخته نشده\n';
     } else {
         for (let w of player.empire.wonders) {
@@ -189,9 +172,6 @@ function formatEmpire(player) {
     return msg;
 }
 
-// =============================================
-// 🎮 کیبورد شیشه‌ای (inline)
-// =============================================
 function getEmpireKeyboard(player) {
     initEmpire(player);
     const buttons = [];
@@ -211,7 +191,7 @@ function getEmpireKeyboard(player) {
 
 module.exports = {
     empireLevels, empireRoles, wonders,
-    initEmpire, getEmpireLevel, assignRole, removeRole,
+    initEmpire, getEmpireLevel, assignRole,
     collectEmpireIncome, buildWonder, setDynastyName,
     formatEmpire, getEmpireKeyboard
 };
