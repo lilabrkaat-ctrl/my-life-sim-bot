@@ -29,6 +29,30 @@ const config = require('../config');
 const audienceStates = {};
 
 // =============================================
+// 🏛️ START
+// =============================================
+bot.onText(/\/start/, async (msg) => {
+    const chatId = msg.chat.id;
+    const firstName = msg.chat.first_name || 'گمنام';
+
+    if (!player.getPlayer(chatId)) player.createPlayer(chatId, firstName);
+    const p = player.getPlayer(chatId);
+    if (!p) return bot.sendMessage(chatId, '❌ خطا! /start بزن.');
+
+    player.initAllSystems(p);
+    const time = require('../player').getTimeOfDay(); p.timeOfDay = time;
+    if (!p.gameDay) p.gameDay = 1;
+    player.checkUnlocks(p); p.chatId = chatId;
+
+    const loc = config.images.locations[p.location] || config.images.locations.village;
+    let welcome = `🏛️ *بقای باستانی*\n\n✨ ${p.name} | 📍 ${loc.emoji} ${loc.name}\n${time.name} | 📅 روز ${p.gameDay||1}/۷ | 🏆 ${p.score||0} امتیاز\n\n🐺 *مرحله اول: روستا*\n🎯 گرگ‌ها، مارها و دزدها رو شکار کن!`;
+    if (p.unlockedMessage) { welcome += `\n\n${p.unlockedMessage}`; p.unlockedMessage = null; }
+    if (p.levelUpMessage) { welcome += `\n\n${p.levelUpMessage}`; p.levelUpMessage = null; }
+
+    await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', ...mainMenu() });
+});
+
+// =============================================
 // 📅 دستور day/روز
 // =============================================
 bot.onText(/^day\s*(\d+)$|^روز\s*(\d+)$/, async (msg, match) => {
