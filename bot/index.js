@@ -5,10 +5,7 @@ const { bot } = require('./core');
 // =============================================
 try { require('./menuHandlers').setupMenuHandlers(); } catch(e) { console.log('menuHandlers:', e.message); }
 try { require('./chamberHandlers').setupChamberHandlers(); } catch(e) { console.log('chamberHandlers:', e.message); }
-try { require('./empireMain').setupEmpireMain(); } catch(e) { console.log('empireMain:', e.message); }
-try { require('./empireChildren').setupEmpireChildren(); } catch(e) { console.log('empireChildren:', e.message); }
-try { require('./empireHarem').setupEmpireHarem(); } catch(e) { console.log('empireHarem:', e.message); }
-try { require('./empirePeople').setupEmpirePeople(); } catch(e) { console.log('empirePeople:', e.message); }
+try { require('./empireHandlers').setupEmpireHandlers(); } catch(e) { console.log('empireHandlers:', e.message); }
 try { require('./shopHandlers').setupShopHandlers(); } catch(e) { console.log('shopHandlers:', e.message); }
 try { require('./fightHandlers').setupFightHandlers(); } catch(e) { console.log('fightHandlers:', e.message); }
 try { require('./craftHandlers').setupCraftHandlers(); } catch(e) { console.log('craftHandlers:', e.message); }
@@ -21,7 +18,7 @@ try { require('./offspringHandlers').setupOffspringHandlers(); } catch(e) { cons
 try { require('./courtHandlers').setupCourtHandlers(); } catch(e) { console.log('courtHandlers:', e.message); }
 try { require('./adminHandlers').setupAdminHandlers(); } catch(e) { console.log('adminHandlers:', e.message); }
 
-console.log('✅ تمام ۱۷ هندلر راه‌اندازی شدن!');
+console.log('✅ تمام ۱۴ هندلر راه‌اندازی شدن!');
 
 const { isAdmin, adminCommand, adminState, mainMenu, activeBattles } = require('./core');
 const { player } = require('./core');
@@ -318,4 +315,4 @@ bot.on('message', async (msg) => {
 });
 
 bot.on('polling_error', (e) => console.log('Polling error:', e.message));
-console.log('✅ ربات بقای باستانی - نسخه کامل با ۷۰ سناریو و ۱۷ هندلر آماده شد! 🎉👑🔥');
+console.log('✅ ربات بقای باستانی - نسخه کامل با ۷۰ سناریو و ۱۴ هندلر آماده شد! 🎉👑🔥');
