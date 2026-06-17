@@ -7,7 +7,7 @@ const API_KEY = process.env.OPENROUTER_API_KEY;
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 const chatHistory = {};
 
-const SYSTEM_PROMPT = 'تو یه همدم گرم و صمیمی هستی. عاشقانه، شیطون و مهربون حرف بزن. فارسی حرف بزن. مثل یه معشوقه رفتار کن.';
+const SYSTEM_PROMPT = 'تو یه همدم گرم و صمیمی هستی. عاشقانه، شیطون و مهربون حرف بزن. فقط فارسی حرف بزن.';
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -23,8 +23,9 @@ bot.on('message', async (msg) => {
 
     try {
         const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-            model: 'meta-llama/llama-3-8b-instruct:free',
-            messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...chatHistory[userId]]
+            model: 'mistralai/mistral-7b-instruct:free',
+            messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...chatHistory[userId]],
+            max_tokens: 200
         }, {
             headers: {
                 'Authorization': 'Bearer ' + API_KEY,
@@ -37,18 +38,19 @@ bot.on('message', async (msg) => {
         await bot.sendMessage(chatId, reply);
 
     } catch (error) {
-        console.log(error.response?.data || error.message);
-        await bot.sendMessage(chatId, '😅 یه لحظه صبر کن...');
+        const errMsg = error.response?.data?.error?.message || error.message;
+        console.log('Error:', errMsg);
+        await bot.sendMessage(chatId, '😅 خطا: ' + errMsg.substring(0, 100));
     }
 });
 
 bot.onText(/\/start/, async (msg) => {
-    await bot.sendMessage(msg.chat.id, '🔥 سلام عزیزم! هر چی دلت میخواد بگو...\n/reset - پاک کردن حافظه');
+    await bot.sendMessage(msg.chat.id, '🔥 سلام! حرف بزن...');
 });
 
 bot.onText(/\/reset/, async (msg) => {
     delete chatHistory[msg.from.id];
-    await bot.sendMessage(msg.chat.id, '🔄 حافظه پاک شد!');
+    await bot.sendMessage(msg.chat.id, '🔄 پاک شد!');
 });
 
-console.log('✅ ربات آماده شد!');
+console.log('✅ ربات آماده!');
