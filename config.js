@@ -1,13 +1,10 @@
 module.exports = {
-    BOT_TOKEN: process.env.BOT_TOKEN || 'YOUR_TOKEN',
+    BOT_TOKEN: process.env.BOT_TOKEN || 'TOKEN_RO_INGA_BEZAR',
     ADMIN_ID: 5576592239,
     ADMIN_PASSWORD: '1376',
-    
-    // کانال تلگرام
     CHANNEL_ID: -1003035245907,
     CHANNEL_USERNAME: 'bostanibotch',
-    
-    // کشورهای جهان
+
     countries: {
         iraq: { name: 'عراق', emoji: '🇮🇶', power: 25, oil: 200, gold: 50 },
         afghanistan: { name: 'افغانستان', emoji: '🇦🇫', power: 15, oil: 10, gold: 20 },
@@ -62,8 +59,7 @@ module.exports = {
         cuba: { name: 'کوبا', emoji: '🇨🇺', power: 60, oil: 20, gold: 30 },
         new_zealand: { name: 'نیوزیلند', emoji: '🇳🇿', power: 150, oil: 50, gold: 400 }
     },
-    
-    // واحدهای نظامی
+
     units: {
         soldier: { name: 'سرباز', emoji: '🗡️', power: 10, cost: 100 },
         sniper: { name: 'تک‌تیرانداز', emoji: '🏹', power: 25, cost: 300 },
@@ -72,15 +68,13 @@ module.exports = {
         missile: { name: 'موشک', emoji: '🚀', power: 200, cost: 10000 },
         robot: { name: 'ربات جنگی', emoji: '🤖', power: 300, cost: 20000 }
     },
-    
-    // قیمت‌های پایه
+
     prices: {
         dollar: 160000,
         oil: 80,
         gold: 2000
     },
-    
-    // فاصله کشورها از ایران (دقیقه)
+
     distances: {
         iraq: 1, afghanistan: 2, turkey: 3, pakistan: 3,
         syria: 2, lebanon: 2, jordan: 3, kuwait: 2, bahrain: 2,
