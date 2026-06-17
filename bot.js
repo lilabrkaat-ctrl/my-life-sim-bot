@@ -28,7 +28,9 @@ bot.on('message', async (msg) => {
         }, {
             headers: {
                 'Authorization': 'Bearer ' + API_KEY,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'https://t.me/sexybot',
+                'X-Title': 'Sexy Bot'
             }
         });
 
@@ -37,7 +39,7 @@ bot.on('message', async (msg) => {
         await bot.sendMessage(chatId, reply);
 
     } catch (error) {
-        console.log('Error:', error.message);
+        console.log('Error:', error.response?.data || error.message);
         await bot.sendMessage(chatId, '😅 یه لحظه صبر کن...');
     }
 });
