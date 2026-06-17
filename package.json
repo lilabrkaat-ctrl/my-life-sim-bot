@@ -1,7 +1,7 @@
 {
-  "name": "my-telegram-bot",
+  "name": "iran-political-game",
   "version": "1.0.0",
-  "description": "A simple Telegram bot",
+  "description": "بازی سیاسی ایران - ربات تلگرام",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
