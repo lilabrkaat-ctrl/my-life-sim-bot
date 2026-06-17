@@ -1,11 +1,14 @@
 module.exports = {
     BOT_TOKEN: process.env.BOT_TOKEN || 'YOUR_TOKEN',
     ADMIN_ID: 5576592239,
-    ADMIN_PASSWORD: 'mahmoud1406',
+    ADMIN_PASSWORD: '1376',
     
-    // کشورهای جهان - ۷۰ کشور
+    // کانال تلگرام
+    CHANNEL_ID: -1003035245907,
+    CHANNEL_USERNAME: 'bostanibotch',
+    
+    // کشورهای جهان
     countries: {
-        // خاورمیانه
         iraq: { name: 'عراق', emoji: '🇮🇶', power: 25, oil: 200, gold: 50 },
         afghanistan: { name: 'افغانستان', emoji: '🇦🇫', power: 15, oil: 10, gold: 20 },
         syria: { name: 'سوریه', emoji: '🇸🇾', power: 30, oil: 150, gold: 80 },
@@ -20,8 +23,6 @@ module.exports = {
         lebanon: { name: 'لبنان', emoji: '🇱🇧', power: 25, oil: 5, gold: 40 },
         palestine: { name: 'فلسطین', emoji: '🇵🇸', power: 15, oil: 0, gold: 10 },
         bahrain: { name: 'بحرین', emoji: '🇧🇭', power: 20, oil: 100, gold: 80 },
-        
-        // قدرت‌های بزرگ
         usa: { name: 'آمریکا', emoji: '🇺🇸', power: 1000, oil: 2000, gold: 5000 },
         russia: { name: 'روسیه', emoji: '🇷🇺', power: 800, oil: 3000, gold: 2000 },
         china: { name: 'چین', emoji: '🇨🇳', power: 900, oil: 1000, gold: 3000 },
@@ -30,86 +31,36 @@ module.exports = {
         germany: { name: 'آلمان', emoji: '🇩🇪', power: 650, oil: 50, gold: 2500 },
         israel: { name: 'اسرائیل', emoji: '🇮🇱', power: 500, oil: 10, gold: 1000 },
         iran: { name: 'ایران', emoji: '🇮🇷', power: 300, oil: 1000, gold: 500 },
-        
-        // آسیا
         india: { name: 'هند', emoji: '🇮🇳', power: 500, oil: 100, gold: 1000 },
         pakistan: { name: 'پاکستان', emoji: '🇵🇰', power: 200, oil: 50, gold: 150 },
         japan: { name: 'ژاپن', emoji: '🇯🇵', power: 600, oil: 0, gold: 3000 },
         south_korea: { name: 'کره جنوبی', emoji: '🇰🇷', power: 400, oil: 0, gold: 2000 },
         north_korea: { name: 'کره شمالی', emoji: '🇰🇵', power: 350, oil: 20, gold: 100 },
-        bangladesh: { name: 'بنگلادش', emoji: '🇧🇩', power: 80, oil: 10, gold: 50 },
-        indonesia: { name: 'اندونزی', emoji: '🇮🇩', power: 250, oil: 200, gold: 300 },
-        malaysia: { name: 'مالزی', emoji: '🇲🇾', power: 150, oil: 300, gold: 400 },
-        thailand: { name: 'تایلند', emoji: '🇹🇭', power: 120, oil: 50, gold: 250 },
-        vietnam: { name: 'ویتنام', emoji: '🇻🇳', power: 100, oil: 100, gold: 150 },
-        philippines: { name: 'فیلیپین', emoji: '🇵🇭', power: 90, oil: 30, gold: 100 },
-        kazakhstan: { name: 'قزاقستان', emoji: '🇰🇿', power: 100, oil: 500, gold: 200 },
-        uzbekistan: { name: 'ازبکستان', emoji: '🇺🇿', power: 70, oil: 100, gold: 150 },
-        turkmenistan: { name: 'ترکمنستان', emoji: '🇹🇲', power: 50, oil: 300, gold: 100 },
-        azerbaijan: { name: 'آذربایجان', emoji: '🇦🇿', power: 80, oil: 400, gold: 200 },
-        armenia: { name: 'ارمنستان', emoji: '🇦🇲', power: 40, oil: 5, gold: 30 },
-        georgia: { name: 'گرجستان', emoji: '🇬🇪', power: 45, oil: 10, gold: 40 },
-        sri_lanka: { name: 'سریلانکا', emoji: '🇱🇰', power: 30, oil: 5, gold: 40 },
-        nepal: { name: 'نپال', emoji: '🇳🇵', power: 25, oil: 0, gold: 15 },
-        myanmar: { name: 'میانمار', emoji: '🇲🇲', power: 60, oil: 30, gold: 50 },
-        cambodia: { name: 'کامبوج', emoji: '🇰🇭', power: 40, oil: 10, gold: 30 },
-        mongolia: { name: 'مغولستان', emoji: '🇲🇳', power: 45, oil: 20, gold: 60 },
-        tajikistan: { name: 'تاجیکستان', emoji: '🇹🇯', power: 25, oil: 10, gold: 20 },
-        kyrgyzstan: { name: 'قرقیزستان', emoji: '🇰🇬', power: 20, oil: 15, gold: 25 },
-        
-        // اروپا
+        egypt: { name: 'مصر', emoji: '🇪🇬', power: 120, oil: 200, gold: 300 },
         italy: { name: 'ایتالیا', emoji: '🇮🇹', power: 300, oil: 20, gold: 1000 },
         spain: { name: 'اسپانیا', emoji: '🇪🇸', power: 280, oil: 10, gold: 800 },
-        poland: { name: 'لهستان', emoji: '🇵🇱', power: 200, oil: 20, gold: 400 },
-        ukraine: { name: 'اوکراین', emoji: '🇺🇦', power: 150, oil: 50, gold: 200 },
+        canada: { name: 'کانادا', emoji: '🇨🇦', power: 400, oil: 500, gold: 1500 },
+        brazil: { name: 'برزیل', emoji: '🇧🇷', power: 350, oil: 400, gold: 600 },
+        australia: { name: 'استرالیا', emoji: '🇦🇺', power: 350, oil: 200, gold: 1000 },
+        indonesia: { name: 'اندونزی', emoji: '🇮🇩', power: 250, oil: 200, gold: 300 },
+        nigeria: { name: 'نیجریه', emoji: '🇳🇬', power: 180, oil: 400, gold: 200 },
+        mexico: { name: 'مکزیک', emoji: '🇲🇽', power: 250, oil: 300, gold: 400 },
+        argentina: { name: 'آرژانتین', emoji: '🇦🇷', power: 200, oil: 100, gold: 300 },
+        south_africa: { name: 'آفریقای جنوبی', emoji: '🇿🇦', power: 200, oil: 50, gold: 500 },
+        venezuela: { name: 'ونزوئلا', emoji: '🇻🇪', power: 100, oil: 1000, gold: 50 },
+        libya: { name: 'لیبی', emoji: '🇱🇾', power: 40, oil: 600, gold: 100 },
+        algeria: { name: 'الجزایر', emoji: '🇩🇿', power: 100, oil: 300, gold: 150 },
+        greece: { name: 'یونان', emoji: '🇬🇷', power: 100, oil: 10, gold: 200 },
         sweden: { name: 'سوئد', emoji: '🇸🇪', power: 180, oil: 5, gold: 600 },
         norway: { name: 'نروژ', emoji: '🇳🇴', power: 150, oil: 500, gold: 800 },
-        greece: { name: 'یونان', emoji: '🇬🇷', power: 100, oil: 10, gold: 200 },
-        portugal: { name: 'پرتغال', emoji: '🇵🇹', power: 120, oil: 5, gold: 300 },
+        poland: { name: 'لهستان', emoji: '🇵🇱', power: 200, oil: 20, gold: 400 },
+        ukraine: { name: 'اوکراین', emoji: '🇺🇦', power: 150, oil: 50, gold: 200 },
         netherlands: { name: 'هلند', emoji: '🇳🇱', power: 200, oil: 100, gold: 700 },
         belgium: { name: 'بلژیک', emoji: '🇧🇪', power: 150, oil: 5, gold: 500 },
         switzerland: { name: 'سوئیس', emoji: '🇨🇭', power: 100, oil: 0, gold: 3000 },
-        austria: { name: 'اتریش', emoji: '🇦🇹', power: 120, oil: 10, gold: 400 },
-        czech: { name: 'چک', emoji: '🇨🇿', power: 100, oil: 5, gold: 250 },
-        romania: { name: 'رومانی', emoji: '🇷🇴', power: 90, oil: 50, gold: 150 },
-        hungary: { name: 'مجارستان', emoji: '🇭🇺', power: 80, oil: 10, gold: 200 },
-        serbia: { name: 'صربستان', emoji: '🇷🇸', power: 60, oil: 5, gold: 100 },
-        finland: { name: 'فنلاند', emoji: '🇫🇮', power: 130, oil: 5, gold: 350 },
-        denmark: { name: 'دانمارک', emoji: '🇩🇰', power: 140, oil: 100, gold: 500 },
-        
-        // آفریقا
-        egypt: { name: 'مصر', emoji: '🇪🇬', power: 120, oil: 200, gold: 300 },
-        nigeria: { name: 'نیجریه', emoji: '🇳🇬', power: 180, oil: 400, gold: 200 },
-        south_africa: { name: 'آفریقای جنوبی', emoji: '🇿🇦', power: 200, oil: 50, gold: 500 },
-        libya: { name: 'لیبی', emoji: '🇱🇾', power: 40, oil: 600, gold: 100 },
-        algeria: { name: 'الجزایر', emoji: '🇩🇿', power: 100, oil: 300, gold: 150 },
-        morocco: { name: 'مراکش', emoji: '🇲🇦', power: 80, oil: 10, gold: 100 },
-        sudan: { name: 'سودان', emoji: '🇸🇩', power: 50, oil: 100, gold: 80 },
-        ethiopia: { name: 'اتیوپی', emoji: '🇪🇹', power: 70, oil: 5, gold: 50 },
-        kenya: { name: 'کنیا', emoji: '🇰🇪', power: 60, oil: 10, gold: 60 },
-        ghana: { name: 'غنا', emoji: '🇬🇭', power: 40, oil: 50, gold: 100 },
-        angola: { name: 'آنگولا', emoji: '🇦🇴', power: 50, oil: 200, gold: 80 },
-        tunisia: { name: 'تونس', emoji: '🇹🇳', power: 30, oil: 20, gold: 40 },
-        tanzania: { name: 'تانزانیا', emoji: '🇹🇿', power: 45, oil: 15, gold: 70 },
-        uganda: { name: 'اوگاندا', emoji: '🇺🇬', power: 35, oil: 10, gold: 30 },
-        senegal: { name: 'سنگال', emoji: '🇸🇳', power: 30, oil: 5, gold: 40 },
-        cameroon: { name: 'کامرون', emoji: '🇨🇲', power: 50, oil: 20, gold: 60 },
-        
-        // آمریکا
-        canada: { name: 'کانادا', emoji: '🇨🇦', power: 400, oil: 500, gold: 1500 },
-        mexico: { name: 'مکزیک', emoji: '🇲🇽', power: 250, oil: 300, gold: 400 },
-        brazil: { name: 'برزیل', emoji: '🇧🇷', power: 350, oil: 400, gold: 600 },
-        argentina: { name: 'آرژانتین', emoji: '🇦🇷', power: 200, oil: 100, gold: 300 },
-        colombia: { name: 'کلمبیا', emoji: '🇨🇴', power: 150, oil: 200, gold: 200 },
-        venezuela: { name: 'ونزوئلا', emoji: '🇻🇪', power: 100, oil: 1000, gold: 50 },
-        chile: { name: 'شیلی', emoji: '🇨🇱', power: 120, oil: 50, gold: 300 },
+        portugal: { name: 'پرتغال', emoji: '🇵🇹', power: 120, oil: 5, gold: 300 },
         cuba: { name: 'کوبا', emoji: '🇨🇺', power: 60, oil: 20, gold: 30 },
-        peru: { name: 'پرو', emoji: '🇵🇪', power: 100, oil: 30, gold: 150 },
-        
-        // اقیانوسیه
-        australia: { name: 'استرالیا', emoji: '🇦🇺', power: 350, oil: 200, gold: 1000 },
-        new_zealand: { name: 'نیوزیلند', emoji: '🇳🇿', power: 150, oil: 50, gold: 400 },
-        fiji: { name: 'فیجی', emoji: '🇫🇯', power: 15, oil: 5, gold: 20 }
+        new_zealand: { name: 'نیوزیلند', emoji: '🇳🇿', power: 150, oil: 50, gold: 400 }
     },
     
     // واحدهای نظامی
@@ -127,5 +78,21 @@ module.exports = {
         dollar: 160000,
         oil: 80,
         gold: 2000
+    },
+    
+    // فاصله کشورها از ایران (دقیقه)
+    distances: {
+        iraq: 1, afghanistan: 2, turkey: 3, pakistan: 3,
+        syria: 2, lebanon: 2, jordan: 3, kuwait: 2, bahrain: 2,
+        saudi: 15, uae: 10, qatar: 12, oman: 10, yemen: 12,
+        egypt: 20, russia: 30, china: 45, india: 25,
+        germany: 50, france: 55, uk: 60, italy: 50, spain: 60,
+        usa: 120, canada: 120, brazil: 90, argentina: 100,
+        australia: 120, japan: 80, south_korea: 80, north_korea: 70,
+        israel: 5, iran: 0, palestine: 5, indonesia: 100,
+        nigeria: 90, mexico: 140, south_africa: 110, venezuela: 130,
+        libya: 40, algeria: 50, greece: 35, sweden: 55, norway: 60,
+        poland: 40, ukraine: 25, netherlands: 55, belgium: 55,
+        switzerland: 50, portugal: 60, cuba: 150, new_zealand: 180
     }
 };
