@@ -2,27 +2,9 @@ const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config');
 const player = require('./player');
 
-// هندلرهای بخش‌های مختلف
-const { setupWarHandlers } = require('./war');
-const { setupDiplomacyHandlers } = require('./diplomacy');
-const { setupHaremHandlers } = require('./harem');
-const { setupEconomyHandlers } = require('./economy');
-const { setupParliamentHandlers } = require('./parliament');
-const { setupSpyHandlers } = require('./spy');
-const { setupPrisonHandlers } = require('./prison');
-
 const bot = new TelegramBot(config.BOT_TOKEN, { polling: true });
 
-// راه‌اندازی همه هندلرها
-setupWarHandlers(bot);
-setupDiplomacyHandlers(bot);
-setupHaremHandlers(bot);
-setupEconomyHandlers(bot);
-setupParliamentHandlers(bot);
-setupSpyHandlers(bot);
-setupPrisonHandlers(bot);
-
-// منوی اصلی
+// ============ منوی اصلی ============
 function mainMenu() {
     return {
         reply_markup: {
@@ -36,125 +18,83 @@ function mainMenu() {
     };
 }
 
-// START
+// ============ START ============
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
-    
     player.createPlayer(userId);
     
     await bot.sendMessage(chatId,
-        '👑 *امپراطوری ۱۴۰۶*\n\n' +
-        '🇮🇷 به بازی امپراطوری خوش اومدی!\n\n' +
-        'کشورت رو مدیریت کن:\n' +
-        '⚔️ بجنگ 🤝 مذاکره کن 👸 ازدواج کن\n' +
-        '💰 اقتصاد بساز 🕵️ جاسوسی کن\n\n' +
-        '🎮 یه گزینه رو انتخاب کن:',
+        '👑 *امپراطوری ۱۴۰۶*\n\n🇮🇷 به بازی خوش اومدی!\n🎮 یه گزینه رو انتخاب کن:',
         { parse_mode: 'Markdown', ...mainMenu() }
     );
 });
 
-// CALLBACK های اصلی
+// ============ منوهای اصلی ============
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     const msgId = query.message.message_id;
     const userId = query.from.id;
     const data = query.data;
-    
     const p = player.getPlayer(userId);
     
-    // منوی اصلی
+    // برگشت به منوی اصلی
     if (data === 'menu_main') {
-        await bot.editMessageText(
-            '👑 *امپراطوری ۱۴۰۶*\n\n🎮 یه گزینه رو انتخاب کن:',
-            { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...mainMenu() }
-        );
+        await bot.editMessageText('👑 *امپراطوری ۱۴۰۶*\n\n🎮 یه گزینه رو انتخاب کن:',
+            { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', ...mainMenu() });
         return bot.answerCallbackQuery(query.id);
     }
     
     // 📊 آمار
     if (data === 'menu_stats') {
-        const stats = player.getStats(userId);
-        let text = '📊 *آمار امپراطوری*\n\n';
-        text += `👤 نام: ${stats.name}\n`;
-        text += `⭐ سطح: ${stats.level}\n`;
-        text += `🏦 خزانه: ${stats.treasury.toLocaleString()} دلار\n`;
-        text += `🛢️ نفت: ${stats.oil.toLocaleString()} بشکه\n`;
-        text += `🪙 طلا: ${stats.gold} کیلو\n`;
-        text += `💂 ارتش: ${stats.totalPower} قدرت\n`;
-        text += `🛡️ دفاع: ${p.defense}\n\n`;
-        text += `👸 ملکه‌ها: ${stats.queens}/۴\n`;
-        text += `👶 فرزندان: ${stats.children}\n`;
-        text += `🔒 زندانیان: ${stats.prisoners}\n`;
-        text += `🕵️ جاسوس‌ها: ${stats.spies}\n`;
-        text += `🌍 متحدان: ${stats.alliances}\n`;
-        text += `⚔️ در جنگ: ${stats.wars}\n`;
-        text += `🗺️ کشورهای فتح شده: ${stats.conquered}\n`;
-        text += `😊 محبوبیت: ${stats.popularity}%`;
-        
-        await bot.editMessageText(
-            text,
+        const s = player.getStats(userId);
+        let text = '📊 *آمار*\n\n';
+        text += `💰 ${s.treasury.toLocaleString()} دلار | 🛢️ ${s.oil} بشکه | 🪙 ${s.gold}kg\n`;
+        text += `💂 ${s.totalPower} قدرت | 🛡️ ${p.defense} دفاع\n`;
+        text += `👸 ${s.queens}/۴ | 👶 ${s.children} | 🔒 ${s.prisoners}\n`;
+        text += `🌍 ${s.alliances} متحد | ⚔️ ${s.wars} جنگ | 😊 ${s.popularity}%`;
+        await bot.editMessageText(text,
             { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown',
-              reply_markup: { inline_keyboard: [[{ text: '🔙 برگشت', callback_data: 'menu_main' }]] } }
-        );
+              reply_markup: { inline_keyboard: [[{ text: '🔙 برگشت', callback_data: 'menu_main' }]] } });
         return bot.answerCallbackQuery(query.id);
     }
 });
 
-// پنل ادمین مخفی
+// ============ هندلرهای بخش‌ها ============
+const { setupWarHandlers } = require('./war');
+const { setupDiplomacyHandlers } = require('./diplomacy');
+const { setupHaremHandlers } = require('./harem');
+const { setupEconomyHandlers } = require('./economy');
+const { setupParliamentHandlers } = require('./parliament');
+const { setupSpyHandlers } = require('./spy');
+const { setupPrisonHandlers } = require('./prison');
+
+setupWarHandlers(bot);
+setupDiplomacyHandlers(bot);
+setupHaremHandlers(bot);
+setupEconomyHandlers(bot);
+setupParliamentHandlers(bot);
+setupSpyHandlers(bot);
+setupPrisonHandlers(bot);
+
+// ============ ادمین ============
 bot.onText(/\/admin (.+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    const password = match[1];
-    
-    if (password !== config.ADMIN_PASSWORD) {
-        return bot.sendMessage(chatId, '❌ رمز عبور اشتباهه!');
-    }
-    
-    await bot.sendMessage(chatId,
-        '👑 *پنل ادمین مخفی*\n\n' +
-        'دستورات ادمین:\n' +
-        '/god - گاد مود\n' +
-        '/money [مبلغ] - پول بی‌نهایت\n' +
-        '/army [نوع] [تعداد] - ارتش نامحدود\n' +
-        '/resetall - ریست کامل',
-        { parse_mode: 'Markdown' }
-    );
+    if (match[1] !== config.ADMIN_PASSWORD) return;
+    await bot.sendMessage(msg.chat.id, '👑 پنل ادمین:\n/god - گاد مود\n/money [مبلغ]\n/resetall');
 });
 
-// گاد مود
 bot.onText(/\/god/, async (msg) => {
-    const chatId = msg.chat.id;
-    const userId = msg.from.id;
-    const p = player.getPlayer(userId);
-    
-    p.treasury = 999999;
-    p.oil = 999999;
-    p.gold = 99999;
-    p.army.soldier = 9999;
-    p.army.sniper = 9999;
-    p.army.drone = 999;
-    p.army.jet = 999;
-    p.army.missile = 999;
-    p.army.robot = 999;
-    p.defense = 999;
-    p.popularity = 100;
-    
-    await bot.sendMessage(chatId, '⚡ *گاد مود فعال شد!*\nهمه چی نامحدود! 👑', { parse_mode: 'Markdown' });
+    const p = player.getPlayer(msg.from.id);
+    p.treasury = 999999; p.oil = 999999; p.gold = 99999;
+    p.army.soldier = 9999; p.army.drone = 999; p.army.missile = 999;
+    p.defense = 999; p.popularity = 100;
+    await bot.sendMessage(msg.chat.id, '⚡ گاد مود فعال شد!');
 });
 
-// پول بی‌نهایت
 bot.onText(/\/money (\d+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    const userId = msg.from.id;
-    const amount = parseInt(match[1]);
-    
-    const p = player.getPlayer(userId);
-    p.treasury += amount;
-    
-    await bot.sendMessage(chatId, `💰 ${amount.toLocaleString()} دلار به خزانه اضافه شد!\n🏦 موجودی: ${p.treasury.toLocaleString()}`, { parse_mode: 'Markdown' });
+    const p = player.getPlayer(msg.from.id);
+    p.treasury += parseInt(match[1]);
+    await bot.sendMessage(msg.chat.id, `💰 +${match[1]} دلار | خزانه: ${p.treasury.toLocaleString()}`);
 });
 
 console.log('👑 امپراطوری ۱۴۰۶ آماده شد!');
-console.log('⚔️ جنگ | 🤝 دیپلماسی | 👸 حرمسرا | 💰 اقتصاد');
-console.log('🏛️ مجلس | 🕵️ جاسوسی | 🔒 زندان');
-console.log('==================================');
