@@ -1,13 +1,14 @@
 {
-  "name": "sexy-bot",
+  "name": "empire-1406-bot",
   "version": "1.0.0",
-  "description": "ربات چت سکسی با هوش مصنوعی",
+  "description": "امپراطوری ۱۴۰۶ - بازی تلگرامی",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.66.0",
-    "axios": "^1.6.0"
-  }
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "author": "Mahmoud",
+  "license": "MIT"
 }
