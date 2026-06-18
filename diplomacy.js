@@ -1,30 +1,39 @@
-// diplomacy.js - سیستم دیپلماسی ایران
+// diplomacy.js - سیستم دیپلماسی ایران (نسخه سخت)
+
+const { LOCKS } = require('./config');
 
 // ============================================
-// 🤝 عملیات‌های دیپلماتیک
+// 🤝 عملیات‌های دیپلماتیک (سخت‌تر و با شانس شکست بیشتر)
 // ============================================
 
 /**
  * مذاکره با یک کشور
- * @param {string} level - سطح مذاکره: 'expert', 'ambassador', 'minister', 'president'
  */
 function negotiate(state, countryCode, topic, level = 'ambassador') {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    // هزینه بر اساس سطح
+    // قفل مذاکره با آمریکا
+    if (countryCode === "US") {
+        const lockCheck = state.canDo('negotiate_usa');
+        if (!lockCheck.allowed) {
+            return `❌ نمی‌تونی با آمریکا مذاکره کنی!\n${lockCheck.reasons.join('\n')}`;
+        }
+    }
+    
+    // هزینه‌ها (بیشتر)
     const costs = {
-        expert: { budget: 0.1, relationMin: 0, risk: 0 },
-        ambassador: { budget: 0.5, relationMin: -50, risk: 5 },
-        minister: { budget: 2, relationMin: -30, risk: 15 },
-        president: { budget: 5, relationMin: -10, risk: 30 }
+        expert: { budget: 0.3, relationMin: -40, risk: 5 },
+        ambassador: { budget: 1, relationMin: -30, risk: 10 },
+        minister: { budget: 3, relationMin: -15, risk: 20 },
+        president: { budget: 8, relationMin: 0, risk: 35 }
     };
     
     const levelConfig = costs[level];
     if (!levelConfig) return "❌ سطح مذاکره نامعتبر!";
     
     if (country[4] < levelConfig.relationMin) {
-        return `❌ روابط برای مذاکره در سطح ${level} خیلی پایینه!\n📊 رابطه فعلی: ${country[4]}`;
+        return `❌ روابط خیلی پایینه!\n📊 نیاز: ${levelConfig.relationMin}\nفعلی: ${country[4]}`;
     }
     
     if (state.budget_toman < levelConfig.budget) {
@@ -33,51 +42,52 @@ function negotiate(state, countryCode, topic, level = 'ambassador') {
     
     state.budget_toman -= levelConfig.budget;
     
-    // احتمال موفقیت
-    const successChance = 50 + country[4] / 2 + (level === 'president' ? 20 : 0);
+    // شانس موفقیت (کمتر)
+    const baseChance = 40 + country[4] / 2 + (level === 'president' ? 15 : 0);
+    const successChance = Math.min(85, baseChance);
     const success = Math.random() * 100 < successChance;
     
     let result = "";
     
     if (success) {
-        const relationBoost = level === 'president' ? 20 : level === 'minister' ? 12 : level === 'ambassador' ? 7 : 3;
+        const relationBoost = level === 'president' ? 15 : level === 'minister' ? 10 : level === 'ambassador' ? 5 : 2;
         country[4] = Math.min(100, country[4] + relationBoost);
         
-        // اثر بر اساس موضوع
         switch(topic) {
             case 'trade':
-                country[5] += 1;
-                state.gdp += 2;
-                result = "🤝 توافق تجاری امضا شد!";
+                country[5] += 0.8;
+                state.gdp += 1.5;
+                result = "🤝 توافق تجاری";
                 break;
             case 'sanctions':
-                state.sanctions = Math.max(0, state.sanctions - 10);
-                result = "🔓 بخشی از تحریم‌ها لغو شد";
+                state.sanctions = Math.max(0, state.sanctions - 8);
+                result = "🔓 تحریم‌ها کاهش";
                 break;
             case 'peace':
-                state.israel_tension = Math.max(0, state.israel_tension - 15);
-                result = "🕊️ توافق صلح امضا شد";
+                state.israel_tension = Math.max(0, state.israel_tension - 12);
+                result = "🕊️ توافق صلح";
                 break;
             case 'alliance':
-                state.popularity += 5;
-                state.gdp += 5;
-                result = "🤝 پیمان اتحاد امضا شد!";
+                state.popularity += 4;
+                state.gdp += 4;
+                result = "🤝 پیمان اتحاد";
                 break;
             case 'nuclear':
-                state.nuclear_percent = Math.max(3.67, state.nuclear_percent - 10);
-                state.sanctions = Math.max(0, state.sanctions - 15);
-                result = "⚛️ توافق هسته‌ای پیشرفت کرد";
+                state.nuclear_percent = Math.max(3.67, state.nuclear_percent - 8);
+                state.sanctions = Math.max(0, state.sanctions - 12);
+                result = "⚛️ پیشرفت هسته‌ای";
                 break;
             case 'prisoner':
-                state.popularity += 5;
-                result = "🔓 تبادل زندانیان موفق";
+                state.popularity += 4;
+                result = "🔓 تبادل زندانیان";
                 break;
             case 'water':
-                state.popularity += 3;
-                result = "💧 توافق حقابه امضا شد";
+                state.popularity += 2;
+                state.water_crisis -= 5;
+                result = "💧 توافق آب";
                 break;
             default:
-                result = "🤝 مذاکره موفقیت‌آمیز بود";
+                result = "🤝 مذاکره موفق";
         }
         
         state.addHistory(`🤝 مذاکره ${level} با ${country[0]} ${country[1]} - ${result}`);
@@ -88,98 +98,100 @@ function negotiate(state, countryCode, topic, level = 'ambassador') {
                `📈 روابط: ${country[4]}/100\n` +
                `💰 هزینه: ${levelConfig.budget} همت`;
     } else {
-        // شکست مذاکره
-        country[4] = Math.max(-100, country[4] - 5);
-        state.popularity -= 2;
+        // شکست (عواقب بیشتر)
+        country[4] = Math.max(-100, country[4] - 8);
+        state.popularity -= 3;
         
         const failReasons = [
             "اختلاف نظر عمیق",
             "کارشکنی اسرائیل",
             "فشار آمریکا",
             "بدقولی طرف مقابل",
-            "جاسوسی فاش شد"
+            "جاسوسی فاش شد",
+            "توهین دیپلماتیک",
+            "رسوایی در مذاکره"
         ];
         const reason = failReasons[Math.floor(Math.random() * failReasons.length)];
         
         state.addHistory(`❌ شکست مذاکره ${level} با ${country[0]} ${country[1]} - ${reason}`);
         
-        return `❌ *مذاکره با ${country[1]} ${country[0]} شکست خورد*\n\n` +
+        return `❌ *مذاکره شکست خورد*\n\n` +
                `📊 سطح: ${level}\n` +
                `🚫 دلیل: ${reason}\n` +
                `📉 روابط: ${country[4]}/100\n` +
-               `⚠️ محبوبیت -۲٪`;
+               `⚠️ محبوبیت -۳٪`;
     }
 }
 
 /**
- * مذاکره محرمانه
+ * مذاکره محرمانه (ریسک لو رفتن بیشتر)
  */
 function secretNegotiation(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    const cost = 0.2;
+    const cost = 0.5;
     state.budget_toman -= cost;
     
-    // ریسک لو رفتن
-    const leakChance = 15;
+    // ریسک لو رفتن (بیشتر)
+    const leakChance = 25;
     const leaked = Math.random() * 100 < leakChance;
     
     if (leaked) {
-        country[4] = Math.max(-100, country[4] - 10);
-        state.popularity -= 5;
+        country[4] = Math.max(-100, country[4] - 15);
+        state.popularity -= 8;
+        state.sanctions = Math.min(100, state.sanctions + 5);
         state.addHistory(`🚨 مذاکره محرمانه با ${country[0]} ${country[1]} لو رفت!`);
         
         return `🚨 *مذاکره محرمانه لو رفت!*\n\n` +
-               `🇮🇷 کشور: ${country[1]} ${country[0]}\n` +
+               `🇮🇷 ${country[1]} ${country[0]}\n` +
                `📉 روابط: ${country[4]}/100\n` +
-               `⚠️ محبوبیت -۵٪\n` +
-               `💀 رسوایی سیاسی!`;
+               `⚠️ محبوبیت -۸٪\n` +
+               `🚫 تحریم +۵\n` +
+               `💀 رسوایی بزرگ!`;
     }
     
-    country[4] = Math.min(100, country[4] + 8);
+    country[4] = Math.min(100, country[4] + 6);
     state.popularity += 1;
     state.addHistory(`🤫 مذاکره محرمانه موفق با ${country[0]} ${country[1]}`);
     
-    return `🤫 *مذاکره محرمانه موفق*\n\n` +
-           `🇮🇷 کشور: ${country[1]} ${country[0]}\n` +
+    return `🤫 *مذاکره محرمانه*\n\n` +
+           `${country[1]} ${country[0]}\n` +
            `📈 روابط: ${country[4]}/100\n` +
            `✅ بدون لو رفتن`;
 }
 
 /**
- * پیمان دفاعی
+ * پیمان دفاعی (هزینه بیشتر)
  */
 function defensePact(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    if (country[4] < 50) {
-        return `❌ روابط برای پیمان دفاعی کافی نیست!\n📊 نیاز: ۵۰\nفعلی: ${country[4]}`;
+    if (country[4] < 60) {
+        return `❌ روابط کافی نیست!\n📊 نیاز: ۶۰\nفعلی: ${country[4]}`;
     }
     
-    const cost = 10;
+    const cost = 15;
     if (state.budget_toman < cost) {
         return `❌ بودجه کافی نیست!\n💰 نیاز: ${cost} همت`;
     }
     
     state.budget_toman -= cost;
-    country[4] = Math.min(100, country[4] + 20);
-    state.popularity += 5;
-    state.gdp += 3;
+    country[4] = Math.min(100, country[4] + 15);
+    state.popularity += 4;
+    state.gdp += 2;
     
-    // واکنش آمریکا
     const usa = state.findCountry("US");
-    if (usa) usa[4] = Math.max(-100, usa[4] - 15);
+    if (usa) usa[4] = Math.max(-100, usa[4] - 20);
     
-    state.addHistory(`🛡️ پیمان دفاعی با ${country[0]} ${country[1]} امضا شد`);
+    state.addHistory(`🛡️ پیمان دفاعی با ${country[0]} ${country[1]}`);
     
     return `🛡️ *پیمان دفاعی با ${country[1]} ${country[0]}*\n\n` +
-           `✅ اتحاد نظامی برقرار شد\n` +
+           `✅ اتحاد نظامی\n` +
            `📈 روابط: ${country[4]}/100\n` +
-           `✅ محبوبیت +۵٪\n` +
-           `📈 GDP +۳\n` +
-           `⚠️ واکنش آمریکا: منفی`;
+           `✅ محبوبیت +۴٪\n` +
+           `⚠️ آمریکا خشمگین (-۲۰)`;
 }
 
 /**
@@ -189,25 +201,25 @@ function tradePact(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    if (country[4] < 30) {
-        return `❌ روابط برای پیمان تجاری کافی نیست!\n📊 نیاز: ۳۰\nفعلی: ${country[4]}`;
+    if (country[4] < 40) {
+        return `❌ روابط کافی نیست!\n📊 نیاز: ۴۰\nفعلی: ${country[4]}`;
     }
     
-    const cost = 3;
+    const cost = 5;
     state.budget_toman -= cost;
-    country[4] = Math.min(100, country[4] + 10);
-    country[5] += 5;
-    state.gdp += 8;
-    state.inflation -= 2;
-    state.popularity += 3;
+    country[4] = Math.min(100, country[4] + 8);
+    country[5] += 4;
+    state.gdp += 6;
+    state.inflation -= 1;
+    state.popularity += 2;
     
-    state.addHistory(`💰 پیمان تجاری با ${country[0]} ${country[1]} (تجارت +۵ میلیارد دلار)`);
+    state.addHistory(`💰 پیمان تجاری با ${country[0]} ${country[1]} (+۴ میلیارد دلار)`);
     
     return `💰 *پیمان تجاری با ${country[1]} ${country[0]}*\n\n` +
-           `✅ تجارت +۵ میلیارد دلار\n` +
-           `📈 GDP +۸\n` +
-           `📉 تورم -۲٪\n` +
-           `✅ محبوبیت +۳٪`;
+           `✅ تجارت +۴ میلیارد\n` +
+           `📈 GDP +۶\n` +
+           `📉 تورم -۱٪\n` +
+           `✅ محبوبیت +۲٪`;
 }
 
 /**
@@ -217,17 +229,19 @@ function cutRelations(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    country[4] = -50;
-    country[5] = Math.max(0, country[5] - 3);
-    state.sanctions = Math.min(100, state.sanctions + 3);
-    state.popularity += 2;
+    country[4] = -60;
+    country[5] = Math.max(0, country[5] - 4);
+    state.sanctions = Math.min(100, state.sanctions + 5);
+    state.popularity += 1;
+    state.gdp -= 2;
     
-    state.addHistory(`🚫 قطع رابطه دیپلماتیک با ${country[0]} ${country[1]}`);
+    state.addHistory(`🚫 قطع رابطه با ${country[0]} ${country[1]}`);
     
     return `🚫 *قطع رابطه با ${country[1]} ${country[0]}*\n\n` +
            `📉 روابط: ${country[4]}/100\n` +
-           `💰 تجارت: ${country[5]} میلیارد دلار\n` +
-           `⚠️ تحریم‌ها +۳`;
+           `💰 تجارت: ${country[5]} میلیارد\n` +
+           `⚠️ تحریم +۵\n` +
+           `📉 GDP -۲`;
 }
 
 /**
@@ -237,14 +251,19 @@ function expelAmbassador(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    country[4] = Math.max(-100, country[4] - 20);
-    state.popularity += 3;
+    country[4] = Math.max(-100, country[4] - 25);
+    state.popularity += 2;
+    
+    // واکنش متقابل
+    if (Math.random() < 0.5) {
+        state.addHistory(`👋 اخراج سفیر ${country[0]} ${country[1]} - آنها هم سفیر ما رو اخراج کردن`);
+        return `👋 *سفیر ${country[1]} ${country[0]} اخراج شد*\n\n` +
+               `📉 روابط: ${country[4]}/100\n` +
+               `🔄 آنها هم سفیر ما رو اخراج کردن!`;
+    }
     
     state.addHistory(`👋 اخراج سفیر ${country[0]} ${country[1]}`);
-    
-    return `👋 *سفیر ${country[1]} ${country[0]} اخراج شد*\n\n` +
-           `📉 روابط: ${country[4]}/100\n` +
-           `✅ محبوبیت +۳٪`;
+    return `👋 *سفیر ${country[1]} ${country[0]} اخراج شد*\n\n📉 روابط: ${country[4]}/100`;
 }
 
 /**
@@ -256,28 +275,27 @@ function mediateConflict(state, country1Code, country2Code) {
     
     if (!country1 || !country2) return "❌ کشور پیدا نشد!";
     
-    const cost = 2;
+    const cost = 4;
     state.budget_toman -= cost;
     
-    const success = Math.random() < 0.5;
+    // شانس موفقیت کمتر
+    const success = Math.random() < 0.4;
     
     if (success) {
-        country1[4] = Math.min(100, country1[4] + 10);
-        country2[4] = Math.min(100, country2[4] + 10);
-        state.popularity += 8;
+        country1[4] = Math.min(100, country1[4] + 8);
+        country2[4] = Math.min(100, country2[4] + 8);
+        state.popularity += 6;
         state.addHistory(`🕊️ میانجی‌گری موفق بین ${country1[0]} و ${country2[0]}`);
         
         return `🕊️ *میانجی‌گری موفق*\n\n` +
-               `🇮🇷 ایران میان ${country1[1]} ${country1[0]} و ${country2[1]} ${country2[0]} صلح برقرار کرد\n` +
-               `✅ محبوبیت +۸٪\n` +
-               `📈 روابط با هر دو کشور +۱۰`;
+               `🇮🇷 ایران بین ${country1[1]} ${country1[0]} و ${country2[1]} ${country2[0]} صلح برقرار کرد\n` +
+               `✅ محبوبیت +۶٪`;
     }
     
-    state.popularity -= 2;
+    state.popularity -= 3;
     state.addHistory(`❌ شکست میانجی‌گری بین ${country1[0]} و ${country2[0]}`);
     
-    return `❌ *میانجی‌گری شکست خورد*\n\n` +
-           `⚠️ محبوبیت -۲٪`;
+    return `❌ *میانجی‌گری شکست خورد*\n\n⚠️ محبوبیت -۳٪`;
 }
 
 // ============================================
@@ -291,54 +309,71 @@ function sanctionCountry(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    country[4] = Math.max(-100, country[4] - 25);
-    country[5] = Math.max(0, country[5] - 2);
-    state.popularity += 4;
-    state.gdp -= 1;
+    country[4] = Math.max(-100, country[4] - 30);
+    country[5] = Math.max(0, country[5] - 3);
+    state.popularity += 3;
+    state.gdp -= 2;
+    state.inflation += 1;
+    
+    // واکنش متقابل
+    if (Math.random() < 0.4) {
+        state.sanctions = Math.min(100, state.sanctions + 3);
+        state.addHistory(`🚫 ایران ${country[0]} ${country[1]} رو تحریم کرد - تحریم متقابل!`);
+        return `🚫 *${country[1]} ${country[0]} تحریم شد*\n\n` +
+               `📉 روابط: ${country[4]}/100\n` +
+               `🔄 تحریم متقابل! +۳ تحریم`;
+    }
     
     state.addHistory(`🚫 ایران ${country[0]} ${country[1]} رو تحریم کرد`);
-    
-    return `🚫 *${country[1]} ${country[0]} تحریم شد*\n\n` +
-           `📉 روابط: ${country[4]}/100\n` +
-           `💰 تجارت: ${country[5]} میلیارد دلار\n` +
-           `✅ محبوبیت +۴٪\n` +
-           `⚠️ GDP -۱`;
+    return `🚫 *${country[1]} ${country[0]} تحریم شد*\n\n📉 روابط: ${country[4]}/100`;
 }
 
 /**
  * دور زدن تحریم
  */
 function evadeSanctions(state) {
-    const cost = 1;
+    const cost = 2;
     state.budget_toman -= cost;
-    state.dollar_rate -= 3000;
-    state.dollar_reserves += 0.5;
-    state.sanctions = Math.max(0, state.sanctions - 3);
     
-    state.addHistory("🔄 عملیات دور زدن تحریم موفق");
+    // ریسک لو رفتن
+    if (Math.random() < 0.2) {
+        state.sanctions = Math.min(100, state.sanctions + 10);
+        state.dollar_rate += 5000;
+        state.addHistory("🔄 دور زدن تحریم - لو رفت! تحریم +۱۰");
+        return `🔄 *دور زدن تحریم - لو رفت!*\n\n🚫 تحریم +۱۰\n💵 دلار +۵,۰۰۰`;
+    }
     
-    return `🔄 *دور زدن تحریم موفق*\n\n` +
-           `💵 دلار -۳,۰۰۰\n` +
-           `💰 ذخایر +۰.۵ میلیارد دلار\n` +
-           `✅ تحریم‌ها -۳`;
+    state.dollar_rate -= 2000;
+    state.dollar_reserves += 0.3;
+    state.sanctions = Math.max(0, state.sanctions - 2);
+    
+    state.addHistory("🔄 دور زدن تحریم موفق");
+    return `🔄 *دور زدن تحریم*\n\n💵 دلار -۲,۰۰۰\n💰 +۰.۳ میلیارد دلار\n✅ تحریم -۲`;
 }
 
 /**
- * بستن تنگه هرمز
+ * بستن تنگه هرمز (با قفل محبوبیت)
  */
 function closeStraitOfHormuz(state) {
-    state.dollar_rate += 25000;
-    state.oil_price += 30;
-    state.sanctions = 100;
-    state.popularity += 10;
-    state.israel_tension += 20;
+    // قفل
+    const lockCheck = state.canDo('close_hormuz');
+    if (!lockCheck.allowed) {
+        return `❌ نمی‌تونی تنگه رو ببندی!\n${lockCheck.reasons.join('\n')}`;
+    }
     
-    // قطع روابط با همه همسایگان خلیج فارس
+    state.dollar_rate += 30000;
+    state.oil_price += 40;
+    state.sanctions = 100;
+    state.popularity += 8;
+    state.israel_tension += 25;
+    state.gdp -= 10;
+    state.budget_toman -= 10;
+    
     const persianGulfCountries = ["SA", "AE", "QA", "BH", "KW", "OM"];
     persianGulfCountries.forEach(code => {
         const country = state.findCountry(code);
         if (country) {
-            country[4] = Math.max(-100, country[4] - 40);
+            country[4] = Math.max(-100, country[4] - 50);
             country[5] = 0;
         }
     });
@@ -348,18 +383,18 @@ function closeStraitOfHormuz(state) {
     
     state.addHistory("🚫 تنگه هرمز بسته شد! بحران جهانی");
     
-    // احتمال جنگ
-    if (Math.random() < 0.4) {
+    // احتمال جنگ (بیشتر)
+    if (Math.random() < 0.6) {
         state.game_over = true;
-        state.addHistory("💥 آمریکا به تنگه هرمز حمله کرد! جنگ جهانی سوم");
+        state.addHistory("💥 آمریکا به تنگه هرمز حمله کرد! بازی پایان یافت");
     }
     
     return `🚫 *تنگه هرمز بسته شد!*\n\n` +
-           `⛽ قیمت نفت +۳۰ دلار\n` +
-           `💵 دلار +۲۵,۰۰۰\n` +
+           `⛽ نفت +۴۰ دلار\n` +
+           `💵 دلار +۳۰,۰۰۰\n` +
            `🚫 تحریم: ۱۰۰٪\n` +
-           `⚠️ خطر جنگ با آمریکا!\n` +
-           `✅ محبوبیت +۱۰٪`;
+           `⚠️ احتمال جنگ: ۶۰٪!\n` +
+           `✅ محبوبیت +۸٪`;
 }
 
 // ============================================
@@ -367,33 +402,34 @@ function closeStraitOfHormuz(state) {
 // ============================================
 
 /**
- * پذیرش FATF
+ * پذیرش FATF (با قفل مجلس)
  */
 function acceptFATF(state) {
     if (state.fatf_accepted) {
-        return "❌ FATF قبلاً پذیرفته شده!";
+        return "❌ قبلاً پذیرفته شده!";
+    }
+    
+    const lockCheck = state.canDo('accept_fatf');
+    if (!lockCheck.allowed) {
+        return `❌ نمی‌تونی FATF رو بپذیری!\n${lockCheck.reasons.join('\n')}`;
     }
     
     state.fatf_accepted = true;
-    state.sanctions = Math.max(0, state.sanctions - 20);
-    state.dollar_rate -= 10000;
-    state.budget_toman += 10;
-    state.popularity -= 5;
+    state.sanctions = Math.max(0, state.sanctions - 18);
+    state.dollar_rate -= 8000;
+    state.budget_toman += 8;
+    state.popularity -= 4;
     
     const eu = state.findCountry("DE");
-    if (eu) eu[4] = Math.min(100, eu[4] + 15);
-    
-    const china = state.findCountry("CN");
-    if (china) china[4] = Math.min(100, china[4] + 10);
+    if (eu) eu[4] = Math.min(100, eu[4] + 12);
     
     state.addHistory("✅ ایران FATF را پذیرفت");
     
     return `✅ *FATF پذیرفته شد*\n\n` +
-           `🔓 تحریم‌ها -۲۰\n` +
-           `💵 دلار -۱۰,۰۰۰\n` +
-           `💰 +۱۰ همت\n` +
-           `⚠️ محبوبیت -۵٪\n` +
-           `✅ روابط بانکی عادی شد`;
+           `🔓 تحریم -۱۸\n` +
+           `💵 دلار -۸,۰۰۰\n` +
+           `💰 +۸ همت\n` +
+           `⚠️ محبوبیت -۴٪`;
 }
 
 /**
@@ -403,18 +439,20 @@ function complainToUN(state, countryCode) {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    const cost = 0.5;
+    const cost = 1;
     state.budget_toman -= cost;
     
-    country[4] = Math.max(-100, country[4] - 5);
-    state.popularity += 1;
+    // شانس موفقیت
+    if (Math.random() < 0.4) {
+        country[4] = Math.max(-100, country[4] - 10);
+        state.popularity += 3;
+        state.addHistory(`📋 شکایت موفق از ${country[0]} ${country[1]} در سازمان ملل`);
+        return `📋 *شکایت موفق*\n\n${country[1]} ${country[0]}\n✅ محکومیت بین‌المللی`;
+    }
     
-    state.addHistory(`📋 شکایت از ${country[0]} ${country[1]} به سازمان ملل`);
-    
-    return `📋 *شکایت به سازمان ملل*\n\n` +
-           `هدف: ${country[1]} ${country[0]}\n` +
-           `📉 روابط: ${country[4]}/100\n` +
-           `⏳ منتظر رأی‌گیری...`;
+    state.popularity -= 1;
+    state.addHistory(`📋 شکایت از ${country[0]} ${country[1]} رد شد`);
+    return `📋 *شکایت رد شد*\n\n${country[1]} ${country[0]}\n❌ رأی نیاورد`;
 }
 
 // ============================================
@@ -428,15 +466,15 @@ function sendAid(state, countryCode, type = 'food') {
     const country = state.findCountry(countryCode);
     if (!country) return "❌ کشور پیدا نشد!";
     
-    const cost = 1;
+    const cost = 1.5;
     
     if (state.budget_toman < cost) {
         return "❌ بودجه کافی نیست!";
     }
     
     state.budget_toman -= cost;
-    country[4] = Math.min(100, country[4] + 15);
-    state.popularity += 2;
+    country[4] = Math.min(100, country[4] + 12);
+    state.popularity += 1;
     
     const aidTypes = {
         food: "🍞 مواد غذایی",
@@ -453,7 +491,7 @@ function sendAid(state, countryCode, type = 'food') {
     return `🎁 *کمک به ${country[1]} ${country[0]}*\n\n` +
            `📦 نوع: ${aidName}\n` +
            `📈 روابط: ${country[4]}/100\n` +
-           `✅ محبوبیت +۲٪`;
+           `✅ محبوبیت +۱٪`;
 }
 
 // ============================================
