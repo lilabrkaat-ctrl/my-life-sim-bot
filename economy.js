@@ -1,9 +1,9 @@
-// economy.js - سیستم اقتصادی ایران
+// economy.js - سیستم اقتصادی ایران (نسخه سخت)
 
-const { MARKET_PRICES, tomanToDollar, dollarToToman, oilToDollar, goldToDollar } = require('./config');
+const { MARKET_PRICES, LOCKS } = require('./config');
 
 // ============================================
-// 💰 عملیات‌های اقتصادی
+// 💰 عملیات‌های اقتصادی (با عواقب سنگین‌تر)
 // ============================================
 
 /**
@@ -12,12 +12,12 @@ const { MARKET_PRICES, tomanToDollar, dollarToToman, oilToDollar, goldToDollar }
 function increaseOilExport(state, amount = 0.3) {
     if (state.oil_export + amount <= state.oil_production) {
         state.oil_export += amount;
-        const income = amount * 30 * state.oil_price; // درآمد ماهانه (میلیون دلار)
+        const income = amount * 30 * state.oil_price;
         state.dollar_reserves += income / 1000;
-        state.sanctions = Math.min(100, state.sanctions + 5);
-        state.popularity += 1;
+        state.sanctions = Math.min(100, state.sanctions + 8); // بیشتر شد
+        state.popularity += 0.5; // کمتر شد
         state.addHistory(`🛢️ صادرات نفت ${amount}+ میلیون بشکه (+${(income/1000).toFixed(1)} میلیارد دلار)`);
-        return `✅ صادرات نفت افزایش یافت!\n💰 درآمد: ${(income/1000).toFixed(1)} میلیارد دلار`;
+        return `✅ صادرات نفت افزایش یافت!\n💰 درآمد: ${(income/1000).toFixed(1)} میلیارد دلار\n⚠️ تحریم‌ها +۸`;
     }
     return "❌ ظرفیت تولید کافی نیست!";
 }
@@ -28,10 +28,11 @@ function increaseOilExport(state, amount = 0.3) {
 function decreaseOilExport(state, amount = 0.3) {
     if (state.oil_export - amount >= 0) {
         state.oil_export -= amount;
-        state.dollar_rate += 2000;
-        state.popularity -= 1;
+        state.dollar_rate += 3000; // بیشتر شد
+        state.popularity -= 2;
+        state.budget_toman -= 2; // جدید: هزینه سیاسی
         state.addHistory(`📉 صادرات نفت ${amount}- میلیون بشکه`);
-        return `✅ صادرات نفت کاهش یافت.\n⚠️ دلار +۲,۰۰۰ تومان`;
+        return `✅ صادرات نفت کاهش یافت.\n⚠️ دلار +۳,۰۰۰ تومان\n💰 هزینه سیاسی: -۲ همت`;
     }
     return "❌ صادرات نمی‌تونه منفی بشه!";
 }
@@ -40,35 +41,35 @@ function decreaseOilExport(state, amount = 0.3) {
  * افزایش تولید نفت
  */
 function increaseOilProduction(state, amount = 0.5) {
-    state.budget_toman -= 5; // هزینه سرمایه‌گذاری
+    state.budget_toman -= 8; // بیشتر شد
     state.oil_production += amount;
-    state.gdp += 3;
-    state.popularity += 1;
-    state.addHistory(`🏭 تولید نفت ${amount}+ میلیون بشکه (هزینه ۵ همت)`);
-    return `✅ تولید نفت به ${state.oil_production} میلیون بشکه رسید`;
+    state.gdp += 2; // کمتر شد
+    state.popularity += 0.5;
+    state.addHistory(`🏭 تولید نفت ${amount}+ میلیون بشکه (هزینه ۸ همت)`);
+    return `✅ تولید نفت به ${state.oil_production} میلیون بشکه رسید\n💰 هزینه: ۸ همت`;
 }
 
 /**
- * تغییر نرخ ارز (مداخله در بازار)
+ * تغییر نرخ ارز
  */
 function changeCurrencyRate(state, increase = true) {
     if (increase) {
-        state.dollar_rate += 5000;
-        state.inflation += 3;
-        state.popularity -= 3;
-        state.budget_toman += 5; // درآمد از فروش ارز
-        state.addHistory("💵 افزایش نرخ ارز (+۵,۰۰۰ تومان)");
-        return "💵 نرخ ارز افزایش یافت\n⚠️ تورم +۳٪";
+        state.dollar_rate += 8000; // بیشتر شد
+        state.inflation += 5; // بیشتر شد
+        state.popularity -= 5; // بیشتر شد
+        state.budget_toman += 3; // کمتر شد
+        state.addHistory("💵 افزایش نرخ ارز (+۸,۰۰۰ تومان)");
+        return "💵 نرخ ارز افزایش یافت\n⚠️ تورم +۵٪\n⚠️ محبوبیت -۵٪";
     } else {
-        if (state.dollar_reserves >= 2) {
+        if (state.dollar_reserves >= 3) { // نیاز بیشتر
             state.dollar_rate -= 5000;
-            state.dollar_reserves -= 2;
+            state.dollar_reserves -= 3;
             state.inflation -= 2;
-            state.popularity += 2;
-            state.addHistory("💵 کاهش نرخ ارز (-۵,۰۰۰ تومان، هزینه ۲ میلیارد دلار)");
-            return "💵 نرخ ارز کاهش یافت\n✅ تورم -۲٪";
+            state.popularity += 3;
+            state.addHistory("💵 کاهش نرخ ارز (-۵,۰۰۰ تومان، هزینه ۳ میلیارد دلار)");
+            return "💵 نرخ ارز کاهش یافت\n✅ تورم -۲٪\n✅ محبوبیت +۳٪";
         }
-        return "❌ ذخایر ارزی کافی نیست!";
+        return "❌ ذخایر ارزی کافی نیست! (نیاز: ۳ میلیارد دلار)";
     }
 }
 
@@ -76,36 +77,38 @@ function changeCurrencyRate(state, increase = true) {
  * حمایت از تولید داخلی
  */
 function supportDomesticProduction(state) {
-    state.budget_toman -= 3;
-    state.gdp += 8;
-    state.unemployment -= 1;
-    state.popularity += 3;
-    state.addHistory("🏭 حمایت از تولید داخلی (GDP +۸)");
-    return "✅ تولید داخلی تقویت شد\n📈 GDP +۸ میلیارد دلار\n👥 بیکاری -۱٪";
+    state.budget_toman -= 5; // بیشتر شد
+    state.gdp += 5; // کمتر شد
+    state.unemployment -= 0.5; // کمتر شد
+    state.popularity += 2;
+    state.inflation -= 1; // جدید
+    state.addHistory("🏭 حمایت از تولید داخلی (GDP +۵, تورم -۱٪)");
+    return "✅ تولید داخلی تقویت شد\n📈 GDP +۵\n👥 بیکاری -۰.۵٪\n📉 تورم -۱٪";
 }
 
 /**
  * افزایش واردات
  */
 function increaseImports(state) {
-    state.budget_toman -= 2;
-    state.inflation -= 3;
-    state.dollar_reserves -= 0.5;
-    state.sanctions += 2;
+    state.budget_toman -= 3; // بیشتر شد
+    state.inflation -= 2; // کمتر شد
+    state.dollar_reserves -= 1; // بیشتر شد
+    state.sanctions += 3;
     state.popularity += 1;
     state.addHistory("📦 افزایش واردات (کاهش تورم)");
-    return "📦 واردات افزایش یافت\n✅ تورم -۳٪\n⚠️ ذخایر ارزی -۰.۵ میلیارد";
+    return "📦 واردات افزایش یافت\n✅ تورم -۲٪\n⚠️ ذخایر ارزی -۱ میلیارد\n⚠️ تحریم +۳";
 }
 
 /**
  * کاهش واردات
  */
 function decreaseImports(state) {
-    state.inflation += 3;
+    state.inflation += 5; // بیشتر شد
     state.dollar_reserves += 0.5;
-    state.popularity -= 2;
+    state.popularity -= 3; // بیشتر شد
+    state.gdp -= 2; // جدید
     state.addHistory("📦 کاهش واردات (صرفه‌جویی ارزی)");
-    return "📦 واردات کاهش یافت\n⚠️ تورم +۳٪\n✅ ذخایر ارزی +۰.۵ میلیارد";
+    return "📦 واردات کاهش یافت\n⚠️ تورم +۵٪\n⚠️ محبوبیت -۳٪\n📉 GDP -۲";
 }
 
 /**
@@ -117,31 +120,30 @@ function buyDomestic(state, itemKey, quantity = 1) {
     
     const totalCost = item.toman * quantity;
     
-    if (state.budget_toman >= totalCost / 1_000_000_000_000) { // تبدیل به همت
+    if (state.budget_toman >= totalCost / 1_000_000_000_000) {
         state.budget_toman -= totalCost / 1_000_000_000_000;
         
-        // اضافه کردن به موجودی
         switch(itemKey) {
             case 'missile_fath':
             case 'missile_kheibar':
-                state.missiles += quantity * 10;
+                state.missiles += quantity * 8; // کمتر
                 break;
             case 'drone_shahed136':
             case 'drone_shahed191':
-                state.drones += quantity * 10;
+                state.drones += quantity * 8;
                 break;
             case 'drone_factory':
-                state.drones += 100;
+                state.drones += 80;
                 break;
             case 'missile_factory':
-                state.missiles += 50;
+                state.missiles += 40;
                 break;
             case 'military_base':
-                state.soldiers += 5000;
+                state.soldiers += 4000;
                 break;
         }
         
-        state.addHistory(`🛒 خرید ${item.emoji} ${item.name} (${quantity} عدد، ${(totalCost/1_000_000_000_000).toFixed(1)} همت)`);
+        state.addHistory(`🛒 خرید ${item.emoji} ${item.name} (${(totalCost/1_000_000_000_000).toFixed(1)} همت)`);
         return `✅ ${item.emoji} ${item.name} خریداری شد!\n💰 هزینه: ${(totalCost/1_000_000_000_000).toFixed(1)} همت`;
     }
     
@@ -157,29 +159,29 @@ function buyInternational(state, itemKey, quantity = 1) {
     
     const totalCost = item.dollar * quantity;
     
-    if (state.dollar_reserves * 1_000_000_000 >= totalCost) { // تبدیل میلیارد به دلار
+    if (state.dollar_reserves * 1_000_000_000 >= totalCost) {
         state.dollar_reserves -= totalCost / 1_000_000_000;
         
         switch(itemKey) {
             case 'sukhoi35':
-                state.missiles += 20;
-                state.drones += 10;
+                state.missiles += 15;
+                state.drones += 8;
                 break;
             case 's400':
-                state.missiles += 10;
+                state.missiles += 8;
                 break;
             case 'spy_satellite':
-                state.cyber_attacks_received = Math.max(0, state.cyber_attacks_received - 5);
+                state.cyber_attacks_received = Math.max(0, state.cyber_attacks_received - 3);
                 break;
             case 'submarine':
-                state.missiles += 5;
+                state.missiles += 4;
                 break;
             case 'wheat':
-                state.popularity += 2;
-                state.inflation -= 1;
+                state.popularity += 1;
+                state.inflation -= 0.5;
                 break;
             case 'vaccine':
-                state.popularity += 5;
+                state.popularity += 3;
                 break;
         }
         
@@ -204,11 +206,11 @@ function sellOil(state, countryCode, barrelsPerDay, pricePerBarrel = null) {
     if (barrelsPerDay <= state.oil_export) {
         state.oil_export -= barrelsPerDay;
         state.dollar_reserves += monthlyIncome / 1_000_000_000;
-        country[4] = Math.min(100, country[4] + 5); // بهبود روابط
-        country[5] += monthlyIncome / 1_000_000_000; // افزایش حجم تجارت
+        country[4] = Math.min(100, country[4] + 4);
+        country[5] += monthlyIncome / 1_000_000_000;
         
         state.addHistory(`🛢️ فروش ${barrelsPerDay} هزار بشکه نفت به ${country[0]} ${country[1]} (${(monthlyIncome/1_000_000).toFixed(1)} میلیون دلار)`);
-        return `✅ ${country[1]} ${country[0]}\n🛢️ قرارداد نفت بسته شد!\n💰 درآمد ماهانه: ${(monthlyIncome/1_000_000).toFixed(1)} میلیون دلار`;
+        return `✅ ${country[1]} ${country[0]}\n🛢️ قرارداد نفت بسته شد!\n💰 درآمد ماهانه: ${(monthlyIncome/1_000_000).toFixed(1)} میلیون دلار\n📈 روابط +۴`;
     }
     
     return "❌ صادرات نفت کافی نیست!";
@@ -223,21 +225,23 @@ function barterOil(state, countryCode, barrelsPerDay, itemNeeded) {
     
     if (barrelsPerDay <= state.oil_export) {
         state.oil_export -= barrelsPerDay;
-        country[4] = Math.min(100, country[4] + 10);
+        country[4] = Math.min(100, country[4] + 8);
         
-        // دریافت کالا
         if (itemNeeded === 'food') {
-            state.inflation -= 2;
-            state.popularity += 3;
+            state.inflation -= 3;
+            state.popularity += 2;
         } else if (itemNeeded === 'weapons') {
-            state.missiles += 50;
-            state.drones += 100;
+            state.missiles += 40;
+            state.drones += 80;
         } else if (itemNeeded === 'medicine') {
-            state.popularity += 5;
+            state.popularity += 4;
+        } else if (itemNeeded === 'technology') {
+            state.gdp += 5;
+            state.brain_drain -= 1;
         }
         
         state.addHistory(`🤝 تهاتر نفت با ${country[0]} ${country[1]} (${barrelsPerDay} هزار بشکه در برابر ${itemNeeded})`);
-        return `✅ ${country[1]} ${country[0]}\n🤝 تهاتر موفق!\n🛢️ نفت در برابر ${itemNeeded}`;
+        return `✅ ${country[1]} ${country[0]}\n🤝 تهاتر موفق!\n🛢️ نفت در برابر ${itemNeeded}\n📈 روابط +۸`;
     }
     
     return "❌ صادرات نفت کافی نیست!";
@@ -251,22 +255,25 @@ function changeGasPrice(state, newPrice) {
     state.gas_price = newPrice;
     
     if (newPrice > oldPrice) {
-        state.popularity -= 10;
-        state.budget_toman += 10;
-        state.inflation += 2;
+        state.popularity -= 15; // بیشتر شد
+        state.budget_toman += 8; // کمتر شد
+        state.inflation += 3;
         state.addHistory(`⛽ افزایش قیمت بنزین: ${oldPrice} → ${newPrice} تومان`);
-        // احتمال اعتراض
-        if (Math.random() < 0.3) {
+        
+        // احتمال اعتراض (بیشتر شد)
+        if (Math.random() < 0.6) {
             const randomProvince = state.provinces[Math.floor(Math.random() * state.provinces.length)];
             randomProvince.has_protest = true;
+            randomProvince.satisfaction -= 20;
             state.addHistory(`⚠️ اعتراضات بنزینی در ${randomProvince.name}!`);
         }
-        return `⛽ بنزین گران شد!\n💰 درآمد: +۱۰ همت\n⚠️ محبوبیت -۱۰٪`;
+        
+        return `⛽ بنزین گران شد!\n💰 درآمد: +۸ همت\n⚠️ محبوبیت -۱۵٪\n⚠️ احتمال اعتراض: بالا`;
     } else {
-        state.popularity += 5;
-        state.budget_toman -= 8;
+        state.popularity += 4; // کمتر شد
+        state.budget_toman -= 10; // بیشتر شد
         state.addHistory(`⛽ کاهش قیمت بنزین: ${oldPrice} → ${newPrice} تومان`);
-        return `⛽ بنزین ارزان شد!\n✅ محبوبیت +۵٪\n💰 هزینه: -۸ همت`;
+        return `⛽ بنزین ارزان شد!\n✅ محبوبیت +۴٪\n💰 هزینه: -۱۰ همت`;
     }
 }
 
@@ -277,14 +284,14 @@ function manageBitcoin(state, action, amount = 100) {
     switch(action) {
         case 'mine':
             state.bitcoin += amount;
-            state.budget_toman -= 0.5; // هزینه برق
+            state.budget_toman -= 1; // بیشتر شد (برق گرون)
             state.addHistory(`₿ استخراج ${amount} بیت‌کوین`);
-            return `₿ ${amount} بیت‌کوین استخراج شد\n💰 هزینه برق: ۰.۵ همت`;
+            return `₿ ${amount} بیت‌کوین استخراج شد\n💰 هزینه برق: ۱ همت`;
             
         case 'sell':
             if (state.bitcoin >= amount) {
                 state.bitcoin -= amount;
-                const dollarValue = amount * 60000; // فرض قیمت ۶۰,۰۰۰ دلار
+                const dollarValue = amount * 55000; // قیمت کمتر
                 state.dollar_reserves += dollarValue / 1_000_000_000;
                 state.addHistory(`₿ فروش ${amount} بیت‌کوین (+${(dollarValue/1_000_000_000).toFixed(1)} میلیارد دلار)`);
                 return `₿ ${amount} بیت‌کوین فروخته شد\n💰 +${(dollarValue/1_000_000_000).toFixed(1)} میلیارد دلار`;
@@ -292,7 +299,7 @@ function manageBitcoin(state, action, amount = 100) {
             return "❌ بیت‌کوین کافی نیست!";
             
         case 'buy':
-            const cost = amount * 60000;
+            const cost = amount * 55000;
             if (state.dollar_reserves * 1_000_000_000 >= cost) {
                 state.dollar_reserves -= cost / 1_000_000_000;
                 state.bitcoin += amount;
@@ -312,10 +319,10 @@ function manageBitcoin(state, action, amount = 100) {
 function manageGold(state, action, amount = 10) {
     switch(action) {
         case 'buy':
-            const cost = amount * 64000; // هر کیلو ۶۴,۰۰۰ دلار
+            const cost = amount * 70000; // گرون‌تر
             if (state.dollar_reserves * 1_000_000_000 >= cost) {
                 state.dollar_reserves -= cost / 1_000_000_000;
-                state.gold_tons += amount / 1000; // تبدیل کیلو به تن
+                state.gold_tons += amount / 1000;
                 state.addHistory(`🥇 خرید ${amount} کیلو طلا (${(cost/1_000_000).toFixed(1)} میلیون دلار)`);
                 return `🥇 ${amount} کیلو طلا خریداری شد`;
             }
@@ -325,7 +332,7 @@ function manageGold(state, action, amount = 10) {
             const tonsToSell = amount / 1000;
             if (state.gold_tons >= tonsToSell) {
                 state.gold_tons -= tonsToSell;
-                const income = amount * 64000;
+                const income = amount * 65000; // قیمت کمتر برای فروش
                 state.dollar_reserves += income / 1_000_000_000;
                 state.addHistory(`🥇 فروش ${amount} کیلو طلا (+${(income/1_000_000_000).toFixed(1)} میلیارد دلار)`);
                 return `🥇 ${amount} کیلو طلا فروخته شد\n💰 +${(income/1_000_000_000).toFixed(1)} میلیارد دلار`;
@@ -342,16 +349,24 @@ function manageGold(state, action, amount = 10) {
  */
 function manageSubsidies(state, increase = true) {
     if (increase) {
-        state.budget_toman -= 15;
-        state.popularity += 8;
-        state.inflation += 1;
-        state.addHistory("💰 افزایش یارانه‌ها (هزینه ۱۵ همت)");
-        return "💰 یارانه‌ها افزایش یافت\n✅ محبوبیت +۸٪\n⚠️ هزینه: -۱۵ همت";
+        state.budget_toman -= 20; // بیشتر شد
+        state.popularity += 6; // کمتر شد
+        state.inflation += 2;
+        state.addHistory("💰 افزایش یارانه‌ها (هزینه ۲۰ همت)");
+        return "💰 یارانه‌ها افزایش یافت\n✅ محبوبیت +۶٪\n⚠️ هزینه: -۲۰ همت\n⚠️ تورم +۲٪";
     } else {
-        state.budget_toman += 15;
-        state.popularity -= 12;
-        state.addHistory("💰 کاهش یارانه‌ها (صرفه‌جویی ۱۵ همت)");
-        return "💰 یارانه‌ها کاهش یافت\n⚠️ محبوبیت -۱۲٪\n✅ صرفه‌جویی: +۱۵ همت";
+        state.budget_toman += 20;
+        state.popularity -= 15; // بیشتر شد
+        state.addHistory("💰 کاهش یارانه‌ها (صرفه‌جویی ۲۰ همت)");
+        
+        // احتمال اعتراض
+        if (Math.random() < 0.5) {
+            const randomProvince = state.provinces[Math.floor(Math.random() * state.provinces.length)];
+            randomProvince.has_protest = true;
+            state.addHistory(`⚠️ اعتراضات معیشتی در ${randomProvince.name}!`);
+        }
+        
+        return "💰 یارانه‌ها کاهش یافت\n⚠️ محبوبیت -۱۵٪\n✅ صرفه‌جویی: +۲۰ همت\n⚠️ احتمال اعتراض: بالا";
     }
 }
 
@@ -360,31 +375,106 @@ function manageSubsidies(state, increase = true) {
  */
 function manageTaxes(state, increase = true) {
     if (increase) {
-        state.budget_toman += 20;
-        state.popularity -= 5;
-        state.gdp -= 2;
-        state.addHistory("📋 افزایش مالیات (+۲۰ همت)");
-        return "📋 مالیات افزایش یافت\n💰 درآمد: +۲۰ همت\n⚠️ محبوبیت -۵٪";
+        state.budget_toman += 15; // کمتر شد
+        state.popularity -= 8; // بیشتر شد
+        state.gdp -= 3;
+        state.inflation += 1;
+        state.addHistory("📋 افزایش مالیات (+۱۵ همت)");
+        return "📋 مالیات افزایش یافت\n💰 درآمد: +۱۵ همت\n⚠️ محبوبیت -۸٪\n📉 GDP -۳";
     } else {
-        state.budget_toman -= 15;
-        state.popularity += 6;
-        state.gdp += 3;
-        state.addHistory("📋 کاهش مالیات (-۱۵ همت)");
-        return "📋 مالیات کاهش یافت\n✅ محبوبیت +۶٪\n⚠️ درآمد: -۱۵ همت";
+        state.budget_toman -= 12;
+        state.popularity += 5; // کمتر شد
+        state.gdp += 2;
+        state.addHistory("📋 کاهش مالیات (-۱۲ همت)");
+        return "📋 مالیات کاهش یافت\n✅ محبوبیت +۵٪\n📈 GDP +۲\n⚠️ درآمد: -۱۲ همت";
     }
 }
 
 /**
- * چاپ پول (با عواقب سنگین)
+ * چاپ پول (با عواقب سنگین‌تر و قفل)
  */
 function printMoney(state, amount = 50) {
-    state.budget_toman += amount;
-    state.inflation += 15;
-    state.dollar_rate += 10000;
-    state.popularity -= 5;
-    state.addHistory(`🏦 چاپ پول ${amount} همت (تورم +۱۵٪)`);
+    // بررسی قفل
+    const lock = LOCKS.print_money;
+    if (state.print_money_count >= lock.max_per_year) {
+        return `❌ حداکثر ${lock.max_per_year} بار در سال می‌تونی پول چاپ کنی!\n📊 چاپ‌های امسال: ${state.print_money_count}/${lock.max_per_year}`;
+    }
     
-    return `🏦 ${amount} همت پول چاپ شد\n⚠️ تورم +۱۵٪\n⚠️ دلار +۱۰,۰۰۰\n⚠️ محبوبیت -۵٪`;
+    state.print_money_count++;
+    state.budget_toman += amount;
+    state.inflation += 20; // بیشتر شد
+    state.dollar_rate += 15000; // بیشتر شد
+    state.popularity -= 8; // بیشتر شد
+    state.corruption_level += 3; // جدید
+    state.addHistory(`🏦 چاپ پول ${amount} همت (بار ${state.print_money_count}/${lock.max_per_year})`);
+    
+    // هشدار ویژه
+    let warning = "";
+    if (state.print_money_count >= 2) {
+        warning = "\n\n⚠️ *هشدار:* یک بار دیگه چاپ کنی، تورم سه‌رقمی می‌شه!";
+    }
+    
+    return `🏦 ${amount} همت پول چاپ شد\n⚠️ تورم +۲۰٪\n⚠️ دلار +۱۵,۰۰۰\n⚠️ محبوبیت -۸٪\n⚠️ فساد +۳٪\n📊 چاپ‌های امسال: ${state.print_money_count}/${lock.max_per_year}${warning}`;
+}
+
+/**
+ * مبارزه با فساد (جدید)
+ */
+function fightCorruption(state) {
+    state.budget_toman -= 3;
+    state.corruption_level -= 8;
+    state.popularity += 4;
+    state.addHistory("🕵️ عملیات مبارزه با فساد (فساد -۸٪)");
+    
+    // احتمال لو رفتن اسامی
+    if (Math.random() < 0.3) {
+        state.popularity -= 2;
+        return "🕵️ مبارزه با فساد\n✅ فساد -۸٪\n⚠️ برخی مقامات ناراضی شدن";
+    }
+    
+    return "🕵️ مبارزه با فساد\n✅ فساد -۸٪\n✅ محبوبیت +۴٪\n💰 هزینه: ۳ همت";
+}
+
+/**
+ * مدیریت بحران آب (جدید)
+ */
+function manageWaterCrisis(state, action = 'invest') {
+    switch(action) {
+        case 'invest':
+            state.budget_toman -= 5;
+            state.water_crisis -= 12;
+            state.popularity += 3;
+            state.addHistory("💧 سرمایه‌گذاری در زیرساخت آب (آب -۱۲٪)");
+            return "💧 سرمایه‌گذاری آب\n✅ بحران آب -۱۲٪\n✅ محبوبیت +۳٪\n💰 هزینه: ۵ همت";
+            
+        case 'import':
+            state.dollar_reserves -= 0.5;
+            state.water_crisis -= 8;
+            state.popularity += 2;
+            state.addHistory("💧 واردات آب (هزینه ۰.۵ میلیارد دلار)");
+            return "💧 واردات آب\n✅ بحران آب -۸٪\n💰 هزینه: ۰.۵ میلیارد دلار";
+            
+        case 'ration':
+            state.water_crisis -= 5;
+            state.popularity -= 3;
+            state.addHistory("💧 جیره‌بندی آب");
+            return "💧 جیره‌بندی آب\n✅ بحران آب -۵٪\n⚠️ محبوبیت -۳٪";
+            
+        default:
+            return "❌ عملیات نامعتبر!";
+    }
+}
+
+/**
+ * جلوگیری از فرار مغزها (جدید)
+ */
+function stopBrainDrain(state) {
+    state.budget_toman -= 4;
+    state.brain_drain -= 2;
+    state.popularity += 2;
+    state.gdp += 3;
+    state.addHistory("🧠 طرح ماندگاری نخبگان (فرار مغزها -۲٪)");
+    return "🧠 طرح نخبگان\n✅ فرار مغزها -۲٪\n✅ محبوبیت +۲٪\n📈 GDP +۳\n💰 هزینه: ۴ همت";
 }
 
 // ============================================
@@ -407,5 +497,8 @@ module.exports = {
     manageGold,
     manageSubsidies,
     manageTaxes,
-    printMoney
+    printMoney,
+    fightCorruption,
+    manageWaterCrisis,
+    stopBrainDrain
 };
