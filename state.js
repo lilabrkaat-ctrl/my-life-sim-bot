@@ -1,238 +1,52 @@
-// state.js - نسخه با سیستم انتخابات و تنزل مقام
+// state.js - وضعیت بازیکن (کامل)
 
-const { INITIAL_STATE, COUNTRIES, INITIAL_PROXIES, RANDOM_EVENT_CHANCE, CRISIS_TYPES, LOCKS } = require('./config');
+const { INITIAL, COUNTRIES, CRISES, TERM_DURATION, PARLIAMENT, VOTE_NEEDED } = require('./config');
 
 class IranState {
-    constructor(playerName) {
-        Object.assign(this, JSON.parse(JSON.stringify(INITIAL_STATE)));
+    constructor(name) {
+        // اطلاعات پایه
+        this.name = name;
+        this.year = 1405;
+        this.month = 1;
+        this.turn = 0;
         
-        this.playerName = playerName;
-        this.history = [];
-        this.countries = JSON.parse(JSON.stringify(COUNTRIES));
-        this.proxies = JSON.parse(JSON.stringify(INITIAL_PROXIES));
+        // کپی از مقادیر اولیه
+        Object.assign(this, JSON.parse(JSON.stringify(INITIAL)));
         
-        // کابینه
-        this.cabinet = {
-            economy_minister: "احمد میدری",
-            foreign_minister: "حسین امیرعبداللهیان",
-            oil_minister: "جواد اوجی",
-            interior_minister: "احمد وحیدی",
-            central_bank_chief: "محمدرضا فرزین"
-        };
+        // کشورها (کپی عمیق)
+        this.countries = COUNTRIES.map(c => ({...c}));
         
         // مجلس
         this.parliament = {
-            principlists: 190,
-            reformists: 35,
-            independents: 65
+            principlists: { name: "اصولگرا", count: 190, basePrice: 3, corruption: 0.3, warSupport: 0.6, economySupport: 0.3 },
+            reformists: { name: "اصلاح‌طلب", count: 35, basePrice: 5, corruption: 0.9, warSupport: 0.2, economySupport: 0.8 },
+            independents: { name: "مستقل", count: 65, basePrice: 2, corruption: 0.7, warSupport: 0.4, economySupport: 0.5 }
         };
+        this.voteNeeded = VOTE_NEEDED;
+        this.boughtVotes = 0;
+        this.voteLeakChance = 0;
         
-        // استان‌ها
-        this.provinces = this.initProvinces();
-        
-        // وضعیت‌های خاص
-        this.internet_filtered = true;
-        this.hijab_mandatory = true;
-        this.gas_price = 3000;
-        this.nuclear_deal_active = false;
-        this.fatf_accepted = false;
-        
-        // آمار
-        this.brain_drain = 5;
-        this.cyber_attacks_received = 3;
-        this.earthquake_deaths = 0;
-        this.corruption_level = 65;
-        this.water_crisis = 70;
-        this.foreign_debt = 10;
-        
-        // قفل‌ها
-        this.print_money_count = 0;
-        this.last_war_turn = -10;
-        this.leader_approval = Math.random() < 0.4;
-        this.parliament_approval = Math.random() < 0.3;
-        
-        // 🆕 سیستم انتخابات و تنزل
-        this.rank = "president"; // president, speaker, minister, mp, citizen
-        this.demotionCount = 0;
-        this.termStart = { year: this.year, month: this.month };
-        this.termDuration = 48; // ۴ سال = ۴۸ نوبت
-        this.electionWarning = false;
-        this.lastElection = { year: this.year, month: this.month };
-        this.canReturn = true; // می‌تونه برگرده به قدرت
-    }
-    
-    initProvinces() {
-        const provinceNames = [
-            "تهران", "مشهد", "اصفهان", "تبریز", "شیراز",
-            "اهواز", "کرمان", "کرمانشاه", "رشت", "ساری",
-            "زاهدان", "همدان", "ارومیه", "یزد", "قزوین",
-            "سنندج", "خرم‌آباد", "بندرعباس", "اردبیل", "گرگان",
-            "بوشهر", "زنجان", "ایلام", "کاشان", "بیرجند",
-            "بجنورد", "یاسوج", "شهرکرد", "سمنان", "قشم", "چابهار"
+        // نیابتی‌ها
+        this.proxies = [
+            { name: "حزب‌الله", emoji: "🇱🇧", forces: 80000, missiles: 100000, drones: 3000, active: true, exposed: false, level: 3 },
+            { name: "انصارالله", emoji: "🇾🇪", forces: 150000, missiles: 7000, drones: 3000, active: true, exposed: false, level: 2 },
+            { name: "حشد شعبی", emoji: "🇮🇶", forces: 100000, missiles: 3000, drones: 700, active: true, exposed: false, level: 2 }
         ];
         
-        return provinceNames.map(name => ({
-            name: name,
-            population: Math.floor(Math.random() * 5) + 1,
-            satisfaction: Math.floor(Math.random() * 20) + 30,
-            unemployment: Math.floor(Math.random() * 20) + 10,
-            has_water_crisis: Math.random() < 0.5,
-            has_protest: Math.random() < 0.2
-        }));
+        // سیستم انتخابات و تنزل
+        this.rank = "president"; // president, speaker, minister, mp, citizen
+        this.termMonths = 0;
+        this.demotionCount = 0;
+        this.lastElection = { year: 1405, month: 1 };
+        
+        // وضعیت
+        this.gameOver = false;
+        this.history = [];
+        this.lastAction = "";
     }
     
-    // ============================================
-    // 📅 گذر زمان
-    // ============================================
-    nextTurn() {
-        this.turn++;
-        this.month++;
-        
-        if (this.month > 12) {
-            this.month = 1;
-            this.year++;
-            this.print_money_count = 0;
-        }
-        
-        // بررسی انتخابات
-        this.checkElection();
-        
-        // اثرات ماهانه
-        this.monthlyEffects();
-        
-        // بحران تصادفی
-        if (Math.random() < RANDOM_EVENT_CHANCE) {
-            this.randomCrisis();
-        }
-        
-        // بحران دوره‌ای
-        if (this.turn % 3 === 0) {
-            this.periodicCrisis();
-        }
-        
-        // بروزرسانی
-        this.updateIndicators();
-        
-        // بررسی تنزل
-        this.checkDemotion();
-        
-        if (this.history.length > 50) {
-            this.history = this.history.slice(-30);
-        }
-        
-        return this.getStatusSummary();
-    }
-    
-    // ============================================
-    // 🗳️ سیستم انتخابات
-    // ============================================
-    checkElection() {
-        const monthsInOffice = (this.year - this.termStart.year) * 12 + (this.month - this.termStart.month);
-        
-        // ۶ ماه قبل هشدار
-        if (monthsInOffice >= 42 && !this.electionWarning && this.rank === 'president') {
-            this.electionWarning = true;
-            this.addHistory("🗳️ ۶ ماه تا انتخابات! محبوبیتت رو ببر بالا!");
-        }
-        
-        // انتخابات
-        if (monthsInOffice >= 48) {
-            this.runElection();
-        }
-    }
-    
-    runElection() {
-        const opponent = this.getRandomOpponent();
-        const opponentPop = Math.floor(Math.random() * 30) + 30;
-        const winChance = this.popularity - opponentPop + Math.floor(Math.random() * 15);
-        
-        if (this.rank === 'president') {
-            if (winChance > 0) {
-                // دوباره رئیس‌جمهور
-                this.termStart = { year: this.year, month: this.month };
-                this.popularity += 5;
-                this.electionWarning = false;
-                this.lastElection = { year: this.year, month: this.month };
-                this.addHistory(`🎉 با ${this.popularity}٪ دوباره رئیس‌جمهور شدی! رقیب: ${opponent} (${opponentPop}٪)`);
-            } else {
-                // باخت → رئیس مجلس
-                this.rank = 'speaker';
-                this.demotionCount++;
-                this.popularity += 5;
-                this.termStart = { year: this.year, month: this.month };
-                this.electionWarning = false;
-                this.lastElection = { year: this.year, month: this.month };
-                this.addHistory(`📉 باختی! ${opponent} (${opponentPop}٪) رئیس‌جمهور شد. تو رئیس مجلس شدی`);
-            }
-        } else if (this.rank !== 'president' && this.canReturn) {
-            // شانس برگشت به ریاست‌جمهوری
-            if (this.popularity > 50 && winChance > 10) {
-                this.rank = 'president';
-                this.termStart = { year: this.year, month: this.month };
-                this.popularity += 10;
-                this.demotionCount = Math.max(0, this.demotionCount - 1);
-                this.electionWarning = false;
-                this.lastElection = { year: this.year, month: this.month };
-                this.addHistory(`🎉 *بازگشت تاریخی!* با ${this.popularity}٪ دوباره رئیس‌جمهور شدی!`);
-            }
-        }
-    }
-    
-    getRandomOpponent() {
-        const opponents = ["احمدی‌نژاد", "ظریف", "جلیلی", "لاریجانی", "قالیباف", "روحانی", "پزشکیان", "رضایی"];
-        return opponents[Math.floor(Math.random() * opponents.length)];
-    }
-    
-    // ============================================
-    // 📉 سیستم تنزل مقام
-    // ============================================
-    checkDemotion() {
-        if (this.rank === 'citizen') {
-            // شهروند عادی فقط با محبوبیت خیلی پایین می‌بازه
-            if (this.popularity <= 3 && this.budget_toman <= 0) {
-                this.game_over = true;
-                this.addHistory("💀 به پایین‌ترین نقطه رسیدی. پایان بازی.");
-                return;
-            }
-            // شانس برگشت به نمایندگی
-            if (this.popularity > 30 && this.canReturn) {
-                this.rank = 'mp';
-                this.popularity += 5;
-                this.addHistory("🎉 با افزایش محبوبیت، دوباره نماینده مجلس شدی!");
-            }
-            return;
-        }
-        
-        // رئیس جمهور - فقط با انتخابات عوض می‌شه
-        if (this.rank === 'president') return;
-        
-        // بقیه مقام‌ها
-        if (this.popularity <= 5 && this.rank === 'speaker') {
-            this.rank = 'minister';
-            this.demotionCount++;
-            this.popularity += 8;
-            this.addHistory("📉 از ریاست مجلس برکنار شدی. حالا وزیر کابینه‌ای");
-        } else if (this.popularity <= 4 && this.rank === 'minister') {
-            this.rank = 'mp';
-            this.demotionCount++;
-            this.popularity += 6;
-            this.addHistory("📉 استیضاح شدی. برگشتی به نمایندگی مجلس");
-        } else if (this.popularity <= 3 && this.rank === 'mp') {
-            this.rank = 'citizen';
-            this.demotionCount++;
-            this.popularity += 10;
-            this.addHistory("📉 رد صلاحیت شدی. حالا یه شهروند عادی هستی");
-        }
-        
-        // شانس برگشت
-        if (this.popularity > 40 && this.rank === 'speaker' && this.canReturn) {
-            this.rank = 'president';
-            this.demotionCount = Math.max(0, this.demotionCount - 1);
-            this.addHistory("🎉 با افزایش محبوبیت، دوباره رئیس‌جمهور شدی!");
-        }
-    }
-    
-    getRankName(rank) {
+    // نام مقام
+    getRankName() {
         const names = {
             president: "🏛️ رئیس‌جمهور",
             speaker: "🏛️ رئیس مجلس",
@@ -240,189 +54,352 @@ class IranState {
             mp: "👤 نماینده",
             citizen: "👤 شهروند"
         };
-        return names[rank] || rank;
+        return names[this.rank] || this.rank;
     }
     
-    // قابلیت‌های هر مقام
-    canDoAction(action) {
+    // چک کردن قابلیت‌ها بر اساس مقام
+    canDo(action) {
         const permissions = {
             president: ["all"],
-            speaker: ["domestic", "economy", "parliament", "protest", "negotiate", "trade"],
-            minister: ["economy", "domestic", "protest"],
-            mp: ["protest", "speech", "domestic"],
-            citizen: ["protest", "flee"]
+            speaker: ["domestic", "parliament", "economy", "imports", "exports", "negotiate"],
+            minister: ["economy", "domestic", "imports", "exports"],
+            mp: ["parliament", "domestic"],
+            citizen: ["protest"]
         };
         
-        const allowed = permissions[this.rank] || [];
-        if (allowed.includes("all")) return { allowed: true };
-        if (allowed.includes(action)) return { allowed: true };
+        if (permissions[this.rank].includes("all")) return { allowed: true };
+        if (permissions[this.rank].includes(action)) return { allowed: true };
         
-        return { 
-            allowed: false, 
-            reasons: [`تو ${this.getRankName(this.rank)} هستی، این کار رو نمی‌تونی بکنی!`] 
-        };
+        return { allowed: false, reason: `شما ${this.getRankName()} هستید و نمی‌توانید این کار را انجام دهید!` };
+    }
+    
+    // خلاصه وضعیت
+    getSummary() {
+        const remaining = TERM_DURATION - this.termMonths;
+        let s = `🇮🇷 *${this.getRankName()}*\n`;
+        s += `👤 ${this.name}\n`;
+        s += `📅 ${this.year}/${this.month} | نوبت ${this.turn}\n`;
+        
+        if (this.rank === "president") {
+            s += `🗳️ ${Math.floor(remaining / 12)} سال و ${remaining % 12} ماه تا انتخابات\n`;
+        }
+        
+        s += `📉 تنزل: ${this.demotionCount} بار\n`;
+        s += `━━━━━━━━━━━━\n`;
+        s += `💰 بودجه: ${this.budget.toFixed(0)} همت\n`;
+        s += `💵 دلار: ${this.dollarRate.toLocaleString()} تومان\n`;
+        s += `💲 ارزی: ${this.dollar.toFixed(1)} میلیارد دلار\n`;
+        s += `📊 تورم: ${this.inflation.toFixed(1)}٪\n`;
+        s += `👥 محبوبیت: ${this.popularity}٪\n`;
+        s += `⚔️ 🚀${this.missiles} 🛸${this.drones} 👥${this.soldiers}\n`;
+        s += `⚛️ غنی‌سازی: ${this.nuclear}٪\n`;
+        s += `🔒 تحریم: ${this.sanctions}/100 | ⚔️ تنش: ${this.tension}/100\n`;
+        s += `💧 آب: ${this.water}٪ | 💰 فساد: ${this.corruption}٪ | 🧠 فرار: ${this.brain}٪\n`;
+        s += `━━━━━━━━━━━━\n`;
+        s += this.gameOver ? '💀 *پایان* /start' : '🎮 ادامه دارد...';
+        return s;
     }
     
     // ============================================
-    // 📊 اثرات ماهانه
+    // 📅 گذر زمان
     // ============================================
-    monthlyEffects() {
-        const oilIncome = this.oil_export * 30 * this.oil_price;
-        this.dollar_reserves += oilIncome / 1000;
+    nextMonth() {
+        this.turn++;
+        this.month++;
+        this.termMonths++;
+        this.boughtVotes = 0;
+        this.voteLeakChance = 0;
         
-        const monthlyExpense = this.budget_toman / 10;
-        this.budget_toman -= monthlyExpense * 0.9;
+        if (this.month > 12) {
+            this.month = 1;
+            this.year++;
+        }
         
-        this.inflation += (Math.random() * 1.5) - 0.3;
+        // درآمد نفت
+        const oilIncome = this.oil * 30 * this.oilPrice / 1000;
+        this.dollar += oilIncome;
+        
+        // هزینه‌های جاری
+        this.budget -= this.budget * 0.07;
+        
+        // تورم
+        this.inflation += (Math.random() * 2) - 0.5;
         this.inflation = Math.max(5, Math.min(150, this.inflation));
         
-        const dollarChange = (Math.random() * 3000) - 1000;
-        this.dollar_rate += dollarChange;
-        this.dollar_rate = Math.max(50000, Math.min(250000, this.dollar_rate));
+        // دلار
+        this.dollarRate += (Math.random() * 5000) - 2000;
+        this.dollarRate = Math.max(50000, Math.min(250000, this.dollarRate));
         
-        const oilChange = (Math.random() * 5) - 2;
-        this.oil_price += oilChange;
-        this.oil_price = Math.max(25, Math.min(130, this.oil_price));
+        // نفت
+        this.oilPrice += (Math.random() * 5) - 2;
+        this.oilPrice = Math.max(25, Math.min(130, this.oilPrice));
         
-        if (this.inflation > 40) this.popularity -= 3;
-        if (this.inflation > 60) this.popularity -= 5;
-        if (this.unemployment > 15) this.popularity -= 2;
+        // محبوبیت بر اساس شرایط
+        if (this.inflation > 50) this.popularity -= 3;
+        if (this.inflation > 70) this.popularity -= 2;
         if (this.sanctions > 80) this.popularity -= 2;
-        if (this.corruption_level > 50) this.popularity -= 1;
-        if (this.brain_drain > 5) this.popularity -= 1;
-        
-        if (Math.random() < 0.2) this.brain_drain += 1;
-        if (Math.random() < 0.3) this.corruption_level += 2;
-        if (Math.random() < 0.15) this.water_crisis += 3;
+        if (this.corruption > 50) this.popularity -= 1;
+        if (this.water > 70) this.popularity -= 1;
+        if (this.brain > 8) this.popularity -= 1;
         
         this.popularity = Math.max(0, Math.min(100, this.popularity));
         
-        if (this.budget_toman < 0) {
-            this.budget_toman = 0;
-            this.inflation += 10;
-            this.dollar_rate += 10000;
-            this.addHistory("⚠️ بودجه صفر! چاپ پول اضطراری");
+        // بحران تصادفی (۳۰٪ شانس)
+        if (Math.random() < 0.30) {
+            this.triggerRandomCrisis();
         }
+        
+        // بودجه منفی = چاپ پول اضطراری
+        if (this.budget < 0) {
+            this.budget = 0;
+            this.inflation += 10;
+            this.dollarRate += 10000;
+            this.history.push("⚠️ بودجه صفر شد! چاپ پول اضطراری (تورم +۱۰٪)");
+        }
+        
+        // انتخابات
+        if (this.rank === "president" && this.termMonths >= TERM_DURATION) {
+            this.runElection();
+        }
+        
+        // تنزل مقام
+        this.checkDemotion();
+        
+        // باخت واقعی
+        if (this.rank === "citizen" && this.popularity <= 3 && this.budget <= 0) {
+            this.gameOver = true;
+            this.history.push("💀 به پایین‌ترین نقطه رسیدی. پایان بازی.");
+        }
+        
+        return this.getSummary();
     }
     
     // ============================================
     // 🎲 بحران تصادفی
     // ============================================
-    randomCrisis() {
-        const crisis = CRISIS_TYPES[Math.floor(Math.random() * CRISIS_TYPES.length)];
-        let message = "";
+    triggerRandomCrisis() {
+        const totalChance = CRISES.reduce((s, c) => s + c.chance, 0);
+        let r = Math.random() * totalChance;
         
-        switch(crisis) {
-            case "اعتراضات_سراسری": this.popularity -= 15; message = "⚠️ اعتراضات سراسری! -۱۵٪"; break;
-            case "حمله_سایبری": this.budget_toman -= 3; this.cyber_attacks_received++; message = "💻 حمله سایبری! -۳ همت"; break;
-            case "زلزله": this.budget_toman -= 5; this.popularity -= 5; message = "🌍 زلزله! -۵ همت"; break;
-            case "ترور_دانشمند": this.nuclear_percent -= 8; this.popularity -= 5; message = "🎯 ترور دانشمند! -۸٪"; break;
-            case "سیل": this.budget_toman -= 3; message = "🌊 سیل! -۳ همت"; break;
-            case "کرونا": this.popularity -= 4; this.gdp -= 8; message = "🦠 کرونا! -۸ GDP"; break;
-            case "رسوایی_فساد": this.budget_toman -= 3; this.popularity -= 10; message = "💰 رسوایی فساد!"; break;
-            case "شورش_قومی": this.popularity -= 8; message = "⚔️ شورش قومی!"; break;
-            case "تحریم_جدید": this.sanctions += 12; this.dollar_rate += 8000; message = "🚫 تحریم جدید!"; break;
-            case "کشف_نفت": this.oil_production += 0.3; this.budget_toman += 8; message = "🛢️ نفت جدید!"; break;
-            case "سقوط_بورس": this.gdp -= 10; this.popularity -= 3; message = "📉 سقوط بورس!"; break;
-            case "فرار_مغزها": this.brain_drain += 3; message = "🧠 فرار نخبگان!"; break;
-            case "کودتای_نرم": this.popularity -= 8; message = "🕵️ کودتای نرم!"; break;
-            case "بحران_آب": this.water_crisis += 10; this.popularity -= 4; message = "💧 بحران آب!"; break;
-            default: message = "⚠️ بحران!"; break;
+        for (const crisis of CRISES) {
+            r -= crisis.chance;
+            if (r <= 0) {
+                if (crisis.pop) this.popularity += crisis.pop;
+                if (crisis.budget) this.budget += crisis.budget;
+                if (crisis.sanctions) this.sanctions = Math.min(100, this.sanctions + crisis.sanctions);
+                if (crisis.nuclear) this.nuclear = Math.max(3.67, this.nuclear + crisis.nuclear);
+                if (crisis.corruption) this.corruption = Math.min(100, this.corruption + crisis.corruption);
+                if (crisis.gdp) this.gdp += crisis.gdp;
+                if (crisis.brain) this.brain += crisis.brain;
+                if (crisis.water) this.water = Math.min(100, this.water + crisis.water);
+                this.history.push(`📅 ${this.year}/${this.month}: ${crisis.msg}`);
+                break;
+            }
         }
-        
-        this.history.push(`📅 ${this.year}/${this.month}: ${message}`);
-        return message;
-    }
-    
-    periodicCrisis() {
-        if (this.inflation > 50) { this.popularity -= 3; this.addHistory("📊 تورم بالای ۵۰٪!"); }
-        if (this.dollar_rate > 120000) { this.popularity -= 2; this.inflation += 2; this.addHistory("💵 دلار بالای ۱۲۰,۰۰۰!"); }
-        if (this.brain_drain > 8) { this.gdp -= 5; this.addHistory("🧠 فرار مغزها بحرانی!"); }
-        if (this.water_crisis > 80) { this.popularity -= 5; this.addHistory("💧 بحران آب اضطرار!"); }
-        if (this.corruption_level > 70) { this.budget_toman -= 5; this.popularity -= 4; this.addHistory("💰 فساد سیستمی!"); }
-    }
-    
-    updateIndicators() {
-        this.popularity = Math.max(0, Math.min(100, this.popularity));
-        this.inflation = Math.max(5, Math.min(150, this.inflation));
-        this.sanctions = Math.max(0, Math.min(100, this.sanctions));
-        this.israel_tension = Math.max(0, Math.min(100, this.israel_tension));
-        this.nuclear_percent = Math.max(3.67, Math.min(90, this.nuclear_percent));
-        this.unemployment = Math.max(2, Math.min(60, this.unemployment));
-        this.corruption_level = Math.max(0, Math.min(100, this.corruption_level));
-        this.water_crisis = Math.max(0, Math.min(100, this.water_crisis));
-        this.brain_drain = Math.max(0, Math.min(30, this.brain_drain));
     }
     
     // ============================================
-    // 📊 گزارش
+    // 🗳️ انتخابات
     // ============================================
-    getStatusSummary() {
-        const monthsInOffice = (this.year - this.termStart.year) * 12 + (this.month - this.termStart.month);
-        const remaining = 48 - monthsInOffice;
-        const yearsLeft = Math.floor(remaining / 12);
-        const monthsLeft = remaining % 12;
+    runElection() {
+        const opponents = ["احمدی‌نژاد", "ظریف", "جلیلی", "قالیباف", "پزشکیان", "لاریجانی"];
+        const opponent = opponents[Math.floor(Math.random() * opponents.length)];
+        const opponentPop = Math.floor(Math.random() * 30) + 30;
         
-        let electionLine = "";
-        if (this.rank === 'president') {
-            electionLine = `\n🗳️ انتخابات: ${yearsLeft} سال و ${monthsLeft} ماه دیگه`;
+        if (this.popularity > opponentPop) {
+            // برنده
+            this.termMonths = 0;
+            this.popularity += 5;
+            this.lastElection = { year: this.year, month: this.month };
+            this.history.push(`🎉 انتخابات رو بردی! (${this.popularity}٪) - رقیب: ${opponent} ${opponentPop}٪`);
+        } else {
+            // بازنده
+            this.rank = "speaker";
+            this.demotionCount++;
+            this.termMonths = 0;
+            this.popularity += 8;
+            this.lastElection = { year: this.year, month: this.month };
+            this.history.push(`📉 باختی! ${opponent} (${opponentPop}٪) رئیس‌جمهور شد. تو ${this.getRankName()} شدی`);
+        }
+    }
+    
+    // ============================================
+    // 📉 سیستم تنزل و ارتقا
+    // ============================================
+    checkDemotion() {
+        if (this.rank === "president") return;
+        
+        // تنزل
+        if (this.popularity <= 5 && this.rank === "speaker") {
+            this.rank = "minister";
+            this.demotionCount++;
+            this.popularity += 8;
+            this.history.push(`📉 از ریاست مجلس برکنار شدی. حالا ${this.getRankName()} هستی`);
+        } else if (this.popularity <= 4 && this.rank === "minister") {
+            this.rank = "mp";
+            this.demotionCount++;
+            this.popularity += 6;
+            this.history.push(`📉 استیضاح شدی. حالا ${this.getRankName()} هستی`);
+        } else if (this.popularity <= 3 && this.rank === "mp") {
+            this.rank = "citizen";
+            this.demotionCount++;
+            this.popularity += 10;
+            this.history.push(`📉 رد صلاحیت شدی. حالا ${this.getRankName()} هستی`);
         }
         
-        return `🇮🇷 *${this.getRankName(this.rank)} - ${this.playerName}*
-📅 ${this.year}/${this.month} | نوبت: ${this.turn}${electionLine}
-📉 تنزل: ${this.demotionCount} بار
-━━━━━━━━━━━━━━━━━━
-💰 بودجه: ${this.budget_toman.toFixed(0)} همت | ارزی: ${this.dollar_reserves.toFixed(1)}B$
-🛢️ نفت: ${this.oil_export}M | 💵 ${this.dollar_rate.toLocaleString()}T
-📊 تورم: ${this.inflation.toFixed(1)}٪ | GDP: ${this.gdp}B$ | فساد: ${this.corruption_level}٪
-━━━━━━━━━━━━━━━━━━
-⚔️ 🚀${this.missiles} 🛸${this.drones} 👥${this.soldiers} | ⚛️${this.nuclear_percent}٪
-🔒 تحریم: ${this.sanctions}/100 | ⚔️ تنش: ${this.israel_tension}/100
-━━━━━━━━━━━━━━━━━━
-👥 ${this.popularity}٪ | 💧${this.water_crisis}٪ | 🧠${this.brain_drain}٪
-🏛️ رهبری:${this.leader_approval?'✅':'❌'} | مجلس:${this.parliament_approval?'✅':'❌'}
-━━━━━━━━━━━━━━━━━━
-${this.game_over ? '💀 *پایان!* /start' : '🎮 ادامه دارد...'}`;
+        // ارتقا
+        if (this.popularity > 50 && this.rank === "speaker" && this.termMonths >= 24) {
+            this.rank = "president";
+            this.termMonths = 0;
+            this.demotionCount = Math.max(0, this.demotionCount - 1);
+            this.history.push("🎉 بازگشت تاریخی! دوباره رئیس‌جمهور شدی!");
+        } else if (this.popularity > 40 && this.rank === "minister") {
+            this.rank = "speaker";
+            this.popularity += 5;
+            this.history.push("🎉 ارتقا به رئیس مجلس!");
+        } else if (this.popularity > 30 && this.rank === "mp") {
+            this.rank = "minister";
+            this.popularity += 3;
+            this.history.push("🎉 ارتقا به وزیر!");
+        } else if (this.popularity > 25 && this.rank === "citizen") {
+            this.rank = "mp";
+            this.popularity += 5;
+            this.history.push("🎉 دوباره نماینده مجلس شدی!");
+        }
     }
     
-    addHistory(text) {
-        this.history.push(`📅 ${this.year}/${this.month}: ${text}`);
+    // ============================================
+    // 🏛️ رأی‌گیری مجلس
+    // ============================================
+    runVote(topic) {
+        let totalSupport = 0;
+        const factions = ['principlists', 'reformists', 'independents'];
+        const details = {};
+        
+        for (const faction of factions) {
+            const f = this.parliament[faction];
+            let baseSupport;
+            
+            if (topic === 'war') {
+                baseSupport = f.count * f.warSupport;
+            } else if (topic === 'economy') {
+                baseSupport = f.count * f.economySupport;
+            } else {
+                baseSupport = f.count * 0.5;
+            }
+            
+            // اضافه کردن رأی‌های خریده شده
+            const boughtEffect = this.boughtVotes * (f.count / 290);
+            baseSupport += boughtEffect;
+            
+            // random
+            const randomEffect = (Math.random() * f.count * 0.2) - (f.count * 0.1);
+            baseSupport += randomEffect;
+            
+            const finalSupport = Math.floor(Math.max(0, Math.min(f.count, baseSupport)));
+            details[faction] = { support: finalSupport, oppose: f.count - finalSupport };
+            totalSupport += finalSupport;
+        }
+        
+        return {
+            support: totalSupport,
+            needed: this.voteNeeded,
+            passed: totalSupport >= this.voteNeeded,
+            details: details
+        };
     }
     
+    // ============================================
+    // 💰 خرید رأی
+    // ============================================
+    buyVote(faction, count) {
+        const f = this.parliament[faction];
+        if (!f) return { success: false, msg: "جناح نامعتبر!" };
+        
+        const totalCost = f.basePrice * count;
+        if (this.budget < totalCost) {
+            return { success: false, msg: `❌ بودجه کم! نیاز: ${totalCost} همت` };
+        }
+        
+        this.budget -= totalCost;
+        
+        let bought = 0;
+        for (let i = 0; i < count; i++) {
+            if (Math.random() < f.corruption) {
+                bought++;
+            }
+        }
+        
+        this.boughtVotes += bought;
+        this.voteLeakChance = Math.min(100, this.voteLeakChance + (bought * 2));
+        this.corruption = Math.min(100, this.corruption + bought);
+        
+        return {
+            success: true,
+            bought: bought,
+            cost: totalCost,
+            totalBought: this.boughtVotes,
+            leakChance: this.voteLeakChance
+        };
+    }
+    
+    // ============================================
+    // 🌍 پیدا کردن کشور
+    // ============================================
     findCountry(code) {
-        return this.countries.find(c => c[2] === code);
+        return this.countries.find(c => c.code === code);
     }
     
-    getDollarRate() { return this.dollar_rate; }
-    getOilPrice() { return this.oil_price; }
-    
-    canDo(action) {
-        const lock = LOCKS[action];
-        if (!lock) return this.canDoAction(action);
+    // ============================================
+    // 📦 واردات
+    // ============================================
+    importGoods(itemKey) {
+        const item = PRICES[itemKey];
+        if (!item) return { success: false, msg: "کالا نامعتبر!" };
         
-        const reasons = [];
-        if (lock.popularity && this.popularity < lock.popularity) reasons.push(`نیاز به محبوبیت ${lock.popularity}٪`);
-        if (lock.missiles && this.missiles < lock.missiles) reasons.push(`نیاز به ${lock.missiles} موشک`);
-        if (lock.leader && !this.leader_approval) reasons.push("نیاز به تأیید رهبری");
-        if (lock.parliament && !this.parliament_approval) reasons.push("نیاز به رأی مجلس");
-        if (lock.max_per_year && this.print_money_count >= lock.max_per_year) reasons.push(`حداکثر ${lock.max_per_year} بار`);
-        if (lock.cooldown_turns && (this.turn - this.last_war_turn) < lock.cooldown_turns) {
-            const remaining = lock.cooldown_turns - (this.turn - this.last_war_turn);
-            reasons.push(`باید ${remaining} نوبت صبر کنی`);
+        if (this.dollar < item.dollar / 1_000_000_000) {
+            return { success: false, msg: `❌ دلار کم! نیاز: ${(item.dollar / 1_000_000).toFixed(1)} میلیون دلار` };
         }
         
-        return { allowed: reasons.length === 0, reasons };
+        this.dollar -= item.dollar / 1_000_000_000;
+        
+        switch(itemKey) {
+            case 'wheat': this.inflation -= 2; this.popularity += 1; break;
+            case 'medicine': this.popularity += 5; break;
+            case 'technology': this.gdp += 10; this.brain -= 1; break;
+            case 'sukhoi': this.missiles += 20; this.drones += 10; break;
+            case 's400': this.missiles += 15; break;
+            case 'oilEquipment': this.oil += 0.3; break;
+        }
+        
+        this.history.push(`📦 واردات: ${item.emoji} ${item.name} (${(item.dollar / 1_000_000).toFixed(1)}M$)`);
+        return { success: true, msg: `✅ ${item.emoji} ${item.name} وارد شد!` };
+    }
+    
+    // ============================================
+    // 🛢️ صادرات
+    // ============================================
+    exportGoods(itemKey) {
+        const item = EXPORTS[itemKey];
+        if (!item) return { success: false, msg: "کالا نامعتبر!" };
+        
+        const income = item.price / 1_000_000_000;
+        this.dollar += income;
+        
+        if (item.sanctions > 0) {
+            this.sanctions = Math.min(100, this.sanctions + item.sanctions);
+        }
+        
+        this.history.push(`🛢️ صادرات: ${item.emoji} ${item.name} (+${income.toFixed(1)} میلیارد دلار)`);
+        return { success: true, msg: `✅ ${item.emoji} ${item.name} صادر شد!\n💰 +${income.toFixed(1)} میلیارد دلار\n⚠️ تحریم +${item.sanctions}` };
     }
 }
 
 // ============================================
-// 💾 ذخیره‌سازی
+// 💾 ذخیره‌سازی بازیکنان
 // ============================================
 const players = new Map();
+function getPlayer(id) { return players.get(id); }
+function setPlayer(id, state) { players.set(id, state); }
 
-function getPlayer(userId) { return players.get(userId); }
-function setPlayer(userId, state) { players.set(userId, state); }
-function deletePlayer(userId) { players.delete(userId); }
-function playerExists(userId) { return players.has(userId); }
-
-module.exports = { IranState, players, getPlayer, setPlayer, deletePlayer, playerExists };
+module.exports = { IranState, getPlayer, setPlayer };
