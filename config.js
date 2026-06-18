@@ -1,295 +1,131 @@
-// config.js - تنظیمات و ثابت‌های بازی (نسخه سخت)
+// config.js - تنظیمات کامل بازی
 
-// توکن ربات (از Railway می‌خونه)
 const TOKEN = process.env.BOT_TOKEN || "TOKEN_DEFAULT";
 
 // ============================================
-// 📅 تنظیمات زمان بازی
+// 📅 زمان
 // ============================================
 const START_YEAR = 1405;
 const START_MONTH = 1;
+const TERM_DURATION = 48; // ۴ سال = ۴۸ نوبت
 
 // ============================================
-// 💰 تنظیمات مالی اولیه (سخت‌تر شده)
+// 💰 اقتصاد اولیه
 // ============================================
-const INITIAL_STATE = {
-    budget_toman: 800,           // همت (قبلاً ۱۲۰۰)
-    dollar_reserves: 15,         // میلیارد دلار (قبلاً ۲۵)
-    gold_tons: 60,               // تن (قبلاً ۱۰۰)
-    bitcoin: 1000,               // عدد (قبلاً ۲۰۰۰)
-    oil_production: 3.0,         // میلیون بشکه در روز (قبلاً ۳.۵)
-    oil_export: 1.2,             // میلیون بشکه در روز (قبلاً ۱.۷)
-    oil_price: 60,               // دلار هر بشکه (قبلاً ۷۰)
-    dollar_rate: 100000,         // تومان (قبلاً ۸۵۰۰۰)
-    
-    // شاخص‌های اقتصادی (بدتر شده)
-    inflation: 48,               // درصد (قبلاً ۴۲)
-    gdp: 350,                    // میلیارد دلار (قبلاً ۴۰۰)
-    unemployment: 16,            // درصد (قبلاً ۱۲)
-    popularity: 38,              // درصد (قبلاً ۵۱)
-    sanctions: 88,               // ۰ تا ۱۰۰ (قبلاً ۸۰)
-    
-    // نظامی (کمتر شده)
-    missiles: 300,               // (قبلاً ۵۰۰)
-    drones: 1200,                // (قبلاً ۲۰۰۰)
-    soldiers: 35000,             // (قبلاً ۵۰۰۰۰)
-    nuclear_percent: 45,         // (قبلاً ۶۰)
-    israel_tension: 85,          // (قبلاً ۸۲)
-    
-    // زمان
-    year: START_YEAR,
-    month: START_MONTH,
-    turn: 0,
-    
-    // وضعیت
-    game_over: false,
-    history: [],
-    
-    // قفل‌های جدید
-    print_money_count: 0,        // تعداد چاپ پول در سال
-    last_war_turn: -10,          // آخرین نوبت جنگ
-    leader_approval: false,      // تأیید رهبری
-    parliament_approval: false,  // تأیید مجلس
+const INITIAL = {
+    budget: 800,            // همت
+    dollar: 15,             // میلیارد دلار
+    dollarRate: 100000,     // تومان
+    gold: 60,               // تن
+    bitcoin: 1000,          // عدد
+    oil: 1.2,               // صادرات میلیون بشکه در روز
+    oilPrice: 60,           // دلار هر بشکه
+    inflation: 48,          // درصد
+    gdp: 350,               // میلیارد دلار
+    unemployment: 16,       // درصد
+    popularity: 38,         // درصد
+    sanctions: 88,          // ۰ تا ۱۰۰
+    tension: 85,            // تنش با اسرائیل
+    missiles: 300,
+    drones: 1200,
+    soldiers: 35000,
+    nuclear: 45,            // درصد غنی‌سازی
+    water: 70,              // بحران آب
+    corruption: 65,         // فساد
+    brain: 5,               // فرار مغزها
+    internet: false,        // اینترنت آزاد؟
+    gasPrice: 3000,         // قیمت بنزین (تومان)
 };
 
 // ============================================
-// 🌍 کشورها (۵۲ کشور - روابط بدتر شده)
+// 🌍 ۱۵ کشور
 // ============================================
 const COUNTRIES = [
-    // همسایگان (۱۶ کشور)
-    ["عراق", "🇮🇶", "IQ", "همسایه", 50, 8],
-    ["ترکیه", "🇹🇷", "TR", "همسایه", 25, 10],
-    ["پاکستان", "🇵🇰", "PK", "همسایه", 30, 1.5],
-    ["افغانستان", "🇦🇫", "AF", "همسایه", -30, 1],
-    ["ترکمنستان", "🇹🇲", "TM", "همسایه", 40, 2],
-    ["آذربایجان", "🇦🇿", "AZ", "همسایه", 10, 0.8],
-    ["ارمنستان", "🇦🇲", "AM", "همسایه", 50, 0.5],
-    ["بحرین", "🇧🇭", "BH", "همسایه", -40, 0.05],
-    ["قطر", "🇶🇦", "QA", "همسایه", 35, 1.5],
-    ["امارات", "🇦🇪", "AE", "همسایه", 15, 5],
-    ["عمان", "🇴🇲", "OM", "همسایه", 40, 0.8],
-    ["یمن", "🇾🇪", "YE", "همسایه", 25, 0.3],
-    ["عربستان", "🇸🇦", "SA", "همسایه", 0, 2],
-    ["کویت", "🇰🇼", "KW", "همسایه", 30, 0.8],
-    ["سوریه", "🇸🇾", "SY", "همسایه", 75, 1.5],
-    ["اردن", "🇯🇴", "JO", "همسایه", -5, 0.2],
-    
-    // قدرت‌های بزرگ
-    ["آمریکا", "🇺🇸", "US", "قدرت", -90, 0],
-    ["چین", "🇨🇳", "CN", "قدرت", 55, 20],
-    ["روسیه", "🇷🇺", "RU", "قدرت", 60, 3],
-    ["هند", "🇮🇳", "IN", "قدرت", 35, 4],
-    
-    // اروپا
-    ["آلمان", "🇩🇪", "DE", "اروپا", -40, 0.8],
-    ["فرانسه", "🇫🇷", "FR", "اروپا", -45, 0.3],
-    ["انگلیس", "🇬🇧", "GB", "اروپا", -60, 0.1],
-    ["ایتالیا", "🇮🇹", "IT", "اروپا", -20, 0.5],
-    ["اسپانیا", "🇪🇸", "ES", "اروپا", -25, 0.2],
-    ["هلند", "🇳🇱", "NL", "اروپا", -30, 0.3],
-    ["سوئد", "🇸🇪", "SE", "اروپا", -50, 0.05],
-    ["سوئیس", "🇨🇭", "CH", "اروپا", 5, 1],
-    
-    // آسیا-اقیانوسیه
-    ["ژاپن", "🇯🇵", "JP", "آسیا", -30, 1.5],
-    ["کره جنوبی", "🇰🇷", "KR", "آسیا", -35, 2],
-    ["کره شمالی", "🇰🇵", "KP", "آسیا", 20, 0.3],
-    ["اندونزی", "🇮🇩", "ID", "آسیا", 30, 0.8],
-    ["مالزی", "🇲🇾", "MY", "آسیا", 40, 1.5],
-    ["ویتنام", "🇻🇳", "VN", "آسیا", 15, 0.5],
-    ["تایلند", "🇹🇭", "TH", "آسیا", 10, 0.3],
-    ["سنگاپور", "🇸🇬", "SG", "آسیا", -15, 0.8],
-    ["فیلیپین", "🇵🇭", "PH", "آسیا", 5, 0.1],
-    ["قزاقستان", "🇰🇿", "KZ", "آسیا", 40, 0.8],
-    ["ازبکستان", "🇺🇿", "UZ", "آسیا", 25, 0.3],
-    ["تاجیکستان", "🇹🇯", "TJ", "آسیا", 50, 0.2],
-    ["قرقیزستان", "🇰🇬", "KG", "آسیا", 45, 0.1],
-    
-    // قفقاز
-    ["گرجستان", "🇬🇪", "GE", "قفقاز", 15, 0.2],
-    
-    // آفریقا
-    ["مصر", "🇪🇬", "EG", "آفریقا", 15, 0.3],
-    ["لیبی", "🇱🇾", "LY", "آفریقا", 25, 0.2],
-    ["الجزایر", "🇩🇿", "DZ", "آفریقا", 30, 0.1],
-    ["نیجریه", "🇳🇬", "NG", "آفریقا", 10, 0.05],
-    ["آفریقای جنوبی", "🇿🇦", "ZA", "آفریقا", 20, 0.3],
-    ["سودان", "🇸🇩", "SD", "آفریقا", 25, 0.1],
-    
-    // آمریکا
-    ["کانادا", "🇨🇦", "CA", "آمریکا", -50, 0.05],
-    ["برزیل", "🇧🇷", "BR", "آمریکا", 25, 1.5],
-    ["آرژانتین", "🇦🇷", "AR", "آمریکا", 15, 0.3],
-    ["ونزوئلا", "🇻🇪", "VE", "آمریکا", 65, 1],
+    { name: "ترکیه", emoji: "🇹🇷", code: "TR", relation: 25, trade: 10 },
+    { name: "عراق", emoji: "🇮🇶", code: "IQ", relation: 50, trade: 8 },
+    { name: "عربستان", emoji: "🇸🇦", code: "SA", relation: 0, trade: 2 },
+    { name: "اسرائیل", emoji: "🇮🇱", code: "IL", relation: -85, trade: 0 },
+    { name: "آمریکا", emoji: "🇺🇸", code: "US", relation: -90, trade: 0 },
+    { name: "روسیه", emoji: "🇷🇺", code: "RU", relation: 60, trade: 3 },
+    { name: "چین", emoji: "🇨🇳", code: "CN", relation: 55, trade: 20 },
+    { name: "پاکستان", emoji: "🇵🇰", code: "PK", relation: 30, trade: 1.5 },
+    { name: "افغانستان", emoji: "🇦🇫", code: "AF", relation: -30, trade: 1 },
+    { name: "هند", emoji: "🇮🇳", code: "IN", relation: 35, trade: 4 },
+    { name: "سوریه", emoji: "🇸🇾", code: "SY", relation: 75, trade: 1.5 },
+    { name: "امارات", emoji: "🇦🇪", code: "AE", relation: 15, trade: 5 },
+    { name: "قطر", emoji: "🇶🇦", code: "QA", relation: 35, trade: 1.5 },
+    { name: "آذربایجان", emoji: "🇦🇿", code: "AZ", relation: 10, trade: 0.8 },
+    { name: "انگلیس", emoji: "🇬🇧", code: "GB", relation: -60, trade: 0.1 }
 ];
 
 // ============================================
-// 🏴 گروه‌های نیابتی اولیه (کمتر و ضعیف‌تر)
+// 🏛️ مجلس
 // ============================================
-const INITIAL_PROXIES = [
-    {
-        name: "حزب‌الله لبنان",
-        emoji: "🇱🇧",
-        country: "لبنان",
-        budget_monthly: 500,
-        forces: 80000,
-        missiles: 100000,
-        drones: 3000,
-        active: true
-    },
-    {
-        name: "انصارالله یمن",
-        emoji: "🇾🇪",
-        country: "یمن",
-        budget_monthly: 150,
-        forces: 150000,
-        missiles: 7000,
-        drones: 3000,
-        active: true
-    },
-    {
-        name: "حشد شعبی عراق",
-        emoji: "🇮🇶",
-        country: "عراق",
-        budget_monthly: 350,
-        forces: 100000,
-        missiles: 3000,
-        drones: 700,
-        active: true
-    },
-    {
-        name: "جهاد اسلامی فلسطین",
-        emoji: "🇵🇸",
-        country: "فلسطین",
-        budget_monthly: 70,
-        forces: 7000,
-        missiles: 15000,
-        drones: 300,
-        active: true
-    }
-];
+const PARLIAMENT = {
+    principlists: { name: "اصولگرا", count: 190, basePrice: 3, corruption: 0.3, warSupport: 0.6, economySupport: 0.3 },
+    reformists: { name: "اصلاح‌طلب", count: 35, basePrice: 5, corruption: 0.9, warSupport: 0.2, economySupport: 0.8 },
+    independents: { name: "مستقل", count: 65, basePrice: 2, corruption: 0.7, warSupport: 0.4, economySupport: 0.5 }
+};
+const VOTE_NEEDED = 146;
 
 // ============================================
-// 🛒 قیمت‌های بازار (گرون‌تر شده)
+// 🛒 قیمت‌های بازار
 // ============================================
-const MARKET_PRICES = {
-    domestic: {
-        missile_fath: { name: "موشک فتح-۳۶۰", toman: 80_000_000_000, emoji: "🚀" },
-        missile_kheibar: { name: "موشک خیبرشکن", toman: 300_000_000_000, emoji: "🚀" },
-        drone_shahed136: { name: "پهپاد شاهد-۱۳۶", toman: 20_000_000_000, emoji: "🛸" },
-        drone_shahed191: { name: "پهپاد شاهد-۱۹۱", toman: 80_000_000_000, emoji: "🛸" },
-        tank_karrar: { name: "تانک کرار", toman: 150_000_000_000, emoji: "🔫" },
-        air_defense: { name: "سامانه پدافندی", toman: 800_000_000_000, emoji: "🛡️" },
-        drone_factory: { name: "کارخانه پهپاد", toman: 3_000_000_000_000, emoji: "🏭" },
-        missile_factory: { name: "کارخانه موشک", toman: 7_000_000_000_000, emoji: "🏭" },
-        military_base: { name: "پایگاه نظامی", toman: 15_000_000_000_000, emoji: "🏗️" }
-    },
+const PRICES = {
+    // داخلی (تومان)
+    missile: { name: "موشک", toman: 80_000_000_000, emoji: "🚀" },
+    drone: { name: "پهپاد شاهد", toman: 20_000_000_000, emoji: "🛸" },
+    factory: { name: "کارخانه نظامی", toman: 3_000_000_000_000, emoji: "🏭" },
+    airDefense: { name: "پدافند", toman: 800_000_000_000, emoji: "🛡️" },
     
-    international: {
-        sukhoi35: { name: "جنگنده سوخو-۳۵", dollar: 120_000_000, emoji: "✈️" },
-        s400: { name: "سامانه اس-۴۰۰", dollar: 700_000_000, emoji: "🛡️" },
-        spy_satellite: { name: "ماهواره جاسوسی", dollar: 300_000_000, emoji: "🛰️" },
-        centrifuge: { name: "تکنولوژی سانتریفیوژ", dollar: 80_000_000, emoji: "⚛️" },
-        submarine: { name: "زیردریایی", dollar: 450_000_000, emoji: "🚢" },
-        airplane: { name: "هواپیمای مسافربری", dollar: 150_000_000, emoji: "✈️" },
-        chip_tech: { name: "تکنولوژی تراشه", dollar: 750_000_000, emoji: "💻" },
-        vaccine: { name: "واکسن و دارو", dollar: 30_000_000, emoji: "💊" },
-        wheat: { name: "گندم (هر تن)", dollar: 500, emoji: "🌾" }
-    }
+    // خارجی (دلار)
+    sukhoi: { name: "سوخو-۳۵", dollar: 120_000_000, emoji: "✈️" },
+    s400: { name: "اس-۴۰۰", dollar: 700_000_000, emoji: "🛡️" },
+    wheat: { name: "گندم", dollar: 500, emoji: "🌾" },
+    medicine: { name: "دارو", dollar: 20_000_000, emoji: "💊" },
+    technology: { name: "تکنولوژی", dollar: 500_000_000, emoji: "💻" },
+    oilEquipment: { name: "تجهیزات نفتی", dollar: 200_000_000, emoji: "🛢️" }
 };
 
 // ============================================
-// 🎲 بحران‌های تصادفی (احتمال بیشتر + بحران‌های جدید)
+// 🛢️ صادرات
 // ============================================
-const RANDOM_EVENT_CHANCE = 0.35;  // ۳۵٪ (قبلاً ۲۰٪)
-const CRISIS_TYPES = [
-    "اعتراضات_سراسری",
-    "حمله_سایبری",
-    "زلزله",
-    "ترور_دانشمند",
-    "سیل",
-    "کرونا",
-    "رسوایی_فساد",
-    "شورش_قومی",
-    "تحریم_جدید",
-    "پیشنهاد_مذاکره_محرمانه",
-    "کشف_نفت",
-    "هک_سامانه_بانکی",
-    "استیضاح_وزیر",
-    "سقوط_بورس",           // جدید
-    "حمله_به_سفارت",       // جدید
-    "فرار_مغزها",          // جدید
-    "کودتای_نرم",          // جدید
-    "بحران_آب",            // جدید
-];
-
-// ============================================
-// 💱 توابع تبدیل
-// ============================================
-function tomanToDollar(toman, rate = 100000) {
-    return toman / rate;
-}
-
-function dollarToToman(dollar, rate = 100000) {
-    return dollar * rate;
-}
-
-function oilToDollar(barrels, price = 60) {
-    return barrels * price;
-}
-
-function goldToDollar(kg, price = 64000) {
-    return kg * price;
-}
-
-// ============================================
-// 🔒 قفل‌های عملیات‌ها
-// ============================================
-const LOCKS = {
-    // مذاکره با آمریکا: نیاز به محبوبیت ۵۰٪ یا تأیید رهبری
-    negotiate_usa: { popularity: 50, or_leader: true },
-    
-    // حمله به اسرائیل: نیاز به ۲۰۰ موشک و تأیید رهبری
-    attack_israel: { missiles: 200, leader: true },
-    
-    // توافق هسته‌ای: نیاز به رأی مجلس
-    nuclear_deal: { parliament: true },
-    
-    // بستن تنگه هرمز: نیاز به محبوبیت ۷۰٪
-    close_hormuz: { popularity: 70 },
-    
-    // چاپ پول: حداکثر ۳ بار در سال
-    print_money: { max_per_year: 3 },
-    
-    // جنگ تمام‌عیار: حداقل ۱۰ نوبت فاصله
-    declare_war: { cooldown_turns: 10 },
-    
-    // خروج از NPT: نیاز به محبوبیت ۶۰٪
-    leave_npt: { popularity: 60 },
-    
-    // پذیرش FATF: نیاز به رأی مجلس
-    accept_fatf: { parliament: true },
-    
-    // افزایش غنی‌سازی به ۹۰٪: نیاز به تأیید رهبری
-    enrich_90: { leader: true },
+const EXPORTS = {
+    oil: { name: "نفت خام", price: 60, sanctions: 3, emoji: "🛢️" },
+    gasoline: { name: "بنزین", price: 80, sanctions: 2, emoji: "⛽" },
+    drone: { name: "پهپاد", price: 10_000_000, sanctions: 5, emoji: "🛸" },
+    missile: { name: "موشک", price: 50_000_000, sanctions: 10, emoji: "🚀" },
+    petrochemical: { name: "پتروشیمی", price: 500, sanctions: 1, emoji: "🏭" },
+    carpet: { name: "فرش و پسته", price: 1_000_000, sanctions: 0, emoji: "🥇" }
 };
 
 // ============================================
-// 📤 خروجی
+// 🎲 بحران‌ها
 // ============================================
+const CRISES = [
+    { msg: "اعتراضات سراسری", pop: -15, chance: 0.05 },
+    { msg: "حمله سایبری", budget: -3, chance: 0.08 },
+    { msg: "زلزله", budget: -5, pop: -5, chance: 0.05 },
+    { msg: "سیل", budget: -3, pop: -2, chance: 0.06 },
+    { msg: "تحریم جدید", sanctions: 8, chance: 0.10 },
+    { msg: "ترور دانشمند", nuclear: -8, pop: -5, chance: 0.04 },
+    { msg: "رسوایی فساد", budget: -3, pop: -10, corruption: 5, chance: 0.07 },
+    { msg: "کشف نفت", budget: 8, chance: 0.03 },
+    { msg: "سقوط بورس", gdp: -10, pop: -3, chance: 0.06 },
+    { msg: "فرار نخبگان", brain: 3, chance: 0.05 },
+    { msg: "بحران آب", water: 10, pop: -4, chance: 0.07 },
+    { msg: "کرونا", pop: -4, gdp: -8, chance: 0.04 }
+];
+
+// ============================================
+// 💱 تبدیل ارز
+// ============================================
+function tomanToDollar(toman, rate = 100000) { return toman / rate; }
+function dollarToToman(dollar, rate = 100000) { return dollar * rate; }
+
 module.exports = {
-    TOKEN,
-    START_YEAR,
-    START_MONTH,
-    INITIAL_STATE,
-    COUNTRIES,
-    INITIAL_PROXIES,
-    MARKET_PRICES,
-    RANDOM_EVENT_CHANCE,
-    CRISIS_TYPES,
-    LOCKS,
-    tomanToDollar,
-    dollarToToman,
-    oilToDollar,
-    goldToDollar
+    TOKEN, START_YEAR, START_MONTH, TERM_DURATION,
+    INITIAL, COUNTRIES, PARLIAMENT, VOTE_NEEDED,
+    PRICES, EXPORTS, CRISES,
+    tomanToDollar, dollarToToman
 };
