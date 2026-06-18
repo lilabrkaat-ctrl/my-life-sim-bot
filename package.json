@@ -1,11 +1,15 @@
 {
-  "name": "empire-1406-bot",
+  "name": "iran-president-game",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "شبیه‌ساز ریاست جمهوری ایران",
+  "main": "bot.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node bot.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.66.0"
+    "grammy": "^1.20.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
