@@ -1,6 +1,6 @@
 // handlers.js - هندلرهای تلگرام و منوها
 
-const { GrammyError, InlineKeyboard } = require('grammy');
+const { InlineKeyboard } = require('grammy');
 const { IranState, getPlayer, setPlayer, deletePlayer, playerExists } = require('./state');
 const {
     increaseOilExport, decreaseOilExport, increaseOilProduction,
@@ -13,26 +13,22 @@ const {
     missileAttack, droneAttack, cyberAttack, declareWar,
     strengthenDefense, produceMissiles, produceDrones, deployForces,
     defendCountry, enrichUranium, decreaseEnrichment, nuclearDeal,
-    leaveNPT, targetedAssassination, infiltrationOperation
+    leaveNPT
 } = require('./military');
 const {
     negotiate, secretNegotiation, defensePact, tradePact,
-    cutRelations, expelAmbassador, mediateConflict, sanctionCountry,
-    evadeSanctions, closeStraitOfHormuz, acceptFATF, complainToUN, sendAid
+    cutRelations, expelAmbassador, sanctionCountry,
+    evadeSanctions, closeStraitOfHormuz, acceptFATF, sendAid
 } = require('./diplomacy');
 const {
     createProxy, fundProxy, sendWeapons, activateProxy,
-    deactivateProxy, reactivateProxy, mergeProxies,
     getProxiesReport, payAllProxies
 } = require('./proxies');
 
 // ============================================
-// 🎮 منوهای اصلی
+// 🎮 منوها
 // ============================================
 
-/**
- * منوی اصلی
- */
 function getMainMenu() {
     return new InlineKeyboard()
         .text("🏛️ اداره کشور", "menu_domestic").row()
@@ -42,38 +38,30 @@ function getMainMenu() {
         .text("🏴 گروه‌های نیابتی", "menu_proxies").row()
         .text("📊 گزارش کامل", "menu_status").row()
         .text("📜 تاریخچه", "menu_history").row()
-        .text("⏭️ پایان نوبت (ماه بعد)", "menu_next_turn");
+        .text("⏭️ پایان نوبت", "menu_next_turn");
 }
 
-/**
- * منوی سیاست خارجی
- */
 function getForeignMenu(page = 0) {
+    const { COUNTRIES } = require('./config');
     const keyboard = new InlineKeyboard();
-    const countries = require('./config').COUNTRIES;
-    
-    // نمایش ۶ کشور در هر صفحه
     const start = page * 6;
-    const end = Math.min(start + 6, countries.length);
+    const end = Math.min(start + 6, COUNTRIES.length);
     
     for (let i = start; i < end; i++) {
-        keyboard.text(`${countries[i][1]} ${countries[i][0]}`, `country_${countries[i][2]}`).row();
+        keyboard.text(`${COUNTRIES[i][1]} ${COUNTRIES[i][0]}`, `country_${COUNTRIES[i][2]}`).row();
     }
     
-    // دکمه‌های ناوبری
-    const navRow = [];
-    if (page > 0) navRow.push(InlineKeyboard.text("⬅️ قبلی", `foreign_page_${page - 1}`));
-    if (end < countries.length) navRow.push(InlineKeyboard.text("بعدی ➡️", `foreign_page_${page + 1}`));
-    if (navRow.length > 0) keyboard.row(...navRow);
+    if (page > 0 || end < COUNTRIES.length) {
+        const navButtons = [];
+        if (page > 0) navButtons.push(InlineKeyboard.text("⬅️ قبلی", `foreign_page_${page - 1}`));
+        if (end < COUNTRIES.length) navButtons.push(InlineKeyboard.text("بعدی ➡️", `foreign_page_${page + 1}`));
+        keyboard.row(...navButtons);
+    }
     
     keyboard.row().text("🔙 منوی اصلی", "main_menu");
-    
     return keyboard;
 }
 
-/**
- * منوی عملیات روی یک کشور
- */
 function getCountryMenu(countryCode) {
     return new InlineKeyboard()
         .text("🤝 مذاکره", `negotiate_${countryCode}`).row()
@@ -86,9 +74,6 @@ function getCountryMenu(countryCode) {
         .text("🔙 بازگشت به کشورها", "menu_foreign");
 }
 
-/**
- * منوی نظامی
- */
 function getMilitaryMenu() {
     return new InlineKeyboard()
         .text("🚀 حمله موشکی", "military_missile").row()
@@ -103,9 +88,6 @@ function getMilitaryMenu() {
         .text("🔙 منوی اصلی", "main_menu");
 }
 
-/**
- * منوی هسته‌ای
- */
 function getNuclearMenu() {
     return new InlineKeyboard()
         .text("⬆️ افزایش غنی‌سازی", "nuclear_enrich").row()
@@ -115,9 +97,6 @@ function getNuclearMenu() {
         .text("🔙 منوی نظامی", "menu_military");
 }
 
-/**
- * منوی اقتصاد
- */
 function getEconomyMenu() {
     return new InlineKeyboard()
         .text("🛢️ مدیریت نفت", "economy_oil").row()
@@ -132,9 +111,6 @@ function getEconomyMenu() {
         .text("🔙 منوی اصلی", "main_menu");
 }
 
-/**
- * منوی بازار داخلی
- */
 function getDomesticMarketMenu() {
     return new InlineKeyboard()
         .text("🚀 موشک فتح (۵۰ همت)", "buy_missile_fath").row()
@@ -146,9 +122,6 @@ function getDomesticMarketMenu() {
         .text("🔙 منوی اقتصاد", "menu_economy");
 }
 
-/**
- * منوی بازار بین‌المللی
- */
 function getInternationalMarketMenu() {
     return new InlineKeyboard()
         .text("✈️ سوخو-۳۵ (۸۵M$)", "buy_sukhoi35").row()
@@ -160,9 +133,6 @@ function getInternationalMarketMenu() {
         .text("🔙 منوی اقتصاد", "menu_economy");
 }
 
-/**
- * منوی گروه‌های نیابتی
- */
 function getProxiesMenu() {
     return new InlineKeyboard()
         .text("📊 گزارش گروه‌ها", "proxies_report").row()
@@ -174,9 +144,6 @@ function getProxiesMenu() {
         .text("🔙 منوی اصلی", "main_menu");
 }
 
-/**
- * منوی اداره کشور
- */
 function getDomesticMenu() {
     return new InlineKeyboard()
         .text("🏭 حمایت از تولید داخلی", "domestic_production").row()
@@ -185,21 +152,29 @@ function getDomesticMenu() {
         .text("⛽ تغییر قیمت بنزین", "domestic_gas").row()
         .text("🌐 مدیریت اینترنت", "domestic_internet").row()
         .text("👥 مدیریت اعتراضات", "domestic_protests").row()
+        .text("✅ پذیرش FATF", "domestic_fatf").row()
         .text("🔙 منوی اصلی", "main_menu");
 }
 
 // ============================================
-// 🎮 مدیریت دستورات و دکمه‌ها
+// 🎮 راه‌اندازی هندلرها
 // ============================================
 
-/**
- * راه‌اندازی همه هندلرها
- */
 function setupHandlers(bot) {
     
-    // ============================================
-    // 📝 دستور /start
-    // ============================================
+    // ذخیره موقت برای session
+    const sessions = new Map();
+    
+    bot.use(async (ctx, next) => {
+        const userId = ctx.from?.id;
+        if (userId && !sessions.has(userId)) {
+            sessions.set(userId, {});
+        }
+        ctx.session = sessions.get(userId);
+        await next();
+    });
+    
+    // دستور /start
     bot.command("start", async (ctx) => {
         const userId = ctx.from.id;
         const userName = ctx.from.first_name;
@@ -220,23 +195,7 @@ function setupHandlers(bot) {
         );
     });
     
-    // ============================================
-    // 📝 دستور /help
-    // ============================================
-    bot.command("help", async (ctx) => {
-        await ctx.reply(
-            "🎯 *راهنمای بازی*\n\n" +
-            "• /start - شروع بازی جدید\n" +
-            "• /status - مشاهده وضعیت کشور\n" +
-            "• /help - این راهنما\n\n" +
-            "📝 با دکمه‌های زیر هر پیام می‌تونی بازی کنی!",
-            { parse_mode: "Markdown" }
-        );
-    });
-    
-    // ============================================
-    // 📝 دستور /status
-    // ============================================
+    // دستور /status
     bot.command("status", async (ctx) => {
         const userId = ctx.from.id;
         const state = getPlayer(userId);
@@ -251,9 +210,7 @@ function setupHandlers(bot) {
         });
     });
     
-    // ============================================
-    // 🔘 مدیریت همه دکمه‌ها
-    // ============================================
+    // مدیریت دکمه‌ها
     bot.on("callback_query:data", async (ctx) => {
         const userId = ctx.from.id;
         const state = getPlayer(userId);
@@ -266,1317 +223,792 @@ function setupHandlers(bot) {
         
         await ctx.answerCallbackQuery();
         
-        // ============================================
-        // منوهای اصلی
-        // ============================================
+        let result = "";
+        let nextMenu = getMainMenu();
+        let showStatus = false;
+        let advanceTurn = false;
         
-        // منوی اصلی
-        if (data === "main_menu") {
-            await ctx.editMessageText(
-                "🏛️ *منوی اصلی*\nتصمیم بعدی شما چیست؟",
-                {
+        try {
+            // ============================================
+            // منوهای اصلی
+            // ============================================
+            
+            if (data === "main_menu") {
+                await ctx.editMessageText("🏛️ *منوی اصلی*\nتصمیم بعدی شما چیست؟", {
                     parse_mode: "Markdown",
                     reply_markup: getMainMenu()
-                }
-            );
-        }
-        
-        // منوی سیاست خارجی
-        else if (data === "menu_foreign" || data.startsWith("foreign_page_")) {
-            let page = 0;
-            if (data.startsWith("foreign_page_")) {
-                page = parseInt(data.split("_")[2]);
+                });
+                return;
             }
             
-            await ctx.editMessageText(
-                "🌍 *انتخاب کشور*\nیک کشور را برای تعامل انتخاب کنید:",
-                {
+            if (data === "menu_foreign" || data.startsWith("foreign_page_")) {
+                let page = data.startsWith("foreign_page_") ? parseInt(data.split("_")[2]) : 0;
+                await ctx.editMessageText("🌍 *انتخاب کشور*\nیک کشور را برای تعامل انتخاب کنید:", {
                     parse_mode: "Markdown",
                     reply_markup: getForeignMenu(page)
-                }
-            );
-        }
-        
-        // منوی نظامی
-        else if (data === "menu_military") {
-            await ctx.editMessageText(
-                "⚔️ *فرماندهی نظامی*\nچه عملیاتی انجام دهیم؟\n\n" +
-                `🚀 موشک: ${state.missiles.toLocaleString()}\n` +
-                `🛸 پهپاد: ${state.drones.toLocaleString()}\n` +
-                `👥 نیرو: ${state.soldiers.toLocaleString()}\n` +
-                `⚛️ غنی‌سازی: ${state.nuclear_percent}٪`,
-                {
+                });
+                return;
+            }
+            
+            if (data === "menu_military") {
+                await ctx.editMessageText(
+                    `⚔️ *فرماندهی نظامی*\n\n🚀 موشک: ${state.missiles.toLocaleString()}\n🛸 پهپاد: ${state.drones.toLocaleString()}\n👥 نیرو: ${state.soldiers.toLocaleString()}\n⚛️ غنی‌سازی: ${state.nuclear_percent}٪`,
+                    { parse_mode: "Markdown", reply_markup: getMilitaryMenu() }
+                );
+                return;
+            }
+            
+            if (data === "military_nuclear") {
+                await ctx.editMessageText(
+                    `⚛️ *برنامه هسته‌ای*\n\nغنی‌سازی فعلی: ${state.nuclear_percent}٪\nتوافق: ${state.nuclear_deal_active ? '✅' : '❌'}\nتحریم: ${state.sanctions}/۱۰۰`,
+                    { parse_mode: "Markdown", reply_markup: getNuclearMenu() }
+                );
+                return;
+            }
+            
+            if (data === "menu_economy") {
+                await ctx.editMessageText(
+                    `💰 *مدیریت اقتصاد*\n\n💵 بودجه: ${state.budget_toman.toFixed(1)} همت\n💲 ارزی: ${state.dollar_reserves.toFixed(1)} میلیارد دلار\n🛢️ نفت: ${state.oil_export} میلیون بشکه/روز\n📊 تورم: ${state.inflation.toFixed(1)}٪`,
+                    { parse_mode: "Markdown", reply_markup: getEconomyMenu() }
+                );
+                return;
+            }
+            
+            if (data === "economy_domestic_market") {
+                await ctx.editMessageText(
+                    `🛒 *بازار داخلی (تومان)*\n\n💰 بودجه: ${state.budget_toman.toFixed(1)} همت`,
+                    { parse_mode: "Markdown", reply_markup: getDomesticMarketMenu() }
+                );
+                return;
+            }
+            
+            if (data === "economy_international_market") {
+                await ctx.editMessageText(
+                    `🌍 *بازار بین‌المللی (دلار)*\n\n💲 ذخایر: ${state.dollar_reserves.toFixed(1)} میلیارد دلار`,
+                    { parse_mode: "Markdown", reply_markup: getInternationalMarketMenu() }
+                );
+                return;
+            }
+            
+            if (data === "menu_proxies") {
+                const totalBudget = state.proxies.reduce((sum, p) => sum + (p.active ? p.budget_monthly : 0), 0);
+                await ctx.editMessageText(
+                    `🏴 *گروه‌های نیابتی*\n\nتعداد: ${state.proxies.length}\nبودجه ماهانه: ${totalBudget.toFixed(1)} همت`,
+                    { parse_mode: "Markdown", reply_markup: getProxiesMenu() }
+                );
+                return;
+            }
+            
+            if (data === "menu_domestic") {
+                await ctx.editMessageText(
+                    `🏛️ *اداره کشور*\n\n👥 محبوبیت: ${state.popularity}٪\n🌐 اینترنت: ${state.internet_filtered ? '🚫 فیلتر' : '✅ آزاد'}\n⛽ بنزین: ${state.gas_price.toLocaleString()} تومان`,
+                    { parse_mode: "Markdown", reply_markup: getDomesticMenu() }
+                );
+                return;
+            }
+            
+            if (data === "menu_status") {
+                await ctx.editMessageText(state.getStatusSummary(), {
                     parse_mode: "Markdown",
-                    reply_markup: getMilitaryMenu()
-                }
-            );
-        }
-        
-        // منوی هسته‌ای
-        else if (data === "military_nuclear") {
-            await ctx.editMessageText(
-                `⚛️ *برنامه هسته‌ای*\n\n` +
-                `غنی‌سازی فعلی: ${state.nuclear_percent}٪\n` +
-                `توافق هسته‌ای: ${state.nuclear_deal_active ? '✅ فعال' : '❌ غیرفعال'}\n` +
-                `تحریم: ${state.sanctions}/۱۰۰`,
-                {
+                    reply_markup: getMainMenu()
+                });
+                return;
+            }
+            
+            if (data === "menu_history") {
+                const historyText = state.history.length > 0 ? state.history.slice(-15).join("\n") : "📜 هنوز تصمیمی گرفته نشده";
+                await ctx.editMessageText("📜 *تاریخچه*\n\n" + historyText, {
                     parse_mode: "Markdown",
-                    reply_markup: getNuclearMenu()
-                }
-            );
-        }
-        
-        // منوی اقتصاد
-        else if (data === "menu_economy") {
-            await ctx.editMessageText(
-                "💰 *مدیریت اقتصاد*\n\n" +
-                `💵 بودجه: ${state.budget_toman.toFixed(1)} همت\n` +
-                `💲 ذخایر ارزی: ${state.dollar_reserves.toFixed(1)} میلیارد دلار\n` +
-                `🛢️ نفت: ${state.oil_export} میلیون بشکه/روز\n` +
-                `📊 تورم: ${state.inflation.toFixed(1)}٪`,
-                {
+                    reply_markup: getMainMenu()
+                });
+                return;
+            }
+            
+            if (data === "menu_next_turn") {
+                state.nextTurn();
+                await ctx.editMessageText("⏭️ *یک ماه گذشت*\n\n" + state.getStatusSummary(), {
                     parse_mode: "Markdown",
-                    reply_markup: getEconomyMenu()
+                    reply_markup: state.game_over ? undefined : getMainMenu()
+                });
+                return;
+            }
+            
+            // ============================================
+            // انتخاب کشور
+            // ============================================
+            
+            if (data.startsWith("country_")) {
+                const code = data.split("_")[1];
+                const country = state.findCountry(code);
+                if (country) {
+                    await ctx.editMessageText(
+                        `${country[1]} *${country[0]}*\n\n📊 روابط: ${country[4]}/100\n💰 تجارت: ${country[5]} میلیارد دلار\n📍 منطقه: ${country[3]}`,
+                        { parse_mode: "Markdown", reply_markup: getCountryMenu(code) }
+                    );
                 }
-            );
-        }
-        
-        // منوی بازار داخلی
-        else if (data === "economy_domestic_market") {
-            await ctx.editMessageText(
-                "🛒 *بازار داخلی (تومان)*\n\n" +
-                "💰 بودجه: " + state.budget_toman.toFixed(1) + " همت\n\n" +
-                "یک کالا انتخاب کن:",
-                {
+                return;
+            }
+            
+            // ============================================
+            // مذاکره
+            // ============================================
+            
+            if (data.startsWith("negotiate_")) {
+                const code = data.split("_")[1];
+                const kb = new InlineKeyboard()
+                    .text("کارشناسی (۰.۱ همت)", `do_negotiate_${code}_expert_trade`).row()
+                    .text("سفیر (۰.۵ همت)", `do_negotiate_${code}_ambassador_trade`).row()
+                    .text("وزیر (۲ همت)", `do_negotiate_${code}_minister_trade`).row()
+                    .text("رئیس‌جمهور (۵ همت)", `do_negotiate_${code}_president_trade`).row()
+                    .text("محرمانه 🤫", `do_secret_${code}`).row()
+                    .text("🔙 بازگشت", `country_${code}`);
+                
+                await ctx.editMessageText("🤝 *سطح مذاکره را انتخاب کن*", {
                     parse_mode: "Markdown",
-                    reply_markup: getDomesticMarketMenu()
-                }
-            );
-        }
-        
-        // منوی بازار بین‌المللی
-        else if (data === "economy_international_market") {
-            await ctx.editMessageText(
-                "🌍 *بازار بین‌المللی (دلار)*\n\n" +
-                "💲 ذخایر: " + state.dollar_reserves.toFixed(1) + " میلیارد دلار\n\n" +
-                "یک کالا انتخاب کن:",
-                {
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_negotiate_")) {
+                const parts = data.split("_");
+                result = negotiate(state, parts[2], parts[4] || "trade", parts[3]);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_secret_")) {
+                result = secretNegotiation(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // حمله
+            // ============================================
+            
+            if (data.startsWith("attack_")) {
+                const code = data.split("_")[1];
+                const kb = new InlineKeyboard()
+                    .text("🚀 حمله موشکی", `do_missile_${code}`).row()
+                    .text("🛸 حمله پهپادی", `do_drone_${code}`).row()
+                    .text("💻 حمله سایبری", `do_cyber_${code}`).row()
+                    .text("⚔️ اعلان جنگ", `do_war_${code}`).row()
+                    .text("🔙 بازگشت", `country_${code}`);
+                
+                await ctx.editMessageText("⚔️ *نوع حمله را انتخاب کن*", {
                     parse_mode: "Markdown",
-                    reply_markup: getInternationalMarketMenu()
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_missile_")) {
+                result = missileAttack(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_drone_")) {
+                result = droneAttack(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_cyber_")) {
+                result = cyberAttack(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_war_")) {
+                result = declareWar(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // تجارت
+            // ============================================
+            
+            if (data.startsWith("trade_")) {
+                const code = data.split("_")[1];
+                const country = state.findCountry(code);
+                if (!country) return;
+                
+                const kb = new InlineKeyboard()
+                    .text("🛢️ فروش نفت", `do_sell_oil_${code}`).row()
+                    .text("📝 پیمان تجاری", `do_trade_pact_${code}`).row()
+                    .text("🔙 بازگشت", `country_${code}`);
+                
+                await ctx.editMessageText(
+                    `💰 *تجارت با ${country[1]} ${country[0]}*\n\n📊 حجم: ${country[5]} میلیارد دلار`,
+                    { parse_mode: "Markdown", reply_markup: kb }
+                );
+                return;
+            }
+            
+            if (data.startsWith("do_sell_oil_")) {
+                result = sellOil(state, data.split("_")[3], 0.1);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_trade_pact_")) {
+                result = tradePact(state, data.split("_")[3]);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // پیمان
+            // ============================================
+            
+            if (data.startsWith("pact_")) {
+                const code = data.split("_")[1];
+                const kb = new InlineKeyboard()
+                    .text("🛡️ پیمان دفاعی", `do_defense_pact_${code}`).row()
+                    .text("💰 پیمان تجاری", `do_trade_pact_${code}`).row()
+                    .text("🔙 بازگشت", `country_${code}`);
+                
+                await ctx.editMessageText("📝 *نوع پیمان را انتخاب کن*", {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_defense_pact_")) {
+                result = defensePact(state, data.split("_")[3]);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // تحریم و قطع رابطه
+            // ============================================
+            
+            if (data.startsWith("sanction_")) {
+                const code = data.split("_")[1];
+                const kb = new InlineKeyboard()
+                    .text("🚫 تحریم", `do_sanction_${code}`).row()
+                    .text("🚫 قطع رابطه", `do_cut_${code}`).row()
+                    .text("👋 اخراج سفیر", `do_expel_${code}`).row()
+                    .text("🔙 بازگشت", `country_${code}`);
+                
+                await ctx.editMessageText("🚫 *اقدام تنبیهی*", {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_sanction_")) {
+                result = sanctionCountry(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_cut_")) {
+                result = cutRelations(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            if (data.startsWith("do_expel_")) {
+                result = expelAmbassador(state, data.split("_")[2]);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // کمک
+            // ============================================
+            
+            if (data.startsWith("aid_")) {
+                const code = data.split("_")[1];
+                const kb = new InlineKeyboard()
+                    .text("🍞 غذا", `do_aid_${code}_food`).row()
+                    .text("💊 دارو", `do_aid_${code}_medicine`).row()
+                    .text("💰 نقدی", `do_aid_${code}_money`).row()
+                    .text("🔙 بازگشت", `country_${code}`);
+                
+                await ctx.editMessageText("🎁 *نوع کمک*", {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_aid_")) {
+                const parts = data.split("_");
+                result = sendAid(state, parts[2], parts[3]);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // اطلاعات کشور
+            // ============================================
+            
+            if (data.startsWith("info_")) {
+                const code = data.split("_")[1];
+                const country = state.findCountry(code);
+                if (!country) return;
+                
+                const relationStatus = country[4] >= 50 ? "✅ متحد" : country[4] >= 20 ? "🟢 دوست" : country[4] >= -20 ? "🟡 بی‌طرف" : country[4] >= -50 ? "🟠 متخاصم" : "🔴 دشمن";
+                
+                await ctx.editMessageText(
+                    `${country[1]} *${country[0]}*\n━━━━━━━━━━\n🌍 منطقه: ${country[3]}\n📈 وضعیت: ${relationStatus}\n📊 روابط: ${country[4]}/100\n💰 تجارت: ${country[5]} میلیارد دلار\n🏛️ سفارت: ${country[4] > -30 ? '✅' : '🚫'}`,
+                    { parse_mode: "Markdown", reply_markup: getCountryMenu(code) }
+                );
+                return;
+            }
+            
+            // ============================================
+            // اقتصاد - نفت
+            // ============================================
+            
+            if (data === "economy_oil") {
+                const kb = new InlineKeyboard()
+                    .text("🛢️ افزایش صادرات", "do_oil_export_up").row()
+                    .text("📉 کاهش صادرات", "do_oil_export_down").row()
+                    .text("🏭 افزایش تولید", "do_oil_production_up").row()
+                    .text("🔙 بازگشت", "menu_economy");
+                
+                await ctx.editMessageText(
+                    `🛢️ *مدیریت نفت*\n\nتولید: ${state.oil_production}\nصادرات: ${state.oil_export}\nقیمت: ${state.oil_price}$`,
+                    { parse_mode: "Markdown", reply_markup: kb }
+                );
+                return;
+            }
+            
+            if (data === "do_oil_export_up") {
+                result = increaseOilExport(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_oil_export_down") {
+                result = decreaseOilExport(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_oil_production_up") {
+                result = increaseOilProduction(state);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // اقتصاد - ارز
+            // ============================================
+            
+            if (data === "economy_currency") {
+                const kb = new InlineKeyboard()
+                    .text("💵 افزایش نرخ", "do_currency_up").row()
+                    .text("💵 کاهش نرخ", "do_currency_down").row()
+                    .text("🔙 بازگشت", "menu_economy");
+                
+                await ctx.editMessageText(
+                    `💵 *مدیریت ارز*\n\nنرخ: ${state.dollar_rate.toLocaleString()} تومان\nذخایر: ${state.dollar_reserves.toFixed(1)} میلیارد دلار`,
+                    { parse_mode: "Markdown", reply_markup: kb }
+                );
+                return;
+            }
+            
+            if (data === "do_currency_up") {
+                result = changeCurrencyRate(state, true);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_currency_down") {
+                result = changeCurrencyRate(state, false);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // بازار
+            // ============================================
+            
+            if (data.startsWith("buy_")) {
+                const itemKey = data.substring(4);
+                const domesticItems = ["missile_fath", "missile_kheibar", "drone_shahed136", "drone_shahed191", "drone_factory", "missile_factory"];
+                
+                if (domesticItems.includes(itemKey)) {
+                    result = buyDomestic(state, itemKey);
+                } else {
+                    result = buyInternational(state, itemKey);
                 }
-            );
-        }
-        
-        // منوی گروه‌های نیابتی
-        else if (data === "menu_proxies") {
-            await ctx.editMessageText(
-                "🏴 *گروه‌های نیابتی*\n\n" +
-                `تعداد گروه‌ها: ${state.proxies.length}\n` +
-                `بودجه ماهانه کل: ${state.proxies.reduce((sum, p) => sum + (p.active ? p.budget_monthly : 0), 0).toFixed(1)} همت`,
-                {
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // اقتصاد - سایر
+            // ============================================
+            
+            if (data === "domestic_production") {
+                result = supportDomesticProduction(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "domestic_imports") {
+                const kb = new InlineKeyboard()
+                    .text("📦 افزایش", "do_imports_up").row()
+                    .text("📦 کاهش", "do_imports_down").row()
+                    .text("🔙 بازگشت", "menu_domestic");
+                
+                await ctx.editMessageText("📦 *مدیریت واردات*", {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data === "do_imports_up") {
+                result = increaseImports(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_imports_down") {
+                result = decreaseImports(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "economy_print") {
+                result = printMoney(state);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // هسته‌ای
+            // ============================================
+            
+            if (data === "nuclear_enrich") {
+                const kb = new InlineKeyboard()
+                    .text("۹۰٪", "do_enrich_90").row()
+                    .text("۶۰٪", "do_enrich_60").row()
+                    .text("🔙 بازگشت", "military_nuclear");
+                
+                await ctx.editMessageText(`⬆️ *افزایش غنی‌سازی*\nفعلی: ${state.nuclear_percent}٪`, {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_enrich_")) {
+                result = enrichUranium(state, parseInt(data.split("_")[2]));
+                advanceTurn = true;
+            }
+            
+            if (data === "nuclear_decrease") {
+                result = decreaseEnrichment(state, 20);
+                advanceTurn = true;
+            }
+            
+            if (data === "nuclear_deal") {
+                result = nuclearDeal(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "nuclear_leave_npt") {
+                result = leaveNPT(state);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // نظامی
+            // ============================================
+            
+            if (data === "military_defense") {
+                result = strengthenDefense(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "military_produce_missile") {
+                result = produceMissiles(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "military_produce_drone") {
+                result = produceDrones(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "military_special") {
+                result = evadeSanctions(state);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // داخلی
+            // ============================================
+            
+            if (data === "domestic_fatf") {
+                result = acceptFATF(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "domestic_internet") {
+                state.internet_filtered = !state.internet_filtered;
+                state.popularity += state.internet_filtered ? -5 : 8;
+                result = state.internet_filtered ? "🚫 اینترنت فیلتر شد\n⚠️ محبوبیت -۵٪" : "✅ اینترنت آزاد شد\n✅ محبوبیت +۸٪";
+                advanceTurn = true;
+            }
+            
+            if (data === "domestic_gas") {
+                const kb = new InlineKeyboard()
+                    .text("۵,۰۰۰ تومان", "do_gas_5000").row()
+                    .text("۱۰,۰۰۰ تومان", "do_gas_10000").row()
+                    .text("۱,۵۰۰ تومان", "do_gas_1500").row()
+                    .text("🔙 بازگشت", "menu_domestic");
+                
+                await ctx.editMessageText(`⛽ *قیمت بنزین*\nفعلی: ${state.gas_price.toLocaleString()} تومان`, {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("do_gas_")) {
+                result = changeGasPrice(state, parseInt(data.split("_")[2]));
+                advanceTurn = true;
+            }
+            
+            if (data === "domestic_protests") {
+                const protesting = state.provinces.filter(p => p.has_protest);
+                if (protesting.length === 0) {
+                    await ctx.editMessageText("✅ اعتراضات فعالی وجود ندارد!", {
+                        parse_mode: "Markdown",
+                        reply_markup: getDomesticMenu()
+                    });
+                    return;
+                }
+                
+                let text = "⚠️ *استان‌های معترض:*\n";
+                protesting.forEach(p => { text += `• ${p.name}: ${p.satisfaction}٪\n`; });
+                
+                const kb = new InlineKeyboard()
+                    .text("🤝 مذاکره", "do_protest_talk").row()
+                    .text("👮 سرکوب", "do_protest_suppress").row()
+                    .text("💰 پرداخت خسارت", "do_protest_pay").row()
+                    .text("🔙 بازگشت", "menu_domestic");
+                
+                await ctx.editMessageText(text, {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data === "do_protest_talk") {
+                state.provinces.forEach(p => { if (p.has_protest) { p.has_protest = false; p.satisfaction += 10; } });
+                state.popularity += 5;
+                result = "✅ مذاکره موفق\n👥 محبوبیت +۵٪";
+                advanceTurn = true;
+            }
+            
+            if (data === "do_protest_suppress") {
+                state.provinces.forEach(p => { if (p.has_protest) { p.has_protest = false; p.satisfaction -= 15; } });
+                state.popularity -= 8;
+                state.sanctions = Math.min(100, state.sanctions + 5);
+                result = "⚠️ اعتراضات سرکوب شد\n👥 محبوبیت -۸٪\n🚫 تحریم +۵";
+                advanceTurn = true;
+            }
+            
+            if (data === "do_protest_pay") {
+                if (state.budget_toman < 10) {
+                    await ctx.answerCallbackQuery("❌ بودجه کافی نیست! (نیاز: ۱۰ همت)");
+                    return;
+                }
+                state.budget_toman -= 10;
+                state.provinces.forEach(p => { if (p.has_protest) { p.has_protest = false; p.satisfaction += 20; } });
+                state.popularity += 3;
+                result = "💰 خسارت پرداخت شد (۱۰ همت)\n✅ محبوبیت +۳٪";
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // بیت‌کوین
+            // ============================================
+            
+            if (data === "economy_bitcoin") {
+                const kb = new InlineKeyboard()
+                    .text("⛏️ استخراج", "do_bitcoin_mine").row()
+                    .text("💰 فروش", "do_bitcoin_sell").row()
+                    .text("🛒 خرید", "do_bitcoin_buy").row()
+                    .text("🔙 بازگشت", "menu_economy");
+                
+                await ctx.editMessageText(
+                    `₿ *بیت‌کوین*\n\nموجودی: ${state.bitcoin}\nارزش: ${(state.bitcoin * 60000 / 1_000_000_000).toFixed(2)} میلیارد دلار`,
+                    { parse_mode: "Markdown", reply_markup: kb }
+                );
+                return;
+            }
+            
+            if (data === "do_bitcoin_mine") {
+                result = manageBitcoin(state, 'mine');
+                advanceTurn = true;
+            }
+            
+            if (data === "do_bitcoin_sell") {
+                result = manageBitcoin(state, 'sell');
+                advanceTurn = true;
+            }
+            
+            if (data === "do_bitcoin_buy") {
+                result = manageBitcoin(state, 'buy');
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // طلا
+            // ============================================
+            
+            if (data === "economy_gold") {
+                const kb = new InlineKeyboard()
+                    .text("🛒 خرید", "do_gold_buy").row()
+                    .text("💰 فروش", "do_gold_sell").row()
+                    .text("🔙 بازگشت", "menu_economy");
+                
+                await ctx.editMessageText(
+                    `🥇 *طلا*\n\nذخایر: ${state.gold_tons.toFixed(3)} تن\nارزش: ${(state.gold_tons * 1000 * 64000 / 1_000_000_000).toFixed(1)} میلیارد دلار`,
+                    { parse_mode: "Markdown", reply_markup: kb }
+                );
+                return;
+            }
+            
+            if (data === "do_gold_buy") {
+                result = manageGold(state, 'buy');
+                advanceTurn = true;
+            }
+            
+            if (data === "do_gold_sell") {
+                result = manageGold(state, 'sell');
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // یارانه و مالیات
+            // ============================================
+            
+            if (data === "economy_subsidies") {
+                const kb = new InlineKeyboard()
+                    .text("💰 افزایش یارانه", "do_subsidy_up").row()
+                    .text("💰 کاهش یارانه", "do_subsidy_down").row()
+                    .text("📋 افزایش مالیات", "do_tax_up").row()
+                    .text("📋 کاهش مالیات", "do_tax_down").row()
+                    .text("🔙 بازگشت", "menu_economy");
+                
+                await ctx.editMessageText("💰 *یارانه و مالیات*", {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data === "do_subsidy_up") {
+                result = manageSubsidies(state, true);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_subsidy_down") {
+                result = manageSubsidies(state, false);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_tax_up") {
+                result = manageTaxes(state, true);
+                advanceTurn = true;
+            }
+            
+            if (data === "do_tax_down") {
+                result = manageTaxes(state, false);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // گروه‌های نیابتی
+            // ============================================
+            
+            if (data === "proxies_report") {
+                result = getProxiesReport(state);
+                await ctx.editMessageText(result, {
                     parse_mode: "Markdown",
                     reply_markup: getProxiesMenu()
-                }
-            );
-        }
-        
-        // منوی اداره کشور
-        else if (data === "menu_domestic") {
-            await ctx.editMessageText(
-                "🏛️ *اداره کشور*\n\n" +
-                `👥 محبوبیت: ${state.popularity}٪\n` +
-                `🌐 اینترنت: ${state.internet_filtered ? '🚫 فیلتر' : '✅ آزاد'}\n` +
-                `⛽ بنزین: ${state.gas_price.toLocaleString()} تومان`,
-                {
+                });
+                return;
+            }
+            
+            if (data === "proxies_pay") {
+                result = payAllProxies(state);
+                advanceTurn = true;
+            }
+            
+            if (data === "proxies_create") {
+                const kb = new InlineKeyboard()
+                    .text("🔫 نظامی", "proxy_create_military").row()
+                    .text("💻 سایبری", "proxy_create_cyber").row()
+                    .text("💰 اقتصادی", "proxy_create_economic").row()
+                    .text("🕵️ جاسوسی", "proxy_create_spy").row()
+                    .text("🔙 بازگشت", "menu_proxies");
+                
+                await ctx.editMessageText("🏴 *نوع گروه نیابتی*", {
                     parse_mode: "Markdown",
-                    reply_markup: getDomesticMenu()
-                }
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("proxy_create_")) {
+                const proxyType = data.split("_")[2];
+                ctx.session.proxyType = proxyType;
+                
+                const { COUNTRIES } = require('./config');
+                const kb = new InlineKeyboard();
+                COUNTRIES.slice(0, 8).forEach(c => {
+                    kb.text(`${c[1]} ${c[0]}`, `proxy_country_${c[2]}`).row();
+                });
+                kb.text("🔙 بازگشت", "proxies_create");
+                
+                await ctx.editMessageText("📍 *کشور هدف*", {
+                    parse_mode: "Markdown",
+                    reply_markup: kb
+                });
+                return;
+            }
+            
+            if (data.startsWith("proxy_country_")) {
+                const countryCode = data.split("_")[2];
+                const proxyType = ctx.session?.proxyType || "military";
+                const name = `گروه_${countryCode}_${Date.now().toString(36)}`;
+                result = createProxy(state, name, countryCode, proxyType);
+                advanceTurn = true;
+            }
+            
+            // ============================================
+            // اگر هیچ کدوم نبود
+            // ============================================
+            
+            if (!result && !advanceTurn) {
+                await ctx.editMessageText("🔧 این بخش در حال توسعه است...", {
+                    reply_markup: getMainMenu()
+                });
+                return;
+            }
+            
+            // ============================================
+            // پایان نوبت و نمایش نتیجه
+            // ============================================
+            
+            if (advanceTurn) {
+                state.nextTurn();
+            }
+            
+            if (result) {
+                await ctx.editMessageText(
+                    result + "\n\n" + state.getStatusSummary(),
+                    {
+                        parse_mode: "Markdown",
+                        reply_markup: state.game_over ? undefined : getMainMenu()
+                    }
+                );
+            }
+            
+        } catch (error) {
+            console.error("❌ خطا در پردازش دکمه:", error);
+            await ctx.editMessageText(
+                "⚠️ خطایی رخ داد!\n\nلطفاً دوباره تلاش کنید یا /start را بزنید.",
+                { reply_markup: getMainMenu() }
             );
-        }
-        
-        // ============================================
-        // ادامه در بخش بعد...
-        // ============================================
-        
-        else {
-            // پردازش سایر دکمه‌ها
-            await handleComplexActions(ctx, state, data);
         }
     });
 }
 
-/**
- * پردازش عملیات‌های پیچیده
- */
-async function handleComplexActions(ctx, state, data) {
-    let result = "✅ عملیات انجام شد";
-    
-    // انتخاب کشور
-    if (data.startsWith("country_")) {
-        const countryCode = data.split("_")[1];
-        const country = state.findCountry(countryCode);
-        
-        if (country) {
-            await ctx.editMessageText(
-                `${country[1]} *${country[0]}*\n\n` +
-                `📊 روابط: ${country[4]}/100\n` +
-                `💰 تجارت: ${country[5]} میلیارد دلار\n` +
-                `📍 منطقه: ${country[3]}\n\n` +
-                `چه اقدامی می‌خوای انجام بدی؟`,
-                {
-                    parse_mode: "Markdown",
-                    reply_markup: getCountryMenu(countryCode)
-                }
-            );
-        }
-    }
-    
-    // مذاکره با کشور
-    else if (data.startsWith("negotiate_")) {
-        const countryCode = data.split("_")[1];
-        const keyboard = new InlineKeyboard()
-            .text("کارشناسی", `do_negotiate_${countryCode}_expert_trade`).row()
-            .text("سفیر", `do_negotiate_${countryCode}_ambassador_trade`).row()
-            .text("وزیر خارجه", `do_negotiate_${countryCode}_minister_trade`).row()
-            .text("رئیس‌جمهور", `do_negotiate_${countryCode}_president_trade`).row()
-            .text("محرمانه 🤫", `do_secret_${countryCode}`).row()
-            .text("🔙 بازگشت", `country_${countryCode}`);
-        
-        await ctx.editMessageText(
-            "🤝 *سطح مذاکره را انتخاب کن*\n\n" +
-            "💰 هزینه:\n" +
-            "• کارشناسی: ۰.۱ همت\n" +
-            "• سفیر: ۰.۵ همت\n" +
-            "• وزیر: ۲ همت\n" +
-            "• رئیس‌جمهور: ۵ همت",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // اجرای مذاکره
-    else if (data.startsWith("do_negotiate_")) {
-        const parts = data.split("_");
-        const countryCode = parts[2];
-        const level = parts[3];
-        const topic = parts[4] || "trade";
-        
-        result = negotiate(state, countryCode, topic, level);
-        
-        await ctx.editMessageText(result, {
-            parse_mode: "Markdown",
-            reply_markup: getMainMenu()
-        });
-    }
-    
-    // مذاکره محرمانه
-    else if (data.startsWith("do_secret_")) {
-        const countryCode = data.split("_")[2];
-        result = secretNegotiation(state, countryCode);
-        
-        await ctx.editMessageText(result, {
-            parse_mode: "Markdown",
-            reply_markup: getMainMenu()
-        });
-    }
-    
-    // حمله به کشور
-    else if (data.startsWith("attack_")) {
-        const countryCode = data.split("_")[1];
-        const keyboard = new InlineKeyboard()
-            .text("🚀 حمله موشکی", `do_missile_${countryCode}`).row()
-            .text("🛸 حمله پهپادی", `do_drone_${countryCode}`).row()
-            .text("💻 حمله سایبری", `do_cyber_${countryCode}`).row()
-            .text("⚔️ اعلان جنگ", `do_war_${countryCode}`).row()
-            .text("🔙 بازگشت", `country_${countryCode}`);
-        
-        await ctx.editMessageText(
-            "⚔️ *نوع حمله را انتخاب کن*\n\n" +
-            `🚀 موشک: ${state.missiles.toLocaleString()} عدد\n` +
-            `🛸 پهپاد: ${state.drones.toLocaleString()} عدد`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // اجرای حمله موشکی
-    else if (data.startsWith("do_missile_")) {
-        const countryCode = data.split("_")[2];
-        result = missileAttack(state, countryCode);
-        state.nextTurn();
-        
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // اجرای حمله پهپادی
-    else if (data.startsWith("do_drone_")) {
-        const countryCode = data.split("_")[2];
-        result = droneAttack(state, countryCode);
-        state.nextTurn();
-        
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // اجرای حمله سایبری
-    else if (data.startsWith("do_cyber_")) {
-        const countryCode = data.split("_")[2];
-        result = cyberAttack(state, countryCode);
-        state.nextTurn();
-        
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // اعلان جنگ
-    else if (data.startsWith("do_war_")) {
-        const countryCode = data.split("_")[2];
-        result = declareWar(state, countryCode);
-        state.nextTurn();
-        
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // گزارش وضعیت
-    else if (data === "menu_status") {
-        await ctx.editMessageText(state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: getMainMenu()
-        });
-    }
-    
-    // تاریخچه
-    else if (data === "menu_history") {
-        const historyText = state.history.length > 0 
-            ? state.history.slice(-15).join("\n")
-            : "📜 هنوز تصمیمی گرفته نشده";
-        
-        await ctx.editMessageText(
-            "📜 *تاریخچه تصمیمات*\n\n" + historyText,
-            {
-                parse_mode: "Markdown",
-                reply_markup: getMainMenu()
-            }
-        );
-    }
-    
-    // پایان نوبت
-    else if (data === "menu_next_turn") {
-        state.nextTurn();
-        
-        await ctx.editMessageText(
-            "⏭️ *یک ماه گذشت*\n\n" + state.getStatusSummary(),
-            {
-                parse_mode: "Markdown",
-                reply_markup: state.game_over ? undefined : getMainMenu()
-            }
-        );
-    }
-    
-    // ============================================
-    // عملیات‌های اقتصادی
-    // ============================================
-    
-    // افزایش صادرات نفت
-    else if (data === "economy_oil") {
-        const keyboard = new InlineKeyboard()
-            .text("🛢️ افزایش صادرات", "do_oil_export_up").row()
-            .text("📉 کاهش صادرات", "do_oil_export_down").row()
-            .text("🏭 افزایش تولید", "do_oil_production_up").row()
-            .text("🤝 فروش به کشور", "do_oil_sell").row()
-            .text("🔄 تهاتر نفت", "do_oil_barter").row()
-            .text("🔙 بازگشت", "menu_economy");
-        
-        await ctx.editMessageText(
-            "🛢️ *مدیریت نفت*\n\n" +
-            `تولید: ${state.oil_production} میلیون بشکه/روز\n` +
-            `صادرات: ${state.oil_export} میلیون بشکه/روز\n` +
-            `قیمت: ${state.oil_price} دلار`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_oil_export_up") {
-        result = increaseOilExport(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_oil_export_down") {
-        result = decreaseOilExport(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_oil_production_up") {
-        result = increaseOilProduction(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // مدیریت ارز
-    else if (data === "economy_currency") {
-        const keyboard = new InlineKeyboard()
-            .text("💵 افزایش نرخ ارز", "do_currency_up").row()
-            .text("💵 کاهش نرخ ارز", "do_currency_down").row()
-            .text("🔙 بازگشت", "menu_economy");
-        
-        await ctx.editMessageText(
-            "💵 *مدیریت ارز*\n\n" +
-            `نرخ فعلی: ${state.dollar_rate.toLocaleString()} تومان\n` +
-            `ذخایر: ${state.dollar_reserves.toFixed(1)} میلیارد دلار`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_currency_up") {
-        result = changeCurrencyRate(state, true);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_currency_down") {
-        result = changeCurrencyRate(state, false);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // خرید از بازار داخلی
-    else if (data.startsWith("buy_")) {
-        const itemKey = data.substring(4);
-        
-        // بازار داخلی
-        if (["missile_fath", "missile_kheibar", "drone_shahed136", "drone_shahed191", 
-             "drone_factory", "missile_factory"].includes(itemKey)) {
-            result = buyDomestic(state, itemKey);
-        }
-        // بازار بین‌المللی
-        else {
-            result = buyInternational(state, itemKey);
-        }
-        
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // حمایت از تولید داخلی
-    else if (data === "domestic_production") {
-        result = supportDomesticProduction(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // افزایش واردات
-    else if (data === "domestic_imports") {
-        const keyboard = new InlineKeyboard()
-            .text("📦 افزایش واردات", "do_imports_up").row()
-            .text("📦 کاهش واردات", "do_imports_down").row()
-            .text("🔙 بازگشت", "menu_domestic");
-        
-        await ctx.editMessageText(
-            "📦 *مدیریت واردات*\n\n" +
-            "انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_imports_up") {
-        result = increaseImports(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_imports_down") {
-        result = decreaseImports(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // چاپ پول
-    else if (data === "economy_print") {
-        result = printMoney(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // عملیات‌های هسته‌ای
-    // ============================================
-    
-    else if (data === "nuclear_enrich") {
-        const keyboard = new InlineKeyboard()
-            .text("۶۰٪ → ۹۰٪", "do_enrich_90").row()
-            .text("۳.۶۷٪ → ۶۰٪", "do_enrich_60").row()
-            .text("🔙 بازگشت", "military_nuclear");
-        
-        await ctx.editMessageText(
-            "⬆️ *افزایش غنی‌سازی*\n\n" +
-            `فعلی: ${state.nuclear_percent}٪\n` +
-            "هدف را انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data.startsWith("do_enrich_")) {
-        const target = parseInt(data.split("_")[2]);
-        result = enrichUranium(state, target);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "nuclear_deal") {
-        result = nuclearDeal(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "nuclear_leave_npt") {
-        const keyboard = new InlineKeyboard()
-            .text("⚠️ بله، خروج از NPT", "do_leave_npt_confirm").row()
-            .text("🔙 انصراف", "military_nuclear");
-        
-        await ctx.editMessageText(
-            "🚫 *خروج از NPT*\n\n" +
-            "⚠️ این تصمیم عواقب بسیار سنگینی دارد!\n" +
-            "• تحریم ۱۰۰٪\n" +
-            "• انزوای کامل بین‌المللی\n" +
-            "• خطر جنگ\n\n" +
-            "مطمئنی؟",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_leave_npt_confirm") {
-        result = leaveNPT(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // گروه‌های نیابتی
-    // ============================================
-    
-    else if (data === "proxies_report") {
-        result = getProxiesReport(state);
-        await ctx.editMessageText(result, {
-            parse_mode: "Markdown",
-            reply_markup: getProxiesMenu()
-        });
-    }
-    
-    else if (data === "proxies_pay") {
-        result = payAllProxies(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // سایر عملیات‌ها
-    // ============================================
-    
-    // تقویت پدافند
-    else if (data === "military_defense") {
-        result = strengthenDefense(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // تولید موشک
-    else if (data === "military_produce_missile") {
-        result = produceMissiles(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // تولید پهپاد
-    else if (data === "military_produce_drone") {
-        result = produceDrones(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // پذیرش FATF
-    else if (data === "domestic_fatf") {
-        result = acceptFATF(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // بستن تنگه هرمز
-    else if (data === "military_hormuz") {
-        const keyboard = new InlineKeyboard()
-            .text("⚠️ بله، تنگه هرمز را ببند", "do_hormuz_confirm").row()
-            .text("🔙 انصراف", "menu_military");
-        
-        await ctx.editMessageText(
-            "🚫 *بستن تنگه هرمز*\n\n" +
-            "⚠️ این تصمیم ممکن است باعث جنگ جهانی شود!\n\n" +
-            "مطمئنی؟",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_hormuz_confirm") {
-        result = closeStraitOfHormuz(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // مدیریت اینترنت
-    else if (data === "domestic_internet") {
-        state.internet_filtered = !state.internet_filtered;
-        state.popularity += state.internet_filtered ? -5 : 8;
-        
-        result = state.internet_filtered 
-            ? "🚫 اینترنت فیلتر شد\n⚠️ محبوبیت -۵٪"
-            : "✅ اینترنت آزاد شد\n✅ محبوبیت +۸٪";
-        
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // تغییر قیمت بنزین
-    else if (data === "domestic_gas") {
-        const keyboard = new InlineKeyboard()
-            .text("⛽ ۵,۰۰۰ تومان", "do_gas_5000").row()
-            .text("⛽ ۱۰,۰۰۰ تومان", "do_gas_10000").row()
-            .text("⛽ ۱,۵۰۰ تومان", "do_gas_1500").row()
-            .text("🔙 بازگشت", "menu_domestic");
-        
-        await ctx.editMessageText(
-            "⛽ *قیمت جدید بنزین*\n\n" +
-            `قیمت فعلی: ${state.gas_price.toLocaleString()} تومان`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data.startsWith("do_gas_")) {
-        const newPrice = parseInt(data.split("_")[2]);
-        result = changeGasPrice(state, newPrice);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else {
-        await ctx.editMessageText(
-            "🔧 این بخش در حال توسعه است...\n\n" +
-            "لطفاً از منوی اصلی یک گزینه دیگر انتخاب کنید.",
-            { reply_markup: getMainMenu() }
-        );
-    }
-}
-
-// ============================================
-// 📤 خروجی
-// ============================================
-module.exports = {
-    setupHandlers,
-    getMainMenu
-};
-// ============================================
-// ادامه handlers.js - بخش ۲
-// ============================================
-
-    // ============================================
-    // عملیات ویژه نظامی
-    // ============================================
-    
-    // منوی عملیات ویژه
-    else if (data === "military_special") {
-        const keyboard = new InlineKeyboard()
-            .text("🎯 ترور هدفمند", "special_assassinate").row()
-            .text("🕵️ عملیات نفوذ", "special_infiltrate").row()
-            .text("🔄 دور زدن تحریم", "special_evade").row()
-            .text("🔙 بازگشت", "menu_military");
-        
-        await ctx.editMessageText(
-            "🕵️ *عملیات ویژه*\n\n" +
-            "نوع عملیات را انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // دور زدن تحریم
-    else if (data === "special_evade") {
-        result = evadeSanctions(state);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // منوی تجارت با کشور
-    // ============================================
-    
-    else if (data.startsWith("trade_")) {
-        const countryCode = data.split("_")[1];
-        const country = state.findCountry(countryCode);
-        
-        if (!country) {
-            await ctx.editMessageText("❌ کشور پیدا نشد!", { reply_markup: getMainMenu() });
-            return;
-        }
-        
-        const keyboard = new InlineKeyboard()
-            .text("🛢️ فروش نفت", `do_sell_oil_${countryCode}`).row()
-            .text("🔄 تهاتر", `do_barter_${countryCode}`).row()
-            .text("📝 پیمان تجاری", `do_trade_pact_${countryCode}`).row()
-            .text("🔙 بازگشت", `country_${countryCode}`);
-        
-        await ctx.editMessageText(
-            `💰 *تجارت با ${country[1]} ${country[0]}*\n\n` +
-            `📊 حجم تجارت فعلی: ${country[5]} میلیارد دلار\n` +
-            `🛢️ نفت قابل فروش: ${state.oil_export} میلیون بشکه/روز`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // فروش نفت به کشور
-    else if (data.startsWith("do_sell_oil_")) {
-        const countryCode = data.split("_")[3];
-        result = sellOil(state, countryCode, 0.1);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // پیمان تجاری
-    else if (data.startsWith("do_trade_pact_")) {
-        const countryCode = data.split("_")[3];
-        result = tradePact(state, countryCode);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // منوی پیمان با کشور
-    // ============================================
-    
-    else if (data.startsWith("pact_")) {
-        const countryCode = data.split("_")[1];
-        const country = state.findCountry(countryCode);
-        
-        if (!country) {
-            await ctx.editMessageText("❌ کشور پیدا نشد!", { reply_markup: getMainMenu() });
-            return;
-        }
-        
-        const keyboard = new InlineKeyboard()
-            .text("🛡️ پیمان دفاعی", `do_defense_pact_${countryCode}`).row()
-            .text("💰 پیمان تجاری", `do_trade_pact_${countryCode}`).row()
-            .text("🕊️ میانجی‌گری", `do_mediate_${countryCode}`).row()
-            .text("🔙 بازگشت", `country_${countryCode}`);
-        
-        await ctx.editMessageText(
-            `📝 *پیمان با ${country[1]} ${country[0]}*\n\n` +
-            `📊 روابط: ${country[4]}/100\n` +
-            "نوع پیمان را انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // پیمان دفاعی
-    else if (data.startsWith("do_defense_pact_")) {
-        const countryCode = data.split("_")[3];
-        result = defensePact(state, countryCode);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // تحریم و قطع رابطه
-    // ============================================
-    
-    else if (data.startsWith("sanction_")) {
-        const countryCode = data.split("_")[1];
-        const country = state.findCountry(countryCode);
-        
-        if (!country) {
-            await ctx.editMessageText("❌ کشور پیدا نشد!", { reply_markup: getMainMenu() });
-            return;
-        }
-        
-        const keyboard = new InlineKeyboard()
-            .text("🚫 تحریم کشور", `do_sanction_${countryCode}`).row()
-            .text("🚫 قطع رابطه", `do_cut_${countryCode}`).row()
-            .text("👋 اخراج سفیر", `do_expel_${countryCode}`).row()
-            .text("🔙 بازگشت", `country_${countryCode}`);
-        
-        await ctx.editMessageText(
-            `🚫 *اقدامات تنبیهی علیه ${country[1]} ${country[0]}*\n\n` +
-            `📊 روابط فعلی: ${country[4]}/100`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // تحریم کشور
-    else if (data.startsWith("do_sanction_")) {
-        const countryCode = data.split("_")[2];
-        result = sanctionCountry(state, countryCode);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // قطع رابطه
-    else if (data.startsWith("do_cut_")) {
-        const countryCode = data.split("_")[2];
-        result = cutRelations(state, countryCode);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // اخراج سفیر
-    else if (data.startsWith("do_expel_")) {
-        const countryCode = data.split("_")[2];
-        result = expelAmbassador(state, countryCode);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // ارسال کمک
-    // ============================================
-    
-    else if (data.startsWith("aid_")) {
-        const countryCode = data.split("_")[1];
-        const keyboard = new InlineKeyboard()
-            .text("🍞 کمک غذایی", `do_aid_${countryCode}_food`).row()
-            .text("💊 کمک دارویی", `do_aid_${countryCode}_medicine`).row()
-            .text("💰 کمک نقدی", `do_aid_${countryCode}_money`).row()
-            .text("🛢️ نفت رایگان", `do_aid_${countryCode}_oil`).row()
-            .text("🔙 بازگشت", `country_${countryCode}`);
-        
-        await ctx.editMessageText(
-            "🎁 *ارسال کمک*\n\n" +
-            "نوع کمک را انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data.startsWith("do_aid_")) {
-        const parts = data.split("_");
-        const countryCode = parts[2];
-        const aidType = parts[3];
-        result = sendAid(state, countryCode, aidType);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // اطلاعات بیشتر کشور
-    // ============================================
-    
-    else if (data.startsWith("info_")) {
-        const countryCode = data.split("_")[1];
-        const country = state.findCountry(countryCode);
-        
-        if (!country) {
-            await ctx.editMessageText("❌ کشور پیدا نشد!", { reply_markup: getMainMenu() });
-            return;
-        }
-        
-        const relationStatus = country[4] >= 50 ? "✅ متحد" :
-                               country[4] >= 20 ? "🟢 دوست" :
-                               country[4] >= -20 ? "🟡 بی‌طرف" :
-                               country[4] >= -50 ? "🟠 متخاصم" : "🔴 دشمن";
-        
-        await ctx.editMessageText(
-            `${country[1]} *${country[0]}*\n\n` +
-            `━━━━━━━━━━━━━━━━\n` +
-            `📊 *اطلاعات کامل*\n` +
-            `━━━━━━━━━━━━━━━━\n\n` +
-            `🌍 منطقه: ${country[3]}\n` +
-            `📈 وضعیت: ${relationStatus}\n` +
-            `📊 روابط: ${country[4]}/100\n` +
-            `💰 حجم تجارت: ${country[5]} میلیارد دلار\n` +
-            `🏛️ سفارت: ${country[4] > -30 ? '✅ فعال' : '🚫 تعطیل'}\n\n` +
-            `━━━━━━━━━━━━━━━━\n` +
-            `📝 *اقدامات اخیر:*\n` +
-            `(در تاریخچه قابل مشاهده است)`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: getCountryMenu(countryCode)
-            }
-        );
-    }
-    
-    // ============================================
-    // گروه‌های نیابتی - ساخت
-    // ============================================
-    
-    else if (data === "proxies_create") {
-        const keyboard = new InlineKeyboard()
-            .text("🔫 نظامی", "proxy_create_military").row()
-            .text("💣 تروریستی", "proxy_create_terrorist").row()
-            .text("💻 سایبری", "proxy_create_cyber").row()
-            .text("📢 رسانه‌ای", "proxy_create_media").row()
-            .text("💰 اقتصادی", "proxy_create_economic").row()
-            .text("🕵️ جاسوسی", "proxy_create_spy").row()
-            .text("🔙 بازگشت", "menu_proxies");
-        
-        await ctx.editMessageText(
-            "🏴 *ساخت گروه نیابتی جدید*\n\n" +
-            "💰 هزینه راه‌اندازی:\n" +
-            "• نظامی: ۲۰ همت + ۵۰M$\n" +
-            "• تروریستی: ۱۰ همت + ۳۰M$\n" +
-            "• سایبری: ۵ همت + ۱۰M$\n" +
-            "• رسانه‌ای: ۳ همت + ۵M$\n" +
-            "• اقتصادی: ۸ همت + ۱۵M$\n" +
-            "• جاسوسی: ۱۵ همت + ۲۵M$\n\n" +
-            "نوع گروه را انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // انتخاب کشور برای گروه نیابتی
-    else if (data.startsWith("proxy_create_")) {
-        const proxyType = data.split("_")[2];
-        
-        // ذخیره نوع گروه در session
-        ctx.session = ctx.session || {};
-        ctx.session.proxyType = proxyType;
-        
-        // نمایش ۱۰ کشور اول برای انتخاب
-        const countries = require('./config').COUNTRIES.slice(0, 10);
-        const keyboard = new InlineKeyboard();
-        
-        countries.forEach(c => {
-            keyboard.text(`${c[1]} ${c[0]}`, `proxy_country_${c[2]}`).row();
-        });
-        
-        keyboard.text("🔙 بازگشت", "proxies_create");
-        
-        await ctx.editMessageText(
-            "📍 *کشور هدف را انتخاب کن*\n\n" +
-            "گروه نیابتی در کدام کشور فعالیت کند؟",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    // ساخت نهایی گروه
-    else if (data.startsWith("proxy_country_")) {
-        const countryCode = data.split("_")[2];
-        const proxyType = ctx.session?.proxyType || "military";
-        
-        const proxyNames = {
-            military: "گردان",
-            terrorist: "گردان",
-            cyber: "واحد سایبری",
-            media: "شبکه رسانه‌ای",
-            economic: "بنیاد اقتصادی",
-            spy: "شبکه جاسوسی"
-        };
-        
-        const name = `${proxyNames[proxyType]}_${countryCode}_${Date.now().toString(36)}`;
-        result = createProxy(state, name, countryCode, proxyType);
-        state.nextTurn();
-        
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // بیت‌کوین
-    // ============================================
-    
-    else if (data === "economy_bitcoin") {
-        const keyboard = new InlineKeyboard()
-            .text("⛏️ استخراج", "do_bitcoin_mine").row()
-            .text("💰 فروش", "do_bitcoin_sell").row()
-            .text("🛒 خرید", "do_bitcoin_buy").row()
-            .text("🔙 بازگشت", "menu_economy");
-        
-        await ctx.editMessageText(
-            "₿ *مدیریت بیت‌کوین*\n\n" +
-            `موجودی: ${state.bitcoin} عدد\n` +
-            `ارزش تقریبی: ${(state.bitcoin * 60000 / 1_000_000_000).toFixed(2)} میلیارد دلار`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_bitcoin_mine") {
-        result = manageBitcoin(state, 'mine', 100);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_bitcoin_sell") {
-        result = manageBitcoin(state, 'sell', 100);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_bitcoin_buy") {
-        result = manageBitcoin(state, 'buy', 100);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // طلا
-    // ============================================
-    
-    else if (data === "economy_gold") {
-        const keyboard = new InlineKeyboard()
-            .text("🛒 خرید طلا", "do_gold_buy").row()
-            .text("💰 فروش طلا", "do_gold_sell").row()
-            .text("🔙 بازگشت", "menu_economy");
-        
-        await ctx.editMessageText(
-            "🥇 *مدیریت طلا*\n\n" +
-            `ذخایر: ${state.gold_tons.toFixed(3)} تن\n` +
-            `ارزش: ${(state.gold_tons * 1000 * 64000 / 1_000_000_000).toFixed(1)} میلیارد دلار`,
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_gold_buy") {
-        result = manageGold(state, 'buy', 10);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_gold_sell") {
-        result = manageGold(state, 'sell', 10);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // یارانه و مالیات
-    // ============================================
-    
-    else if (data === "economy_subsidies") {
-        const keyboard = new InlineKeyboard()
-            .text("💰 افزایش یارانه", "do_subsidy_up").row()
-            .text("💰 کاهش یارانه", "do_subsidy_down").row()
-            .text("📋 افزایش مالیات", "do_tax_up").row()
-            .text("📋 کاهش مالیات", "do_tax_down").row()
-            .text("🔙 بازگشت", "menu_economy");
-        
-        await ctx.editMessageText(
-            "💰 *یارانه و مالیات*\n\n" +
-            "انتخاب کن:",
-            {
-                parse_mode: "Markdown",
-                reply_markup: keyboard
-            }
-        );
-    }
-    
-    else if (data === "do_subsidy_up") {
-        result = manageSubsidies(state, true);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_subsidy_down") {
-        result = manageSubsidies(state, false);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_tax_up") {
-        result = manageTaxes(state, true);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    else if (data === "do_tax_down") {
-        result = manageTaxes(state, false);
-        state.nextTurn();
-        await ctx.editMessageText(result + "\n\n" + state.getStatusSummary(), {
-            parse_mode: "Markdown",
-            reply_markup: state.game_over ? undefined : getMainMenu()
-        });
-    }
-    
-    // ============================================
-    // مدیریت اعتراضات
-    // ============================================
-    
-    else if (data === "domestic_protests") {
-        const protestingProvinces = state.provinces.filter(p => p.has_protest);
-        
-        if (protestingProvinces.length === 0) {
-            await ctx.editMessageText(
-                "✅ *خوشبختانه اعتراضات فعالی وجود ندارد!*\n\n" +
-                "محبوبیت: " + state.popularity + "٪",
-                {
-                    parse_mode: "Markdown",
-                    reply_markup: getDomesticMenu()
-                }
-            );
-            return;
-        }
-        
-        let protestText = "⚠️ *استان‌های معترض:*\n\n";
-        protestingProvinces.forEach(p => {
-            protestText += `• ${p.name}: رضایت ${p.satisfaction}٪\n`;
-        });
-        
-        const keyboard = new InlineKeyboard()
-            .text("🤝 مذاکره با معترضان", "do_protest_talk").row()
-            .text("👮 سرکوب اعتراضات", "do_protest_suppress").row()
-            .text("💰 پرداخت خسارت", "do_protest_pay").row()
-            .text("🔙 بازگشت", "menu_domestic");
-        
-        await ctx.editMessageText(protestText, {
-            parse_mode: "Markdown",
-            reply_markup: keyboard
-        });
-    }
-    
-    else if (data === "do_protest_talk") {
-        state.provinces.forEach(p => {
-            if (p.has_protest) {
-                p.has_protest = false;
-                p.satisfaction += 10;
-            }
-        });
-        state.popularity += 5;
-        state.addHistory("🤝 مذاکره با معترضان - اعتراضات پایان یافت");
-        
-        await ctx.editMessageText(
-            "✅ *مذاکره با معترضان موفق بود*\n\n" +
-            "👥 محبوبیت +۵٪\n" +
-            "🏘️ رضایت استانی +۱۰٪",
-            {
-                parse_mode: "Markdown",
-                reply_markup: getDomesticMenu()
-            }
-        );
-    }
-    
-    else if (data === "do_protest_suppress") {
-        state.provinces.forEach(p => {
-            if (p.has_protest) {
-                p.has_protest = false;
-                p.satisfaction -= 15;
-            }
-        });
-        state.popularity -= 8;
-        state.sanctions = Math.min(100, state.sanctions + 5);
-        state.addHistory("👮 سرکوب اعتراضات - محکومیت بین‌المللی");
-        
-        await ctx.editMessageText(
-            "⚠️ *اعتراضات سرکوب شد*\n\n" +
-            "👥 محبوبیت -۸٪\n" +
-            "🚫 تحریم +۵\n" +
-            "🏘️ رضایت استانی -۱۵٪",
-            {
-                parse_mode: "Markdown",
-                reply_markup: getDomesticMenu()
-            }
-        );
-    }
-    
-    else if (data === "do_protest_pay") {
-        if (state.budget_toman < 10) {
-            await ctx.answerCallbackQuery("❌ بودجه کافی نیست! (نیاز: ۱۰ همت)");
-            return;
-        }
-        
-        state.budget_toman -= 10;
-        state.provinces.forEach(p => {
-            if (p.has_protest) {
-                p.has_protest = false;
-                p.satisfaction += 20;
-            }
-        });
-        state.popularity += 3;
-        state.addHistory("💰 پرداخت خسارت به معترضان (۱۰ همت)");
-        
-        await ctx.editMessageText(
-            "💰 *خسارت پرداخت شد*\n\n" +
-            "💵 هزینه: ۱۰ همت\n" +
-            "✅ اعتراضات پایان یافت\n" +
-            "👥 محبوبیت +۳٪",
-            {
-                parse_mode: "Markdown",
-                reply_markup: getDomesticMenu()
-            }
-        );
-    }
-}
-
-// ============================================
-// 📤 خروجی نهایی
-// ============================================
-module.exports = {
-    setupHandlers,
-    getMainMenu
-};
+module.exports = { setupHandlers, getMainMenu };
