@@ -1,7 +1,8 @@
-// src/handlers.js
+// src/handlers.js - کامل با عکس‌ها
 
 const { InlineKeyboard } = require("grammy");
 const { State, db, wait } = require("./state");
+const { G } = require("./images");
 
 const CITIES = ["بندرعباس", "بندرلنگه", "قشم", "میناب", "جاسک", "خواجه", "رودان", "سیریک", "حاجی‌آباد", "تنب"];
 const LEAGUES = [
@@ -51,14 +52,22 @@ function passWeek(s) {
         const p = s.players.find(x => !x.contract);
         if (p) return `📞 *${CLUBS[Math.floor(Math.random()*10)]}*: "${p.name} رو ${Math.floor(p.value/100)}M قرض می‌دیم!"`;
     }
+    // مصدومیت
+    if (Math.random() < 0.08 && s.players.length > 0) {
+        const p = s.players[Math.floor(Math.random()*s.players.length)];
+        p.ability = Math.max(1, p.ability - 1);
+        p.value = p.talent * p.ability * 2;
+        p.history.push(`🚑 مصدومیت (${s.week})`);
+        return `🚑 *${p.name}* مصدوم شد! 💪 -۱`;
+    }
     return null;
 }
 
 async function start(ctx) {
     const uid = ctx.from.id;
-    if (db.has(uid)) return ctx.reply(db.get(uid).sum(), { parse_mode: "Markdown", reply_markup: mainMenu() });
+    if (db.has(uid)) return ctx.replyWithPhoto(G("main"), { caption: db.get(uid).sum(), parse_mode: "Markdown", reply_markup: mainMenu() });
     const kb = new InlineKeyboard().text("👤 ایجنت", "go_agent").text("⚽ باشگاه", "go_club").row();
-    await ctx.reply("🎮 *بازی امپراتوری فوتبال*\n\nمسیرت رو انتخاب کن:", { parse_mode: "Markdown", reply_markup: kb });
+    await ctx.replyWithPhoto(G("main"), { caption: "🎮 *بازی امپراتوری فوتبال*\n\nمسیرت رو انتخاب کن:", parse_mode: "Markdown", reply_markup: kb });
 }
 
 async function message(ctx) {
@@ -67,7 +76,7 @@ async function message(ctx) {
     const s = new State(ctx.message.text, wait.get(uid));
     db.set(uid, s);
     wait.delete(uid);
-    await ctx.reply(`🎉 ثبت شد!\n\n${s.sum()}`, { parse_mode: "Markdown", reply_markup: mainMenu() });
+    await ctx.replyWithPhoto(G("main"), { caption: `🎉 ثبت شد!\n\n${s.sum()}`, parse_mode: "Markdown", reply_markup: mainMenu() });
 }
 
 async function callback(ctx) {
@@ -82,24 +91,28 @@ async function callback(ctx) {
 
     const s = db.get(uid);
     if (!s) { await ctx.answerCallbackQuery("❌ /start"); return; }
-    let r = "";
+    let r = "", img = G("main");
 
-    if (d === "menu_main") return ctx.editMessageText(s.sum(), { parse_mode: "Markdown", reply_markup: mainMenu() });
-    if (d === "menu_time") return ctx.editMessageText(`⏭️ *گذر زمان*\n📅 هفته ${s.week} | فصل ${s.season}`, { parse_mode: "Markdown", reply_markup: timeMenu() });
+    if (d === "menu_main") return ctx.editMessageMedia({ type: "photo", media: G("main"), caption: s.sum(), parse_mode: "Markdown" }, { reply_markup: mainMenu() });
+    if (d === "menu_time") return ctx.editMessageMedia({ type: "photo", media: G("main"), caption: `⏭️ *گذر زمان*\n📅 هفته ${s.week} | فصل ${s.season}`, parse_mode: "Markdown" }, { reply_markup: timeMenu() });
 
     if (d.startsWith("next_")) {
         const w = parseInt(d.split("_")[1]);
         let ev = "";
         for (let i = 0; i < w; i++) { const e = passWeek(s); if (e && i === w-1) ev = "\n\n" + e; }
-        if (s.week % 3 === 0) ev += "\n\n📰 *خبر هرمزگان*\n" + s.players.map(p => `⚽ ${p.name}: 💰${p.value}M`).join("\n");
-        return ctx.editMessageText(`⏭️ ${w} هفته\n📅 هفته ${s.week} | فصل ${s.season}${ev}\n\n${s.sum()}`, { parse_mode: "Markdown", reply_markup: mainMenu() });
+        if (s.week % 3 === 0) {
+            ev += "\n\n📰 *خبر هرمزگان*\n" + s.players.map(p => `⚽ ${p.name}: 💰${p.value}M`).join("\n");
+            img = G("newspaper");
+        }
+        if (ev.includes("🚑")) img = G("clinic");
+        return ctx.editMessageMedia({ type: "photo", media: img, caption: `⏭️ ${w} هفته\n📅 هفته ${s.week} | فصل ${s.season}${ev}\n\n${s.sum()}`, parse_mode: "Markdown" }, { reply_markup: mainMenu() });
     }
 
     if (d === "scout") {
         const kb = new InlineKeyboard();
         LEAGUES.forEach((l, i) => kb.text(l.name, `sl_${i}`).row());
         kb.text("🔙", "menu_main");
-        return ctx.editMessageText(`🔍 کدوم لیگ؟\n💰 ۵۰M | ${s.money}M`, { parse_mode: "Markdown", reply_markup: kb });
+        return ctx.editMessageMedia({ type: "photo", media: G("scout"), caption: `🔍 کدوم لیگ؟\n💰 ۵۰M | ${s.money}M`, parse_mode: "Markdown" }, { reply_markup: kb });
     }
 
     if (d.startsWith("sl_")) {
@@ -124,7 +137,7 @@ async function callback(ctx) {
         const kb = new InlineKeyboard();
         f.forEach((p, i) => kb.text(`${i+1}`, `pick_${i}`));
         kb.row().text("🔍 دوباره", `sl_${li}`).text("🔙", "scout");
-        return ctx.editMessageText(tx, { parse_mode: "Markdown", reply_markup: kb });
+        return ctx.editMessageMedia({ type: "photo", media: G("scout"), caption: tx, parse_mode: "Markdown" }, { reply_markup: kb });
     }
 
     if (d.startsWith("pick_")) {
@@ -133,26 +146,27 @@ async function callback(ctx) {
         s.players.push(s.temp[i]);
         s.temp = null;
         r = `🤝 ${s.players[s.players.length-1].name} پیوست!`;
+        img = G("player");
     }
 
     if (d === "players") {
-        if (!s.players.length) return ctx.editMessageText("👥 خالی!", { parse_mode: "Markdown", reply_markup: mainMenu() });
+        if (!s.players.length) return ctx.editMessageMedia({ type: "photo", media: G("player"), caption: "👥 خالی!", parse_mode: "Markdown" }, { reply_markup: mainMenu() });
         const kb = new InlineKeyboard();
         s.players.forEach((p, i) => kb.text(`${p.special?"🌟":""} ${p.name} ⭐${p.talent}`, `pv_${i}`).row());
         kb.text("🔙", "menu_main");
-        return ctx.editMessageText(`👥 بازیکنات (${s.players.length})`, { parse_mode: "Markdown", reply_markup: kb });
+        return ctx.editMessageMedia({ type: "photo", media: G("player"), caption: `👥 بازیکنات (${s.players.length})`, parse_mode: "Markdown" }, { reply_markup: kb });
     }
 
     if (d.startsWith("pv_")) {
         const i = parseInt(d.split("_")[1]);
         const p = s.players[i];
         if (!p) { await ctx.answerCallbackQuery("❌"); return; }
-        return ctx.editMessageText(card(p), { parse_mode: "Markdown", reply_markup: playerMenu(i) });
+        return ctx.editMessageMedia({ type: "photo", media: G("player"), caption: card(p), parse_mode: "Markdown" }, { reply_markup: playerMenu(i) });
     }
 
     if (d.startsWith("up_")) {
         const i = parseInt(d.split("_")[1]);
-        return ctx.editMessageText(`🏋️ ${s.players[i].name}`, { parse_mode: "Markdown", reply_markup: upgradeMenu(i) });
+        return ctx.editMessageMedia({ type: "photo", media: G("training"), caption: `🏋️ ${s.players[i].name}`, parse_mode: "Markdown" }, { reply_markup: upgradeMenu(i) });
     }
 
     if (d.startsWith("tr_")) {
@@ -168,6 +182,7 @@ async function callback(ctx) {
         p.value = c === 500 ? p.talent*p.ability*6 : p.talent*p.ability*2;
         p.history.push(`🏋️ تمرین (${s.week})`);
         r = `✅ ${p.name} 💪${p.ability} 💰${p.value}M`;
+        img = G("training");
     }
 
     if (d.startsWith("se_")) {
@@ -176,6 +191,7 @@ async function callback(ctx) {
         s.money += p.value;
         s.fame += 5;
         r = `💰 ${p.name} +${p.value}M`;
+        img = G("sell");
     }
 
     if (d.startsWith("ct_")) {
@@ -188,6 +204,7 @@ async function callback(ctx) {
         s.money += mo*3;
         p.history.push(`🤝 ${cl} (${s.week})`);
         r = `🤝 ${p.name}\n🏠 ${cl}\n💵 ${mo}M/ماه`;
+        img = G("contract");
     }
 
     if (d.startsWith("loan_")) {
@@ -202,9 +219,10 @@ async function callback(ctx) {
         p.games = (p.games||0)+1;
         p.history.push(`🔄 ${cl} (${s.week})`);
         r = `🔄 ${p.name} → ${cl}\n💰 ${lm}M\n💪 +۱`;
+        img = G("player");
     }
 
-    if (r) await ctx.editMessageText(`${r}\n\n${s.sum()}`, { parse_mode: "Markdown", reply_markup: mainMenu() });
+    if (r) await ctx.editMessageMedia({ type: "photo", media: img, caption: `${r}\n\n${s.sum()}`, parse_mode: "Markdown" }, { reply_markup: mainMenu() });
 }
 
 module.exports = { start, message, callback };
