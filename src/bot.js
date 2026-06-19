@@ -10,4 +10,5 @@ bot.command("start", start);
 bot.on("message:text", message);
 bot.on("callback_query:data", callback);
 
-bot.start({ onStart: (info) => console.log(`✅ @${info.username}`) });
+bot.catch((err) => console.error("❌", err.message));
+bot.start({ onStart: (info) => console.log(`✅ @${info.username} راه‌اندازی شد!`) });
