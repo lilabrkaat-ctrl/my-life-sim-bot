@@ -1,4 +1,4 @@
-// bot.js - کامل با منوی ادمین
+// bot.js - کامل با مننوی ادمین
 
 const { Bot, InlineKeyboard } = require("grammy");
 const { TOKEN, CITIES, FIRST_NAMES, LAST_NAMES, POSITIONS } = require("./config");
