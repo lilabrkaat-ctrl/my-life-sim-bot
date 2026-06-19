@@ -1,35 +1,58 @@
-const { COUNTRIES, PARLIAMENT, VOTE_NEEDED } = require("./config");
+const { LEAGUES } = require("./config");
 
-class IranState {
-    constructor(name) {
+class GameState {
+    constructor(name, path) {
         this.name = name;
-        this.budget = 800;
-        this.popularity = 38;
-        this.corruption = 65;
-        this.missiles = 300;
-        this.drones = 1200;
-        this.sanctions = 88;
-        this.internet = false;
-        this.dollarRate = 100000;
-        this.inflation = 48;
-        this.water = 70;
-        this.brain = 5;
-        this.gdp = 350;
-        this.tension = 85;
-        
-        this.countries = COUNTRIES.map(c => ({...c}));
-        this.parliament = JSON.parse(JSON.stringify(PARLIAMENT));
-        this.voteNeeded = VOTE_NEEDED;
-        this.boughtVotes = 0;
-        this.voteLeakChance = 0;
-        this.pendingBill = null;
-        this.playerVote = 0;
-        this.extraVotes = 0;
+        this.path = path; // "agent" یا "club"
+        this.money = 500;
+        this.coins = 0;
+        this.fame = 10;
+        this.city = "هرمزگان";
+        this.week = 1;
+        this.season = 1;
         this.history = [];
+        
+        // ایجنت
+        this.players = [];
+        
+        // باشگاه
+        this.clubName = "";
+        this.leagueIndex = 0; // ۰ = لیگ استان
+        this.teamPlayers = [];
+        this.stadium = 5000;
+        this.fans = 2500;
+        this.points = 0;
+        this.gamesPlayed = 0;
     }
     
-    findCountry(code) {
-        return this.countries.find(c => c.code === code);
+    getLeague() {
+        return LEAGUES[this.leagueIndex];
+    }
+    
+    getTitle() {
+        if (this.path === "agent") {
+            let level = "محلی";
+            if (this.fame > 80) level = "جهانی";
+            else if (this.fame > 60) level = "آسیایی";
+            else if (this.fame > 40) level = "ملی";
+            else if (this.fame > 20) level = "منطقه‌ای";
+            return `👤 ${this.name} - ایجنت ${level}`;
+        } else {
+            return `⚽ ${this.clubName || "باشگاه"} - ${this.getLeague().name}`;
+        }
+    }
+    
+    getSummary() {
+        let s = `${this.getTitle()}\n📍 ${this.city} | ⭐ شهرت: ${this.fame}\n`;
+        s += `💰 ${this.money}M | 🎯 ${this.coins} سکه\n`;
+        s += `📅 هفته ${this.week} | فصل ${this.season}\n`;
+        if (this.path === "agent") {
+            s += `👥 بازیکن: ${this.players.length} نفر\n`;
+        } else {
+            s += `🏟️ ${this.stadium.toLocaleString()} نفر | 👥 هوادار: ${this.fans.toLocaleString()}\n`;
+            s += `⚽ بازیکن: ${this.teamPlayers.length} | 📊 ${this.points} امتیاز\n`;
+        }
+        return s;
     }
 }
 
@@ -37,4 +60,4 @@ const players = new Map();
 function getPlayer(id) { return players.get(id); }
 function setPlayer(id, state) { players.set(id, state); }
 
-module.exports = { IranState, getPlayer, setPlayer };
+module.exports = { GameState, getPlayer, setPlayer };
