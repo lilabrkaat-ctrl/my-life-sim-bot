@@ -1,22 +1,28 @@
+// bot.js - فایل اصلی ربات
+
 const { Bot } = require("grammy");
 const { TOKEN } = require("./config");
 const { IranState, getPlayer, setPlayer } = require("./state");
-const { mainMenu, adminMenu, handleCallback, handleAdminAction, getAdminCaption, MAIN_IMAGE, ADMIN_ID } = require("./handlers");
+const {
+    mainMenu, handleCallback, handleMessage,
+    MAIN_IMAGE, userStates
+} = require("./handlers");
 
 const bot = new Bot(TOKEN);
 
+// ============================================
 // /start
+// ============================================
 bot.command("start", async (ctx) => {
     const userId = ctx.from.id;
     let state = getPlayer(userId);
     
     if (state && !state.gameOver) {
-        await ctx.replyWithPhoto(MAIN_IMAGE, {
+        return ctx.replyWithPhoto(MAIN_IMAGE, {
             caption: `🏛️ *${state.name}*! بازی قبلیت هنوز فعاله!\n\n${state.getSummary()}`,
             parse_mode: "Markdown",
             reply_markup: mainMenu()
         });
-        return;
     }
     
     state = new IranState(ctx.from.first_name);
@@ -29,10 +35,13 @@ bot.command("start", async (ctx) => {
     });
 });
 
+// ============================================
 // /status
+// ============================================
 bot.command("status", async (ctx) => {
     const state = getPlayer(ctx.from.id);
-    if (!state) return ctx.reply("❌ /start رو بزن!");
+    if (!state) return ctx.reply("❌ اول /start رو بزن!");
+    
     await ctx.replyWithPhoto(MAIN_IMAGE, {
         caption: state.getSummary(),
         parse_mode: "Markdown",
@@ -40,36 +49,72 @@ bot.command("status", async (ctx) => {
     });
 });
 
-// /edwin
-bot.command(["edwin", "ادوین"], async (ctx) => {
-    if (ctx.from.id !== ADMIN_ID) return ctx.reply("🚫 وجود ندارد!");
-    const state = getPlayer(ctx.from.id);
-    if (!state) return ctx.reply("اول /start");
-    
+// ============================================
+// /help
+// ============================================
+bot.command("help", async (ctx) => {
     await ctx.replyWithPhoto(MAIN_IMAGE, {
-        caption: getAdminCaption(state),
+        caption: `🎮 *راهنمای بازی*\n\n` +
+            `🏛️ *کشور* - مدیریت داخلی، مجلس، واردات، صادرات\n` +
+            `🌍 *خارجی* - مذاکره، تجارت، حمله به ۱۵ کشور\n` +
+            `⚔️ *نظامی* - موشک، پهپاد، سایبری، هسته‌ای\n` +
+            `💰 *اقتصاد* - نفت، ارز، بازار، بنزین، یارانه\n` +
+            `🏴 *نیابتی* - گروه‌های نیابتی در کشورهای مختلف\n` +
+            `⏭️ *زمان* - گذر ۱ ماه تا ۴ سال\n\n` +
+            `📝 *مجلس:* روی "ارائه لایحه" بزن و متن لایحه رو تایپ کن!\n` +
+            `مثال: "حمله به اسرائیل" یا "افزایش یارانه"`,
         parse_mode: "Markdown",
-        reply_markup: adminMenu()
+        reply_markup: mainMenu()
     });
 });
 
+// ============================================
 // دکمه‌ها
+// ============================================
 bot.on("callback_query:data", async (ctx) => {
     const state = getPlayer(ctx.from.id);
     const data = ctx.callbackQuery.data;
     
-    if (!state) { await ctx.answerCallbackQuery("/start بزن!"); return; }
-    await ctx.answerCallbackQuery();
-    
-    // ادمین
-    if (data.startsWith("admin_")) {
-        await handleAdminAction(ctx, state, data);
+    if (!state) {
+        await ctx.answerCallbackQuery("❌ اول /start رو بزن!");
         return;
     }
     
-    // بقیه دکمه‌ها
+    await ctx.answerCallbackQuery();
     await handleCallback(ctx, state, data);
 });
 
-// شروع
-bot.start({ onStart: (info) => console.log(`✅ @${info.username} راه‌اندازی شد!`) });
+// ============================================
+// پیام‌های متنی (برای لایحه مجلس)
+// ============================================
+bot.on("message:text", async (ctx) => {
+    const state = getPlayer(ctx.from.id);
+    if (!state) return;
+    
+    const text = ctx.message.text;
+    
+    // چک کن منتظر لایحه هست یا نه
+    const handled = await handleMessage(ctx, state, text);
+    if (handled) return;
+    
+    // پیام‌های معمولی رو ignore کن
+});
+
+// ============================================
+// مدیریت خطا
+// ============================================
+bot.catch((err) => {
+    console.error("❌ خطا:", err.message);
+});
+
+// ============================================
+// شروع ربات
+// ============================================
+bot.start({
+    onStart: (info) => {
+        console.log("━━━━━━━━━━━━━━━━━━━━━━");
+        console.log("🏛️ ربات ریاست‌جمهوری ایران");
+        console.log(`✅ @${info.username} راه‌اندازی شد!`);
+        console.log("━━━━━━━━━━━━━━━━━━━━━━");
+    }
+});
