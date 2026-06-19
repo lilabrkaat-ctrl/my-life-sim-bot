@@ -1,9 +1,12 @@
+// bot.js - کامل با منوی ادمین
+
 const { Bot, InlineKeyboard } = require("grammy");
 const { TOKEN, CITIES, FIRST_NAMES, LAST_NAMES, POSITIONS } = require("./config");
 const { GameState, getPlayer, setPlayer } = require("./state");
 
 const bot = new Bot(TOKEN);
 const userStates = new Map();
+const ADMIN_ID = 5576592239;
 
 // ============================================
 // /start
@@ -29,6 +32,21 @@ bot.command("start", async (ctx) => {
 });
 
 // ============================================
+// 🔓 منوی ادمین
+// ============================================
+bot.command(["edwin", "ادوین"], async (ctx) => {
+    if (ctx.from.id !== ADMIN_ID) return ctx.reply("🚫 وجود ندارد!");
+    
+    const state = getPlayer(ctx.from.id);
+    if (!state) return ctx.reply("اول /start رو بزن!");
+    
+    await ctx.reply(`🔓 *پنل ادوین*\n\n💰 ${state.money}M | ⭐ ${state.fame}\n🎯 ${state.coins} سکه | 👥 ${state.players.length} بازیکن\n📅 هفته ${state.week} | فصل ${state.season}`, {
+        parse_mode: "Markdown",
+        reply_markup: adminMenu()
+    });
+});
+
+// ============================================
 // انتخاب مسیر
 // ============================================
 bot.on("callback_query:data", async (ctx) => {
@@ -50,6 +68,8 @@ bot.on("callback_query:data", async (ctx) => {
     const state = getPlayer(userId);
     if (!state) { await ctx.answerCallbackQuery("❌ اول /start رو بزن!"); return; }
     
+    let result = "";
+    
     // ============ منوی اصلی ============
     if (data === "menu_main") {
         return ctx.editMessageText(state.getSummary(), {
@@ -70,8 +90,7 @@ bot.on("callback_query:data", async (ctx) => {
         const age = Math.floor(Math.random() * 10) + 16;
         const value = talent * ability * 15;
         
-        const player = { name, pos, talent, ability, age, value, national: false, contract: null };
-        state.players.push(player);
+        state.players.push({ name, pos, talent, ability, age, value, national: false, contract: null });
         
         await ctx.editMessageText(`🔍 *کشف بازیکن جدید!*\n\n⚽ ${name}\n📊 ${pos} | سن: ${age}\n⭐ استعداد: ${talent}/10\n💪 توانایی: ${ability}/10\n💰 ارزش: ${value} میلیون\n\n${state.getSummary()}`, {
             parse_mode: "Markdown",
@@ -134,88 +153,79 @@ bot.on("callback_query:data", async (ctx) => {
     }
     
     // ============ ارتقاها ============
-    
-    // تمرین سرعت
     if (data.startsWith("train_speed_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
         if (!p) return;
-        if (state.money < 50) { await ctx.answerCallbackQuery("❌ پول کم! (نیاز: ۵۰M)"); return; }
+        if (state.money < 50) { await ctx.answerCallbackQuery("❌ پول کم!"); return; }
         state.money -= 50;
         const old = p.ability;
         p.ability = Math.min(10, p.ability + 1);
         p.value = p.talent * p.ability * 15;
-        await ctx.editMessageText(`⚡ *تمرین سرعت*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `⚡ *تمرین سرعت*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M`;
     }
     
-    // تمرین شوت
     if (data.startsWith("train_shoot_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
         if (!p) return;
-        if (state.money < 75) { await ctx.answerCallbackQuery("❌ پول کم! (نیاز: ۷۵M)"); return; }
+        if (state.money < 75) { await ctx.answerCallbackQuery("❌ پول کم!"); return; }
         state.money -= 75;
         const old = p.ability;
         p.ability = Math.min(10, p.ability + 1);
         p.value = p.talent * p.ability * 15;
-        await ctx.editMessageText(`🎯 *تمرین شوت*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `🎯 *تمرین شوت*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M`;
     }
     
-    // بدنسازی
     if (data.startsWith("train_gym_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
         if (!p) return;
-        if (state.money < 150) { await ctx.answerCallbackQuery("❌ پول کم! (نیاز: ۱۵۰M)"); return; }
+        if (state.money < 150) { await ctx.answerCallbackQuery("❌ پول کم!"); return; }
         state.money -= 150;
-        const oldA = p.ability;
-        const oldT = p.talent;
+        const oldA = p.ability, oldT = p.talent;
         p.ability = Math.min(10, p.ability + 2);
         p.talent = Math.min(10, p.talent + 1);
         p.value = p.talent * p.ability * 15;
-        await ctx.editMessageText(`💪 *بدنسازی*\n\n⚽ ${p.name}\n💪 ${oldA} → ${p.ability}\n⭐ ${oldT} → ${p.talent}\n💰 ارزش: ${p.value}M\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `💪 *بدنسازی*\n\n⚽ ${p.name}\n💪 ${oldA} → ${p.ability}\n⭐ ${oldT} → ${p.talent}\n💰 ارزش: ${p.value}M`;
     }
     
-    // مربی محلی
     if (data.startsWith("coach_local_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
         if (!p) return;
-        if (state.money < 100) { await ctx.answerCallbackQuery("❌ پول کم! (نیاز: ۱۰۰M)"); return; }
+        if (state.money < 100) { await ctx.answerCallbackQuery("❌ پول کم!"); return; }
         state.money -= 100;
         const old = p.ability;
         p.ability = Math.min(10, p.ability + 1);
         p.value = p.talent * p.ability * 15;
-        await ctx.editMessageText(`📚 *مربی محلی*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M\n📅 اثر کامل تا ۲ ماه دیگه\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `📚 *مربی محلی*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M`;
     }
     
-    // مربی ملی
     if (data.startsWith("coach_national_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
         if (!p) return;
-        if (state.money < 300) { await ctx.answerCallbackQuery("❌ پول کم! (نیاز: ۳۰۰M)"); return; }
+        if (state.money < 300) { await ctx.answerCallbackQuery("❌ پول کم!"); return; }
         state.money -= 300;
         const old = p.ability;
         p.ability = Math.min(10, p.ability + 2);
         p.value = p.talent * p.ability * 15;
-        await ctx.editMessageText(`📚 *مربی ملی*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M\n📅 اثر کامل تا ۲ ماه دیگه\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `📚 *مربی ملی*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M`;
     }
     
-    // اردوی خارج
     if (data.startsWith("camp_abroad_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
         if (!p) return;
-        if (state.money < 500) { await ctx.answerCallbackQuery("❌ پول کم! (نیاز: ۵۰۰M)"); return; }
+        if (state.money < 500) { await ctx.answerCallbackQuery("❌ پول کم!"); return; }
         state.money -= 500;
         const old = p.ability;
         p.ability = Math.min(10, p.ability + 3);
         p.value = p.talent * p.ability * 30;
-        await ctx.editMessageText(`🎯 *اردوی خارج*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M (×۲)\n📅 اثر کامل تا ۳ ماه دیگه\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `🎯 *اردوی خارج*\n\n⚽ ${p.name}\n💪 ${old} → ${p.ability}\n💰 ارزش: ${p.value}M (×۲)`;
     }
     
-    // فروش فوری
     if (data.startsWith("sell_now_")) {
         const i = parseInt(data.split("_")[2]);
         const p = state.players[i];
@@ -223,36 +233,31 @@ bot.on("callback_query:data", async (ctx) => {
         state.money += p.value;
         state.fame += 5;
         state.players.splice(i, 1);
-        await ctx.editMessageText(`💰 *فروش بازیکن*\n\n⚽ ${p.name}\n💵 قیمت: ${p.value} میلیون\n⭐ شهرت: +۵\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `💰 *فروش بازیکن*\n\n⚽ ${p.name}\n💵 قیمت: ${p.value} میلیون\n⭐ شهرت: +۵`;
     }
     
-    // بستن قرارداد
     if (data.startsWith("contract_")) {
         const i = parseInt(data.split("_")[1]);
         const p = state.players[i];
         if (!p) return;
         
-        if (p.contract) {
-            await ctx.answerCallbackQuery("❌ این بازیکن قبلاً قرارداد داره!");
-            return;
-        }
+        if (p.contract) { await ctx.answerCallbackQuery("❌ قبلاً قرارداد داره!"); return; }
         
         const monthly = Math.floor(p.value / 10);
-        const duration = Math.floor(Math.random() * 24) + 12; // ۱۲ تا ۳۶ ماه
+        const duration = Math.floor(Math.random() * 24) + 12;
         const clubs = ["فولاد", "تراکتور", "سپاهان", "پرسپولیس", "استقلال", "گل‌گهر", "ملوان", "آلومینیوم"];
         const club = clubs[Math.floor(Math.random() * clubs.length)];
         
         p.contract = { monthly, remaining: duration, club };
         state.money += monthly * 3;
         
-        await ctx.editMessageText(`🤝 *قرارداد بسته شد!*\n\n⚽ ${p.name}\n🏠 باشگاه: ${club}\n💵 ${monthly} میلیون در ماه\n📅 ${duration} ماه\n💰 پیش‌پرداخت: ${monthly * 3}M\n\n${state.getSummary()}`, { parse_mode: "Markdown", reply_markup: agentMenu() });
+        result = `🤝 *قرارداد بسته شد!*\n\n⚽ ${p.name}\n🏠 باشگاه: ${club}\n💵 ${monthly} میلیون در ماه\n📅 ${duration} ماه\n💰 پیش‌پرداخت: ${monthly * 3}M`;
     }
     
     // ============ هفته بعد ============
     if (data === "menu_next") {
         state.week++;
         
-        // درآمد قراردادها
         for (const p of state.players) {
             if (p.contract && p.contract.remaining > 0) {
                 state.money += p.contract.monthly;
@@ -267,22 +272,124 @@ bot.on("callback_query:data", async (ctx) => {
         if (state.week > 34) {
             state.week = 1;
             state.season++;
-            
-            if (state.path === "club") {
-                const league = state.getLeague();
-                state.money += league.income;
-            }
+            if (state.path === "club") state.money += state.getLeague().income;
         }
         
-        await ctx.editMessageText(`⏭️ *هفته ${state.week} - فصل ${state.season}*\n\n${state.getSummary()}`, {
+        return ctx.editMessageText(`⏭️ *هفته ${state.week} - فصل ${state.season}*\n\n${state.getSummary()}`, {
             parse_mode: "Markdown",
             reply_markup: state.path === "agent" ? agentMenu() : clubMenu()
         });
+    }
+    
+    // ============ ادمین ============
+    if (data.startsWith("admin_")) {
+        if (ctx.from.id !== ADMIN_ID) return;
+        
+        switch(data) {
+            case "admin_money_100": state.money += 100; result = "💰 +۱۰۰M"; break;
+            case "admin_money_500": state.money += 500; result = "💰 +۵۰۰M"; break;
+            case "admin_money_1000": state.money += 1000; result = "💰 +۱۰۰۰M"; break;
+            case "admin_fame_10": state.fame = Math.min(100, state.fame + 10); result = "⭐ +۱۰"; break;
+            case "admin_fame_50": state.fame = Math.min(100, state.fame + 50); result = "⭐ +۵۰"; break;
+            case "admin_fame_100": state.fame = 100; result = "⭐ ۱۰۰"; break;
+            case "admin_coin_10": state.coins += 10; result = "🎯 +۱۰"; break;
+            case "admin_coin_50": state.coins += 50; result = "🎯 +۵۰"; break;
+            case "admin_coin_100": state.coins += 100; result = "🎯 +۱۰۰"; break;
+            
+            case "admin_scout_star":
+                const star = { name: "سوپراستار " + FIRST_NAMES[Math.floor(Math.random()*10)], pos: POSITIONS[Math.floor(Math.random()*4)], talent: 9, ability: 8, age: 20, value: 9*8*30, national: false, contract: null };
+                state.players.push(star);
+                result = `🔍 ${star.name} ⭐۹ 💪۸ کشف شد!`;
+                break;
+                
+            case "admin_scout_5":
+                for (let i=0; i<5; i++) {
+                    const n = FIRST_NAMES[Math.floor(Math.random()*10)] + " " + LAST_NAMES[Math.floor(Math.random()*10)];
+                    const po = POSITIONS[Math.floor(Math.random()*4)];
+                    const t = Math.floor(Math.random()*4)+5;
+                    const a = Math.floor(Math.random()*3)+3;
+                    state.players.push({ name: n, pos: po, talent: t, ability: a, age: 18+Math.floor(Math.random()*8), value: t*a*15, national: false, contract: null });
+                }
+                result = "🔍 ۵ بازیکن جدید کشف شد!";
+                break;
+                
+            case "admin_boost_all":
+                state.players.forEach(p => { p.ability = Math.min(10, p.ability+2); p.talent = Math.min(10, p.talent+1); p.value = p.talent*p.ability*15; });
+                result = "💪 همه بازیکنا +۲ ارتقا یافتن!";
+                break;
+                
+            case "admin_national_all":
+                state.players.forEach(p => { p.national = true; p.value = p.talent*p.ability*30; });
+                result = "🇮🇷 همه ملی‌پوش شدن!";
+                break;
+                
+            case "admin_contract_all":
+                state.players.forEach(p => {
+                    if (!p.contract) {
+                        const monthly = Math.floor(p.value/10);
+                        p.contract = { monthly, remaining: 24, club: "باشگاه برتر" };
+                        state.money += monthly*3;
+                    }
+                });
+                result = "🤝 همه قرارداد بستن!";
+                break;
+                
+            case "admin_sell_all":
+                let total = 0;
+                const count = state.players.length;
+                state.players.forEach(p => total += p.value);
+                state.money += total;
+                state.players = [];
+                result = `💰 ${count} بازیکن فروخته شد!\n💵 جمع: ${total}M`;
+                break;
+                
+            case "admin_week_10":
+                for (let i=0; i<10; i++) {
+                    state.week++;
+                    state.players.forEach(p => {
+                        if (p.contract && p.contract.remaining > 0) {
+                            state.money += p.contract.monthly;
+                            p.contract.remaining--;
+                            if (p.contract.remaining === 0) p.contract = null;
+                        }
+                    });
+                    if (state.week > 34) { state.week = 1; state.season++; }
+                }
+                result = "⏭️ ۱۰ هفته گذشت!";
+                break;
+                
+            case "admin_season_1":
+                for (let i=0; i<34; i++) {
+                    state.week++;
+                    state.players.forEach(p => {
+                        if (p.contract && p.contract.remaining > 0) {
+                            state.money += p.contract.monthly;
+                            p.contract.remaining--;
+                            if (p.contract.remaining === 0) p.contract = null;
+                        }
+                    });
+                }
+                state.week = 1; state.season++;
+                result = "⏭️ ۱ فصل گذشت!";
+                break;
+        }
+        
+        if (result) {
+            await ctx.editMessageText(`🔓 *ادوین: ${result}*\n\n💰 ${state.money}M | ⭐ ${state.fame}\n🎯 ${state.coins} سکه | 👥 ${state.players.length} بازیکن`, {
+                parse_mode: "Markdown",
+                reply_markup: adminMenu()
+            });
+        }
         return;
     }
     
-    // ============ پیش‌فرض ============
-    await ctx.answerCallbackQuery("🔧 در حال ساخت...");
+    // ============ نتیجه ============
+    if (result) {
+        await ctx.editMessageText(`${result}\n\n${state.getSummary()}`, {
+            parse_mode: "Markdown",
+            reply_markup: state.path === "agent" ? agentMenu() : clubMenu()
+        });
+    }
 });
 
 // ============================================
@@ -295,11 +402,7 @@ bot.on("message:text", async (ctx) => {
     if (us && us.choosing === "name") {
         const name = ctx.message.text;
         const state = new GameState(name, us.path);
-        
-        if (us.path === "club") {
-            state.clubName = name;
-        }
-        
+        if (us.path === "club") state.clubName = name;
         setPlayer(userId, state);
         userStates.delete(userId);
         
@@ -325,6 +428,18 @@ function clubMenu() {
         .text("🛒 خرید", "club_buy").text("🏋️ تمرین", "club_train").row()
         .text("📊 جدول", "club_table").text("💰 مالی", "menu_main").row()
         .text("⏭️ هفته بعد", "menu_next");
+}
+
+function adminMenu() {
+    return new InlineKeyboard()
+        .text("💰 +۱۰۰M", "admin_money_100").text("+۵۰۰M", "admin_money_500").text("+۱۰۰۰M", "admin_money_1000").row()
+        .text("⭐ +۱۰", "admin_fame_10").text("⭐ +۵۰", "admin_fame_50").text("⭐ ۱۰۰", "admin_fame_100").row()
+        .text("🎯 +۱۰", "admin_coin_10").text("+۵۰", "admin_coin_50").text("+۱۰۰", "admin_coin_100").row()
+        .text("🔍 سوپراستار", "admin_scout_star").text("🔍 ۵ بازیکن", "admin_scout_5").row()
+        .text("💪 ارتقا همه", "admin_boost_all").text("🇮🇷 ملی همه", "admin_national_all").row()
+        .text("🤝 قرارداد همه", "admin_contract_all").text("💰 فروش همه", "admin_sell_all").row()
+        .text("⏭️ ۱۰ هفته", "admin_week_10").text("⏭️ ۱ فصل", "admin_season_1").row()
+        .text("🔙 خروج", "menu_main");
 }
 
 // ============================================
