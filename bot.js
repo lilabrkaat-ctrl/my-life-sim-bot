@@ -1,3 +1,5 @@
+// bot.js - کامل
+
 const { Bot, InlineKeyboard } = require("grammy");
 const { TOKEN, CITIES, FIRST_NAMES, LAST_NAMES, POSITIONS, LEAGUES } = require("./config");
 const { GameState, getPlayer, setPlayer } = require("./state");
@@ -5,7 +7,6 @@ const { GameState, getPlayer, setPlayer } = require("./state");
 const bot = new Bot(TOKEN);
 const userStates = new Map();
 const ADMIN_ID = 5576592239;
-
 const SPECIAL_PLAYER = { name: "مهدی برکات", pos: "🥅 دروازه‌بان", talent: 9, ability: 7, city: "بندرلنگه", chance: 5 };
 
 // ============================================
@@ -91,22 +92,15 @@ bot.on("callback_query:data", async (ctx) => {
         if (state.money < 50) { await ctx.answerCallbackQuery("❌ پول کم! (۵۰M نیازه)"); return; }
         state.money -= 50;
         
-        // ساخت ۳ بازیکن رندوم
         const found = [];
         for (let i = 0; i < 3; i++) {
-            // شانس مهدی برکات (فقط تو لیگ استان)
             if (leagueIndex === 0 && Math.random() * 100 < SPECIAL_PLAYER.chance) {
                 found.push({
-                    name: SPECIAL_PLAYER.name,
-                    pos: SPECIAL_PLAYER.pos,
-                    talent: SPECIAL_PLAYER.talent,
-                    ability: SPECIAL_PLAYER.ability,
-                    age: 21,
-                    city: SPECIAL_PLAYER.city,
+                    name: SPECIAL_PLAYER.name, pos: SPECIAL_PLAYER.pos,
+                    talent: SPECIAL_PLAYER.talent, ability: SPECIAL_PLAYER.ability,
+                    age: 21, city: SPECIAL_PLAYER.city,
                     value: SPECIAL_PLAYER.talent * SPECIAL_PLAYER.ability * 15,
-                    special: true,
-                    national: false,
-                    contract: null
+                    special: true, national: false, contract: null
                 });
             } else {
                 const name = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)] + " " + LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
@@ -122,15 +116,11 @@ bot.on("callback_query:data", async (ctx) => {
         
         state.tempPlayers = found;
         
-        let txt = `🔍 *${league.name} - ۳ بازیکن*\n\n`;
-        txt += `💰 هزینه: ۵۰M | بودجه: ${state.money}M\n`;
-        txt += `━━━━━━━━━━━━━━━━━━\n\n`;
+        let txt = `🔍 *${league.name} - ۳ بازیکن*\n\n💰 هزینه: ۵۰M | بودجه: ${state.money}M\n━━━━━━━━━━━━━━━━━━\n\n`;
         
         found.forEach((p, i) => {
             const star = p.special ? "🌟" : "";
-            txt += `${i+1}. ${star}⚽ *${p.name}*\n`;
-            txt += `   📊 ${p.pos} | ${p.age} سال | ${p.city}\n`;
-            txt += `   ⭐${p.talent} 💪${p.ability} | 💰${p.value}M\n`;
+            txt += `${i+1}. ${star}⚽ *${p.name}*\n   📊 ${p.pos} | ${p.age} سال | ${p.city}\n   ⭐${p.talent} 💪${p.ability} | 💰${p.value}M\n`;
             if (p.special) txt += `   🏆 استعداد ویژه!\n`;
             txt += "\n";
         });
@@ -201,8 +191,6 @@ bot.on("callback_query:data", async (ctx) => {
         const index = parseInt(data.split("_")[2]);
         const p = state.players[index];
         if (!p) { await ctx.answerCallbackQuery("❌ نیست!"); return; }
-        
-        state.selectedPlayer = index;
         
         const kb = new InlineKeyboard()
             .text("⚡ سرعت (۵۰M)", `train_speed_${index}`).text("🎯 شوت (۷۵M)", `train_shoot_${index}`).row()
