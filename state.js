@@ -3,30 +3,28 @@ const { LEAGUES } = require("./config");
 class GameState {
     constructor(name, path) {
         this.name = name;
-        this.path = path; // "agent" یا "club"
+        this.path = path;
         this.money = 500;
         this.coins = 0;
         this.fame = 10;
         this.city = "هرمزگان";
         this.week = 1;
         this.season = 1;
-        this.history = [];
-        
-        // ایجنت
         this.players = [];
-        
-        // باشگاه
+        this.tempPlayers = null;
         this.clubName = "";
-        this.leagueIndex = 0; // ۰ = لیگ استان
+        this.leagueIndex = 0;
         this.teamPlayers = [];
         this.stadium = 5000;
         this.fans = 2500;
         this.points = 0;
-        this.gamesPlayed = 0;
     }
     
     getLeague() {
-        return LEAGUES[this.leagueIndex];
+        if (LEAGUES && LEAGUES[this.leagueIndex]) {
+            return LEAGUES[this.leagueIndex];
+        }
+        return { name: "لیگ استان", teams: 8, income: 50, cost: 20, level: 1, minStar: 2, maxStar: 4, minAbility: 1, maxAbility: 3 };
     }
     
     getTitle() {
@@ -43,14 +41,13 @@ class GameState {
     }
     
     getSummary() {
-        let s = `${this.getTitle()}\n📍 ${this.city} | ⭐ شهرت: ${this.fame}\n`;
-        s += `💰 ${this.money}M | 🎯 ${this.coins} سکه\n`;
-        s += `📅 هفته ${this.week} | فصل ${this.season}\n`;
+        let s = `${this.getTitle()}\n📍 ${this.city} | ⭐ ${this.fame || 0}\n`;
+        s += `💰 ${this.money || 0}M | 🎯 ${this.coins || 0} سکه\n`;
+        s += `📅 هفته ${this.week || 1} | فصل ${this.season || 1}\n`;
         if (this.path === "agent") {
-            s += `👥 بازیکن: ${this.players.length} نفر\n`;
+            s += `👥 بازیکن: ${this.players ? this.players.length : 0} نفر`;
         } else {
-            s += `🏟️ ${this.stadium.toLocaleString()} نفر | 👥 هوادار: ${this.fans.toLocaleString()}\n`;
-            s += `⚽ بازیکن: ${this.teamPlayers.length} | 📊 ${this.points} امتیاز\n`;
+            s += `🏟️ ${(this.stadium || 5000).toLocaleString()} | 👥 ${(this.fans || 2500).toLocaleString()}`;
         }
         return s;
     }
