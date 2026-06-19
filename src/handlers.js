@@ -1,4 +1,4 @@
-// src/handlers.js
+// src/handlers.js - کامل با عادل فردوسی‌پور، مسابقه محلی، عناوین هفته
 
 const { InlineKeyboard } = require("grammy");
 const { State, db, wait } = require("./state");
@@ -34,13 +34,66 @@ function card(p) {
     return c;
 }
 
+function weekTitle(s) {
+    const w = s.week;
+    if (w === 1) return "🏁 هفته اول - شروع فصل";
+    if (w === 10) return "🔟 هفته دهم - یک‌چهارم فصل";
+    if (w === 17) return "⏸️ هفته هفدهم - نیم‌فصل";
+    if (w === 20) return "🔄 هفته بیستم - نقل و انتقالات";
+    if (w === 34) return "🏆 هفته آخر - پایان فصل";
+    if (w <= 5) return `📅 هفته ${w} - شروع`;
+    if (w <= 17) return `📅 هفته ${w} - نیم‌فصل اول`;
+    if (w <= 33) return `📅 هفته ${w} - نیم‌فصل دوم`;
+    return `📅 هفته ${w}`;
+}
+
+function adelReport(s) {
+    if (s.players.length === 0) return `🎙️ *عادل فردوسی‌پور:* "محمد ظالم هنوز بازیکنی جذب نکرده. باید زودتر دست به کار بشه!"`;
+    const p = s.players[Math.floor(Math.random()*s.players.length)];
+    const msgs = [
+        `🎙️ *عادل فردوسی‌پور:* "سلام به همه! این هفته تو لیگ ${s.league || 'استان'}، بازیکنای محمد ظالم عملکرد خوبی داشتن. ${p.name} مخصوصاً عالی بود. ⭐${p.talent} 💪${p.ability}"`,
+        `🎙️ *عادل:* "تو هرمزگان همه از ${p.name} حرف می‌زنن. این بازیکن زیر نظر محمد ظالم داره پیشرفت می‌کنه. ارزشش رسیده به 💰${p.value}M"`,
+        `🎙️ *عادل:* "محمد ظالم یکی از ایجنتای فعال جنوبه. بازیکناش تو تیمای محلی دارن می‌درخشن. ${p.name} رو دیدم، واقعاً استعداد داره."`,
+        `🎙️ *عادل:* "این هفته تو فوتبال محلی، ${p.name} بهترین بازیکن زمین بود. ایجنتش محمد ظالم باید حواسش باشه این بازیکن رو از دست نده!"`
+    ];
+    return msgs[Math.floor(Math.random()*msgs.length)];
+}
+
+function localTournament() {
+    const prize = Math.floor(Math.random()*150)+50;
+    const club = CLUBS[Math.floor(Math.random()*10)];
+    return `🏆 *مسابقه محلی ${club}!*\n💰 جایزه: ${prize}M\n👥 ۸ تیم محلی\n\nبازیکن آزاد می‌تونی بفرستی!\n[ از منوی بازیکنا → قرض دادن ]`;
+}
+
 function passWeek(s) {
     s.week++;
     s.players.forEach(p => { if (p.contract?.remaining > 0) { s.money += p.contract.monthly; p.contract.remaining--; if (p.contract.remaining === 0) p.contract = null; } });
-    if (s.week > 34) { s.week = 1; s.season++; }
-    if (Math.random() < 0.15 && s.players.length > 0) { const p = s.players.find(x => !x.contract); if (p) return `📞 ${CLUBS[Math.floor(Math.random()*10)]}: "${p.name} رو ${Math.floor(p.value/100)}M قرض می‌دیم!"`; }
-    if (Math.random() < 0.08 && s.players.length > 0) { const p = s.players[Math.floor(Math.random()*s.players.length)]; p.ability = Math.max(1, p.ability-1); p.value = p.talent*p.ability*2; p.history.push(`🚑 مصدومیت (${s.week})`); return `🚑 ${p.name} مصدوم!`; }
-    return null;
+    if (s.week > 34) { s.week = 1; s.season++; s.league = LEAGUES[Math.min(5, (s.season-1))]?.name || "لیگ استان"; }
+    
+    let news = "";
+    
+    // عادل فردوسی‌پور - هر ۴ هفته
+    if (s.week % 4 === 0) news += adelReport(s) + "\n\n";
+    
+    // مسابقه محلی - هر ۶ هفته
+    if (s.week % 6 === 0) news += localTournament() + "\n\n";
+    
+    // پیشنهاد قرض
+    if (Math.random() < 0.15 && s.players.length > 0) {
+        const p = s.players.find(x => !x.contract);
+        if (p) news += `📞 *${CLUBS[Math.floor(Math.random()*10)]}*: "${p.name} رو ${Math.floor(p.value/100)}M قرض می‌دیم!"\n\n`;
+    }
+    
+    // مصدومیت
+    if (Math.random() < 0.08 && s.players.length > 0) {
+        const p = s.players[Math.floor(Math.random()*s.players.length)];
+        p.ability = Math.max(1, p.ability-1);
+        p.value = p.talent*p.ability*2;
+        p.history.push(`🚑 مصدومیت (${s.week})`);
+        news += `🚑 *${p.name}* مصدوم شد! 💪 -۱\n\n`;
+    }
+    
+    return news || null;
 }
 
 async function start(ctx) {
@@ -63,11 +116,7 @@ async function callback(ctx) {
     
     if (d === "go_agent" || d === "go_club") {
         wait.set(uid, d === "go_agent" ? "agent" : "club");
-        try {
-            await ctx.editMessageText(`✍️ اسم ${d === "go_agent" ? "ایجنت" : "باشگاه"} رو تایپ کن:`);
-        } catch(e) {
-            await ctx.reply(`✍️ اسم ${d === "go_agent" ? "ایجنت" : "باشگاه"} رو تایپ کن:`);
-        }
+        try { await ctx.editMessageText(`✍️ اسم ${d === "go_agent" ? "ایجنت" : "باشگاه"} رو تایپ کن:`); } catch(e) { await ctx.reply(`✍️ اسم ${d === "go_agent" ? "ایجنت" : "باشگاه"} رو تایپ کن:`); }
         return;
     }
     
@@ -76,14 +125,16 @@ async function callback(ctx) {
     let r = "", im = G("main");
 
     if (d === "menu_main") return ctx.editMessageMedia({ type: "photo", media: G("main"), caption: s.sum(), parse_mode: "Markdown" }, { reply_markup: mainMenu() });
-    if (d === "menu_time") return ctx.editMessageMedia({ type: "photo", media: G("main"), caption: `⏭️ هفته ${s.week}`, parse_mode: "Markdown" }, { reply_markup: timeMenu() });
+    if (d === "menu_time") return ctx.editMessageMedia({ type: "photo", media: G("main"), caption: `⏭️ ${weekTitle(s)}\n📅 فصل ${s.season}`, parse_mode: "Markdown" }, { reply_markup: timeMenu() });
 
     if (d.startsWith("next_")) {
         const w = parseInt(d.split("_")[1]); let ev = "";
-        for (let i=0; i<w; i++) { const e = passWeek(s); if (e && i===w-1) ev = "\n\n"+e; }
-        if (s.week%3===0) { ev += "\n\n📰 *خبر هرمزگان*\n"+s.players.map(p=>`⚽ ${p.name}: 💰${p.value}M`).join("\n"); im = G("newspaper"); }
+        for (let i=0; i<w; i++) { const e = passWeek(s); if (e) ev += e; }
+        if (s.week%3===0) { ev += `📰 *خبر هرمزگان*\n` + s.players.map(p=>`⚽ ${p.name}: 💰${p.value}M`).join("\n"); im = G("newspaper"); }
         if (ev.includes("🚑")) im = G("clinic");
-        return ctx.editMessageMedia({ type:"photo", media:im, caption:`⏭️ ${w} هفته\n📅 ${s.week}${ev}\n\n${s.sum()}`, parse_mode:"Markdown" }, { reply_markup:mainMenu() });
+        if (ev.includes("عادل")) im = G("host");
+        if (ev.includes("🏆")) im = G("trophy");
+        return ctx.editMessageMedia({ type:"photo", media:im, caption:`⏭️ ${w} هفته\n${weekTitle(s)}\n${ev}\n${s.sum()}`, parse_mode:"Markdown" }, { reply_markup:mainMenu() });
     }
 
     if (d === "scout") {
