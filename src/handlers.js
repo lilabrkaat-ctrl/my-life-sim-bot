@@ -1,4 +1,4 @@
-// src/handlers.js - کامل با منوی ادمین شیشه‌ای
+// src/handlers.js - کامل
 
 const { InlineKeyboard } = require("grammy");
 const { State, db, wait } = require("./state");
@@ -49,7 +49,6 @@ function passWeek(s) {
     return n||null;
 }
 
-// ============== START ==============
 async function start(ctx) {
     const uid=ctx.from.id;
     if(db.has(uid)) return ctx.replyWithPhoto(G("main"),{caption:db.get(uid).sum(),parse_mode:"Markdown",reply_markup:mainMenu()});
@@ -60,13 +59,11 @@ async function message(ctx) {
     await ctx.replyWithPhoto(G("main"),{caption:`🎉 ثبت شد!\n\n${s.sum()}`,parse_mode:"Markdown",reply_markup:mainMenu()});
 }
 
-// ============== CALLBACK ==============
 async function callback(ctx) {
     const d=ctx.callbackQuery.data,uid=ctx.from.id; await ctx.answerCallbackQuery();
     if(d==="go_agent"||d==="go_club"){wait.set(uid,d==="go_agent"?"agent":"club");try{await ctx.editMessageText(`✍️ اسم ${d==="go_agent"?"ایجنت":"باشگاه"} رو تایپ کن:`);}catch(e){await ctx.reply(`✍️ اسم ${d==="go_agent"?"ایجنت":"باشگاه"} رو تایپ کن:`);}return;}
     const s=db.get(uid); if(!s){await ctx.answerCallbackQuery("❌ /start");return;} let r="",im=G("main");
 
-    // ادمین
     if(d.startsWith("adm_")){if(ctx.from.id!==ADMIN_ID)return;switch(d){case"adm_m10":s.money+=10;r="💰 +۱۰M";break;case"adm_m50":s.money+=50;r="💰 +۵۰M";break;case"adm_m100":s.money+=100;r="💰 +۱۰۰M";break;case"adm_f10":s.fame=Math.min(100,s.fame+10);r="⭐ +۱۰";break;case"adm_f30":s.fame=Math.min(100,s.fame+30);r="⭐ +۳۰";break;case"adm_f100":s.fame=100;r="⭐ ۱۰۰";break;case"adm_star":s.players.push({name:SPECIAL.name,pos:SPECIAL.pos,talent:SPECIAL.talent,ability:SPECIAL.ability,age:21,city:SPECIAL.city,value:SPECIAL.talent*SPECIAL.ability*3,special:true,contract:null,history:["🌟"],goals:0,assists:0,cleans:0,conceded:0,tackles:0,games:0});r="🌟 مهدی برکات!";break;case"adm_boost":s.players.forEach(p=>{p.ability=Math.min(10,p.ability+2);p.talent=Math.min(10,p.talent+1);p.value=p.talent*p.ability*2;});r="💪 همه +۲";break;case"adm_5w":for(let i=0;i<5;i++)passWeek(s);r="⏭️ ۵ هفته";break;case"adm_34w":for(let i=0;i<34;i++)passWeek(s);r="⏭️ ۱ فصل";break;case"adm_office":if(s.office.level<5){const n=SHOP.offices[s.office.level];s.office={level:n.id,name:n.name,capacity:n.capacity,staffCapacity:n.staffCapacity,prestige:n.prestige};r=`🏚️ ${n.name}`;}break;case"adm_vehicle":if(s.vehicle.level<5){const n=SHOP.vehicles[s.vehicle.level];s.vehicle={level:n.id,name:n.name,cities:n.cities,speed:n.speed};r=`🚗 ${n.name}`;}break;case"adm_facility":if(s.facilities.level<5){const n=SHOP.facilities[s.facilities.level];s.facilities={level:n.id,name:n.name,bonus:n.bonus,desc:n.desc};r=`🏟️ ${n.name}`;}break;}await ctx.editMessageMedia({type:"photo",media:G("main"),caption:`🔓 ${r}\n\n${s.sum()}`,parse_mode:"Markdown"},{reply_markup:adminMenu()});return;}
 
     if(d==="shop_menu"||d.startsWith("shop_")||d.startsWith("buy_")||d.startsWith("hire_")){await handleShop(ctx,s,d);return;}
@@ -86,7 +83,6 @@ async function callback(ctx) {
     if(r) await ctx.editMessageMedia({type:"photo",media:im,caption:`${r}\n\n${s.sum()}`,parse_mode:"Markdown"},{reply_markup:mainMenu()});
 }
 
-// ============== فروشگاه ==============
 async function handleShop(ctx, state, data) {
     if(data==="shop_menu"){return ctx.editMessageMedia({type:"photo",media:G("main"),caption:box("🛒 فروشگاه",`🏚️ ${state.office.name}\n🚗 ${state.vehicle.name}\n🏟️ ${state.facilities.name}\n👩‍💼 ${state.staff.length}/${state.office.staffCapacity}`),parse_mode:"Markdown"},{reply_markup:shopMenu()});}
     if(data==="shop_office"){const c=SHOP.offices[state.office.level-1],n=SHOP.offices[state.office.level];let t=`${c.emoji} *${c.name}*\n👥 ${c.capacity} | 👩‍💼 ${state.staff.length}/${c.staffCapacity}\n⭐ ${"★".repeat(c.prestige)}${"☆".repeat(5-c.prestige)}`;if(n){const p=Math.min(100,Math.floor((state.money/n.price)*100));t+=`\n\n🛒 ${n.emoji} ${n.name}\n💰 ${n.price}M | ${"█".repeat(Math.floor(p/10))}${"░".repeat(10-Math.floor(p/10))} ${p}٪`;}else t+=`\n\n🏆 حداکثر!`;const kb=new InlineKeyboard();if(n&&state.money>=n.price)kb.text(`خرید ${n.name}`,"buy_office");else if(n)kb.text(`🔒 ${n.price}M`,"noop");kb.row().text("🔙","shop_menu");return ctx.editMessageMedia({type:"photo",media:G("main"),caption:t,parse_mode:"Markdown"},{reply_markup:kb});}
@@ -100,4 +96,4 @@ async function handleShop(ctx, state, data) {
     if(data.startsWith("hire_")){const id=parseInt(data.split("_")[1]),st=SHOP.staff.find(s=>s.id===id);if(st&&state.money>=st.price&&state.staff.length<state.office.staffCapacity){state.money-=st.price;state.staff.push(st);await ctx.answerCallbackQuery(`✅ ${st.name}!`);return handleShop(ctx,state,"shop_staff");}}
 }
 
-module.exports = { start, message, callback };
+module.exports = { start, message, callback, ADMIN_ID, adminMenu };
