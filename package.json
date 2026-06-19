@@ -1,9 +1,0 @@
-{
-  "name": "football-agent",
-  "scripts": {
-    "start": "node bot.js"
-  },
-  "dependencies": {
-    "grammy": "^1.20.0"
-  }
-}
