@@ -1,17 +1,23 @@
-// src/state.js
-
 class State {
     constructor(n, p) {
         this.name = n;
         this.path = p;
-        this.money = 500;
+        this.money = 35;
         this.coins = 0;
         this.fame = 10;
-        this.city = "هرمزگان";
+        this.city = "بندرعباس";
         this.week = 1;
         this.season = 1;
         this.players = [];
         this.temp = null;
+        this.league = "لیگ استان";
+        this.history = [];
+        this.office = { level: 1, name: "خونه پدری", capacity: 3, staffCapacity: 0, prestige: 1 };
+        this.vehicle = { level: 1, name: "پیاده", cities: 1 };
+        this.facilities = { level: 1, name: "زمین خاکی", bonus: 1 };
+        this.staff = [];
+        this.level = 1;
+        this.xp = 0;
     }
     title() {
         if (this.path === "agent") {
@@ -25,8 +31,9 @@ class State {
         return `⚽ ${this.name} - باشگاه`;
     }
     sum() {
-        return `${this.title()}\n📍 ${this.city} | ⭐ ${this.fame}\n💰 ${this.money}M | 📅 هفته ${this.week}\n👥 ${this.players.length} بازیکن`;
+        return `╭────────────────────╮\n│ 👤 ${this.name}\n│ 📿 ایجنت ${this.league}\n│ 🕌 ${this.city}\n╰────────────────────╯\n💰 ${this.money}M │ ⭐ ${this.fame} │ 👥 ${this.players.length}\n📅 هفته ${this.week} | فصل ${this.season}`;
     }
+    addXP(n) { this.xp += n; if (this.xp >= this.level * 100) { this.xp = 0; this.level++; this.fame += 5; return true; } return false; }
 }
 
 const db = new Map();
