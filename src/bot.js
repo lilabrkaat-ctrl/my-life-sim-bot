@@ -2,7 +2,8 @@
 
 const { Bot } = require("grammy");
 const { TOKEN } = require("./config");
-const { start, message, callback, ADMIN_ID, adminMenu } = require("./handlers");
+const { start, message, callback } = require("./handlers");
+const { ADMIN_ID, adminMenu } = require("./admin");
 const { G } = require("./images");
 const { db } = require("./state");
 
