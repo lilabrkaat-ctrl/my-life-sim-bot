@@ -1,11 +1,11 @@
 {
-  "name": "iran-football-manager-bot",
+  "name": "football-manager-bot",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.22.0"
   }
 }
