@@ -1,19 +1,20 @@
 const { Bot, GrammyError, HttpError } = require("grammy");
+const { setupHandlers } = require("./handlers");
 
 const token = process.env.BOT_TOKEN;
 if (!token) {
-    console.error("❌ Error: BOT_TOKEN is not defined in Environment Variables!");
+    console.error("❌ BOT_TOKEN is not defined!");
     process.exit(1);
 }
 
 const bot = new Bot(token);
 
-// مدیریت خطاها
+// مدیریت خطا
 bot.catch((err) => {
     const e = err.error;
     if (e instanceof GrammyError) {
         if (e.error_code === 404) {
-            console.warn(`⚠️ Ignored Telegram 404 Error: ${e.description}`);
+            console.warn(`⚠️ Ignored 404: ${e.description}`);
             return;
         }
         console.error("❌ Grammy Error:", e.description);
@@ -24,10 +25,8 @@ bot.catch((err) => {
     }
 });
 
-// دستورات ربات
-bot.command("start", async (ctx) => {
-    await ctx.reply("سلام! ربات فعال است.");
-});
+// راه‌اندازی handlers
+setupHandlers(bot);
 
-console.log("🚀 Bot is starting...");
+console.log("🚀 Marvel Empire Bot started!");
 bot.start();
