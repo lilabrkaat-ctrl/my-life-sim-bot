@@ -1,12 +1,12 @@
 {
-  "name": "marvel-empire-bot",
+  "name": "iran-football-manager-bot",
   "version": "1.0.0",
-  "description": "Marvel Empire Telegram Bot",
-  "main": "bot.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node index.js"
   },
   "dependencies": {
-    "grammy": "^1.33.0"
+    "telegraf": "^4.22.0",
+    "node-persist": "^3.1.0"
   }
 }
